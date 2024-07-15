@@ -1,6 +1,7 @@
 package com.tiviacz.travelersbackpack.blocks;
 
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
+import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
@@ -113,16 +114,22 @@ public class SleepingBagBlock extends BedBlock
             }
             else
             {
-                if(player instanceof ServerPlayerEntity)
+                player.trySleep(pos).ifLeft((sleepFailureReason) ->
                 {
-                    player.trySleep(pos).ifLeft((sleepFailureReason) ->
+                    if(sleepFailureReason != null)
                     {
-                        if(sleepFailureReason != null)
-                        {
-                            player.sendMessage(sleepFailureReason.getMessage(), true);
-                        }
-                    });
+                        player.sendMessage(sleepFailureReason.getMessage(), true);
+                    }
+                });
+
+                if(player instanceof ServerPlayerEntity serverPlayer)
+                {
+                    if(TravelersBackpackConfig.getConfig().backpackSettings.enableSleepingBagSpawnPoint)
+                    {
+                        serverPlayer.setSpawnPoint(world.getRegistryKey(), pos, 0.0F, true, true);
+                    }
                 }
+
                 return ActionResult.SUCCESS;
             }
         }
