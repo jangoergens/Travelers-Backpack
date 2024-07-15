@@ -3,8 +3,6 @@ package com.tiviacz.travelersbackpack.compat.trinkets;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
-import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.Trinket;
 import dev.emi.trinkets.api.TrinketEnums;
@@ -17,7 +15,7 @@ public class TravelersBackpackTrinket implements Trinket
     @Override
     public boolean canEquip(ItemStack stack, SlotReference slot, LivingEntity entity)
     {
-        return TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration && !slot.inventory().containsAny(p -> p.getItem() instanceof TravelersBackpackItem);
+        return TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration;
     }
 
     @Override
@@ -29,18 +27,6 @@ public class TravelersBackpackTrinket implements Trinket
             return TrinketEnums.DropRule.DEFAULT;
         }
         return TrinketEnums.DropRule.DEFAULT;
-      /*  if(TravelersBackpackConfig.getConfig().backpackSettings.backpackDeathPlace && !TravelersBackpack.isAnyGraveModInstalled())
-        {
-            if(entity.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY))
-            {
-                return TrinketEnums.DropRule.KEEP;
-            }
-            else
-            {
-                return TrinketEnums.DropRule.DESTROY;
-            }
-        }
-        return TrinketEnums.DropRule.DEFAULT; */
     }
 
     @Override
@@ -52,6 +38,7 @@ public class TravelersBackpackTrinket implements Trinket
         {
             ComponentUtils.getComponent(player).setContents(stack);
             ComponentUtils.getComponent(player).setWearable(stack);
+            ComponentUtils.sync(player);
         }
     }
 
@@ -63,22 +50,23 @@ public class TravelersBackpackTrinket implements Trinket
         if(entity instanceof PlayerEntity player)
         {
             ComponentUtils.getComponent(player).removeWearable();
+            ComponentUtils.sync(player);
         }
     }
 
-    @Override
+  /*  @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity)
     {
         if(!TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration) return;
 
-        if(entity instanceof PlayerEntity player)
+        if(entity instanceof PlayerEntity player && !player.getWorld().isClient)
         {
             TravelersBackpackInventory inventory = ComponentUtils.getComponent(player).getInventory();
 
-            if(!ItemStack.canCombine(inventory.getItemStack(), TrinketsCompat.getTravelersBackpackTrinket(player)))
+            if(!ItemStack.canCombine(inventory.getItemStack(), stack))
             {
-                TrinketsCompat.getTravelersBackpackTrinket(player).setNbt(inventory.getItemStack().getOrCreateNbt());
+                stack.setNbt(inventory.getItemStack().getOrCreateNbt());
             }
         }
-    }
+    } */
 }

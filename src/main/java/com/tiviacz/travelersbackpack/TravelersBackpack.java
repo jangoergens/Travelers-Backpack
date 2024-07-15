@@ -20,7 +20,7 @@ public class TravelersBackpack implements ModInitializer
 	public static final String MODID = "travelersbackpack";
 	public static final Logger LOGGER = LogManager.getLogger();
 
-	private static boolean trinketsLoaded;
+	public static boolean trinketsLoaded;
 	public static boolean craftingTweaksLoaded;
 
 	public static boolean dehydrationloaded;

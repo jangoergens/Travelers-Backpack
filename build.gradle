@@ -64,6 +64,7 @@ repositories {
 
 	maven { url "https://api.modrinth.com/maven" }
 	maven { url "https://server.bbkr.space/artifactory/libs-release" }  // LibGUI
+	maven { url "https://mvn.devos.one/releases/" } // Porting Lib
 
 	/*maven { url = "https://www.cursemaven.com" }
 	maven { url = "https://maven.shedaniel.me/" }
@@ -117,7 +118,7 @@ dependencies {
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
 
 	//Trinkets
-	modCompileOnly("dev.emi:trinkets:${trinkets_version}")
+	modImplementation("dev.emi:trinkets:${trinkets_version}")
 
 	//REI
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
@@ -144,6 +145,13 @@ dependencies {
 	modRuntimeOnly("maven.modrinth:yigd:VslzbAWg")
 	modRuntimeOnly("io.github.cottonmc:LibGui:8.1.1+1.20.1")
 	modRuntimeOnly("me.lucko:fabric-permissions-api:0.2-SNAPSHOT")
+
+	//Create
+	//modRuntimeOnly "maven.modrinth:create-fabric:h2HgGyvA"
+	//modRuntimeOnly "maven.modrinth:fxnt-create-storage:H3voyod7"
+	//modRuntimeOnly "maven.modrinth:porting_lib:GWCykcY1"
+	//modRuntimeOnly "io.github.fabricators_of_create.Porting-Lib:$module:2.3.5-beta.31+1.20.1"
+	//modRuntimeOnly "maven.modrinth:forge-config-api-port:CtENDTlF"
 
 	//modRuntimeOnly("eu.pb4:sgui:1.2.2+1.20")
 	//modRuntimeOnly("eu.pb4:placeholder-api:2.1.1+1.20")
