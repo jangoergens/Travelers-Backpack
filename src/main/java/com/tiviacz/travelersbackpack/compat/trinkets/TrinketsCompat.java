@@ -46,7 +46,6 @@ public class TrinketsCompat
                                 SlotReference ref = new SlotReference(inv, i);
                                 if(TrinketSlot.canInsert(stack, ref, player))
                                 {
-                                    System.out.println("workd");
                                     return true;
                                 }
                             }
