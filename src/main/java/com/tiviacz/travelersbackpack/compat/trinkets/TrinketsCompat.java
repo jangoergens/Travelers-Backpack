@@ -2,10 +2,13 @@ package com.tiviacz.travelersbackpack.compat.trinkets;
 
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
-import dev.emi.trinkets.api.TrinketItem;
-import dev.emi.trinkets.api.TrinketsApi;
+import dev.emi.trinkets.TrinketSlot;
+import dev.emi.trinkets.api.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Equipment;
 import net.minecraft.item.ItemStack;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.world.event.GameEvent;
 
 
 public class TrinketsCompat
@@ -29,8 +32,33 @@ public class TrinketsCompat
         }));
     }
 
-    public static void rightClickEquip(PlayerEntity player, ItemStack stack)
+    public static boolean rightClickEquip(PlayerEntity player, ItemStack stack, boolean simulate)
     {
-        TrinketItem.equipItem(player, stack);
+        if(simulate)
+        {
+            var optional = TrinketsApi.getTrinketComponent(player);
+            if(optional.isPresent()) {
+                TrinketComponent comp = optional.get();
+                for(var group : comp.getInventory().values()) {
+                    for(TrinketInventory inv : group.values()) {
+                        for(int i = 0; i < inv.size(); i++) {
+                            if(inv.getStack(i).isEmpty()) {
+                                SlotReference ref = new SlotReference(inv, i);
+                                if(TrinketSlot.canInsert(stack, ref, player))
+                                {
+                                    System.out.println("workd");
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        else
+        {
+            return TrinketItem.equipItem(player, stack);
+        }
     }
 }
