@@ -18,7 +18,7 @@ public class EntityItemHandler
 
             if(itemEntity.getStack().getItem() instanceof TravelersBackpackItem)
             {
-                itemEntity.setCovetedItem();
+                itemEntity.setNeverDespawn();
                 entity.setInvulnerable(true);
             }
         });
