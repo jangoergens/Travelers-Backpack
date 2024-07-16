@@ -130,7 +130,7 @@ public class SleepingBagBlock extends BedBlock
                         serverPlayer.setSpawnPoint(world.getRegistryKey(), pos, 0.0F, true, true);
                     }
                 }
-                
+
                 return ActionResult.SUCCESS;
             }
         }

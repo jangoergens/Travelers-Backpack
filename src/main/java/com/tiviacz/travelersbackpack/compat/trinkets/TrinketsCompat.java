@@ -4,13 +4,8 @@ import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
-import dev.emi.trinkets.api.SlotReference;
-import dev.emi.trinkets.api.TrinketComponent;
-import dev.emi.trinkets.api.TrinketItem;
-import dev.emi.trinkets.api.TrinketsApi;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import dev.emi.trinkets.TrinketSlot;
+import dev.emi.trinkets.api.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
@@ -48,12 +43,6 @@ public class TrinketsCompat
         return ComponentUtils.getComponent(player).getInventory();
     }
 
-    @Environment(value = EnvType.CLIENT)
-    public static boolean renderTrinketsLayer(AbstractClientPlayerEntity clientPlayer)
-    {
-        return TrinketsCompat.getTravelersBackpackTrinket(clientPlayer).getItem() instanceof TravelersBackpackItem;
-    }
-
     public static void rightClickUnequip(PlayerEntity player, ItemStack stack)
     {
         TrinketsApi.getTrinketComponent(player).ifPresent(t -> t.forEach((slotReference, itemStack) ->
@@ -65,8 +54,32 @@ public class TrinketsCompat
         }));
     }
 
-    public static void rightClickEquip(PlayerEntity player, ItemStack stack)
+    public static boolean rightClickEquip(PlayerEntity player, ItemStack stack, boolean simulate)
     {
-        TrinketItem.equipItem(player, stack);
+        if(simulate)
+        {
+            var optional = TrinketsApi.getTrinketComponent(player);
+            if (optional.isPresent()) {
+                TrinketComponent comp = optional.get();
+                for (var group : comp.getInventory().values()) {
+                    for (TrinketInventory inv : group.values()) {
+                        for (int i = 0; i < inv.size(); i++) {
+                            if (inv.getStack(i).isEmpty()) {
+                                SlotReference ref = new SlotReference(inv, i);
+                                if(TrinketSlot.canInsert(stack, ref, player))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        else
+        {
+            return TrinketItem.equipItem(player, stack);
+        }
     }
 }
