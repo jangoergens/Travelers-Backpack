@@ -248,7 +248,7 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
         {
             //Stop updating stack if player is changing settings
             if(this.slotManager.isSelectorActive(SlotManager.MEMORY) || this.slotManager.isSelectorActive(SlotManager.UNSORTABLE)) return;
-            
+
             ComponentUtils.sync(this.player);
         }
     }
