@@ -3,6 +3,7 @@ package com.tiviacz.travelersbackpack.compat.trinkets;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.Trinket;
 import dev.emi.trinkets.api.TrinketEnums;
@@ -36,8 +37,11 @@ public class TravelersBackpackTrinket implements Trinket
 
         if(entity instanceof PlayerEntity player)
         {
-            ComponentUtils.getComponent(player).setContents(stack);
-            ComponentUtils.getComponent(player).setWearable(stack);
+            if(!player.getWorld().isClient)
+            {
+                ComponentUtils.getComponent(player).setContents(TravelersBackpack.accessoriesLoaded ? stack : stack.copy());
+                ComponentUtils.getComponent(player).setWearable(TravelersBackpack.accessoriesLoaded ? stack : stack.copy());
+            }
             ComponentUtils.sync(player);
         }
     }
@@ -49,24 +53,28 @@ public class TravelersBackpackTrinket implements Trinket
 
         if(entity instanceof PlayerEntity player)
         {
-            ComponentUtils.getComponent(player).removeWearable();
+            if(!player.getWorld().isClient)
+            {
+                ComponentUtils.getComponent(player).removeWearable();
+            }
             ComponentUtils.sync(player);
         }
     }
 
-  /*  @Override
+    @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity)
     {
-        if(!TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration) return;
+        if(!TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration || entity.getWorld().isClient || TravelersBackpack.accessoriesLoaded) return;
 
-        if(entity instanceof PlayerEntity player && !player.getWorld().isClient)
+        if(entity instanceof PlayerEntity player)
         {
             TravelersBackpackInventory inventory = ComponentUtils.getComponent(player).getInventory();
 
             if(!ItemStack.canCombine(inventory.getItemStack(), stack))
             {
-                stack.setNbt(inventory.getItemStack().getOrCreateNbt());
+                stack.setNbt(inventory.getItemStack().getNbt());
+                this.onEquip(stack, slot, entity);
             }
         }
-    } */
+    }
 }
