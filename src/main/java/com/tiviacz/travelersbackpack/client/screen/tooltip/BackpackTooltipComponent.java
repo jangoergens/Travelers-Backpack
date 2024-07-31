@@ -1,9 +1,10 @@
 package com.tiviacz.travelersbackpack.client.screen.tooltip;
 
-import com.tiviacz.travelersbackpack.inventory.FluidTank;
+import com.mojang.datafixers.util.Pair;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -30,12 +31,12 @@ public class BackpackTooltipComponent implements TooltipComponent
 
         if(BackpackUtils.isCtrlPressed())
         {
-            if(!component.leftTank.isResourceBlank())
+            if(!component.leftTank.getFirst().isBlank())
             {
                 height += 10;
             }
 
-            if(!component.rightTank.isResourceBlank())
+            if(!component.rightTank.getFirst().isBlank())
             {
                 height += 10;
             }
@@ -75,24 +76,24 @@ public class BackpackTooltipComponent implements TooltipComponent
         {
             int yOffset = 0;
 
-            if(!component.leftTank.isResourceBlank())
+            if(!component.leftTank.getFirst().isBlank())
             {
                 renderFluidTankTooltip(component.leftTank, textRenderer, x, y, matrix4f, immediate);
                 yOffset += 10;
             }
 
-            if(!component.rightTank.isResourceBlank())
+            if(!component.rightTank.getFirst().isBlank())
             {
                 renderFluidTankTooltip(component.rightTank, textRenderer, x, y + yOffset, matrix4f, immediate);
             }
         }
     }
 
-    public void renderFluidTankTooltip(FluidTank fluidTank, TextRenderer textRenderer, int x, int y, Matrix4f matrix4f, VertexConsumerProvider.Immediate immediate)
+    public void renderFluidTankTooltip(Pair<FluidVariant, Long> fluidTank, TextRenderer textRenderer, int x, int y, Matrix4f matrix4f, VertexConsumerProvider.Immediate immediate)
     {
-        float amount = (float)fluidTank.getAmount() / 81;
+        float amount = (float)fluidTank.getSecond() / 81;
 
-        Text c = Text.literal(FluidVariantAttributes.getName(fluidTank.getResource()).getString());
+        Text c = Text.literal(FluidVariantAttributes.getName(fluidTank.getFirst()).getString());
         Text c1 = Text.literal(": ");
         Text c2 = Text.literal((int)amount + "mB");
 
@@ -108,12 +109,12 @@ public class BackpackTooltipComponent implements TooltipComponent
 
         if(BackpackUtils.isCtrlPressed())
         {
-            if(!component.leftTank.isResourceBlank())
+            if(!component.leftTank.getFirst().isBlank())
             {
                 yOffset += 10;
             }
 
-            if(!component.rightTank.isResourceBlank())
+            if(!component.rightTank.getFirst().isBlank()) //tank...getResource().isBlank()
             {
                 yOffset += 10;
             }

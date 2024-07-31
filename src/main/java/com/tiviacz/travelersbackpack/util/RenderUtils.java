@@ -68,13 +68,13 @@ public class RenderUtils
                 float maxU = icon.getMaxU();
                 float maxV = icon.getMaxV();
 
-                BufferBuilder builder = Tessellator.getInstance().getBuffer();
+                //BufferBuilder builder = Tessellator.getInstance().getBuffer();
                 Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
-                builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-                builder.vertex(matrix4f, drawX, drawY + drawHeight, (float)z).texture(minU, minV + (maxV - minV) * (float)drawHeight / 16F).next();
-                builder.vertex(matrix4f, drawX + drawWidth, drawY + drawHeight, (float)z).texture(minU + (maxU - minU) * (float)drawWidth / 16F, minV + (maxV - minV) * drawHeight / 16F).next();
-                builder.vertex(matrix4f, drawX + drawWidth, drawY, (float)z).texture(minU + (maxU - minU) * drawWidth / 16F, minV).next();
-                builder.vertex(matrix4f, drawX, drawY, (float)z).texture(minU, minV).next();
+                BufferBuilder builder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+                builder.vertex(matrix4f, drawX, drawY + drawHeight, (float)z).texture(minU, minV + (maxV - minV) * (float)drawHeight / 16F);
+                builder.vertex(matrix4f, drawX + drawWidth, drawY + drawHeight, (float)z).texture(minU + (maxU - minU) * (float)drawWidth / 16F, minV + (maxV - minV) * drawHeight / 16F);
+                builder.vertex(matrix4f, drawX + drawWidth, drawY, (float)z).texture(minU + (maxU - minU) * drawWidth / 16F, minV);
+                builder.vertex(matrix4f, drawX, drawY, (float)z).texture(minU, minV);
                 BufferRenderer.drawWithGlobalProgram(builder.end());
             }
         }
@@ -146,10 +146,10 @@ public class RenderUtils
             float replacedU1 = (direction == Direction.UP || direction == Direction.DOWN) ? icon.getFrameU(4F/16) : icon.getFrameU(7F/16);
             float replacedU2 = (direction == Direction.UP || direction == Direction.DOWN) ? icon.getFrameU(8F/16) : icon.getFrameU(8F/16);
 
-            renderer.vertex(matrix4f, c[0][0], getHeight(c[0][1], height), c[0][2]).color(r, g, b, a).texture(replacedU1, replacedMaxV).light(brightness).next();
-            renderer.vertex(matrix4f, c[1][0], getHeight(c[1][1], height), c[1][2]).color(r, g, b, a).texture(replacedU1, icon.getMinV()).light(brightness).next();
-            renderer.vertex(matrix4f, c[2][0], getHeight(c[2][1], height), c[2][2]).color(r, g, b, a).texture(replacedU2, icon.getMinV()).light(brightness).next();
-            renderer.vertex(matrix4f, c[3][0], getHeight(c[3][1], height), c[3][2]).color(r, g, b, a).texture(replacedU2, replacedMaxV).light(brightness).next();
+            renderer.vertex(matrix4f, c[0][0], getHeight(c[0][1], height), c[0][2]).color(r, g, b, a).texture(replacedU1, replacedMaxV).light(brightness);
+            renderer.vertex(matrix4f, c[1][0], getHeight(c[1][1], height), c[1][2]).color(r, g, b, a).texture(replacedU1, icon.getMinV()).light(brightness);
+            renderer.vertex(matrix4f, c[2][0], getHeight(c[2][1], height), c[2][2]).color(r, g, b, a).texture(replacedU2, icon.getMinV()).light(brightness);
+            renderer.vertex(matrix4f, c[3][0], getHeight(c[3][1], height), c[3][2]).color(r, g, b, a).texture(replacedU2, replacedMaxV).light(brightness);
         }
     }
 

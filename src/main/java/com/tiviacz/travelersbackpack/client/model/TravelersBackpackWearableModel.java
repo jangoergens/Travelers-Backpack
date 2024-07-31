@@ -116,11 +116,60 @@ public class TravelersBackpackWearableModel<T extends LivingEntity> extends Bipe
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha)
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int rgb)
+    {
+        this.sleepingBag.render(matrices, vertices, light, overlay, rgb);
+        this.sleepingBagExtras.render(matrices, vertices, light, overlay, rgb);
+        this.tankLeftTop.render(matrices, vertices, light, overlay, rgb);
+        this.tankRightTop.render(matrices, vertices, light, overlay, rgb);
+        this.mainBody.render(matrices, vertices, light, overlay, rgb);
+
+        if(this.livingEntity != null)
+        {
+            Item item = this.livingEntity instanceof PlayerEntity ? ComponentUtils.getWearingBackpack((PlayerEntity)this.livingEntity).getItem() : ComponentUtils.getWearingBackpack(this.livingEntity).getItem();
+
+            if(item == ModItems.FOX_TRAVELERS_BACKPACK)
+            {
+                this.foxNose.render(matrices, vertices, light, overlay);
+            }
+
+            if(item == ModItems.WOLF_TRAVELERS_BACKPACK)
+            {
+                this.wolfNose.render(matrices, vertices, light, overlay);
+            }
+
+            if(item == ModItems.VILLAGER_TRAVELERS_BACKPACK || item == ModItems.IRON_GOLEM_TRAVELERS_BACKPACK)
+            {
+                this.villagerNose.render(matrices, vertices, light, overlay);
+            }
+
+            if(item == ModItems.OCELOT_TRAVELERS_BACKPACK)
+            {
+                this.ocelotNose.render(matrices, vertices, light, overlay);
+            }
+
+            if(item == ModItems.PIG_TRAVELERS_BACKPACK || item == ModItems.HORSE_TRAVELERS_BACKPACK)
+            {
+                this.pigNose.render(matrices, vertices, light, overlay);
+            }
+        }
+
+        if(this.livingEntity instanceof PlayerEntity)
+        {
+            if(TravelersBackpackConfig.getConfig().client.renderTools)
+            {
+                this.stacks.render(matrices, vertices, light, overlay);
+            }
+            this.fluids.render(matrices, vertices, light, overlay);
+        }
+    }
+
+   // @Override
+   /* public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int rgb, float alpha)
     {
         if(alpha == 0.25F)
         {
-            this.sleepingBag.render(matrices, vertices, light, overlay, red, green, blue, 1.0F);
+            this.sleepingBag.render(matrices, vertices, light, overlay, rgb, 1.0F);
         }
         else
         {
@@ -169,7 +218,7 @@ public class TravelersBackpackWearableModel<T extends LivingEntity> extends Bipe
                 this.fluids.render(matrices, vertices, light, overlay);
             }
         }
-    }
+    } */
 
     public void setupAngles(BipedEntityModel<T> model)
     {

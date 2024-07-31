@@ -2,9 +2,12 @@ package com.tiviacz.travelersbackpack.util;
 
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.items.HoseItem;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+
+import java.util.Objects;
 
 public class ItemStackUtils
 {
@@ -13,46 +16,24 @@ public class ItemStackUtils
         return Inventories.splitStack(inventory.getFluidSlotsInventory().getStacks(), index, count);
     }
 
-    public static boolean canCombine(ItemStack stack1, ItemStack stack2)
+    public static boolean isSameItemSameComponents(ItemStack pStack, ItemStack pOther)
     {
         //Hose patch
-        if(stack1.getItem() instanceof HoseItem && stack1.isOf(stack2.getItem())) return true;
+        if(pStack.getItem() instanceof HoseItem && pStack.isOf(pOther.getItem())) return true;
 
-        return ItemStack.areItemsEqual(stack1, stack2) && areTagsEqual(stack1, stack2);
-    }
-
-    public static boolean areTagsEqual(ItemStack stack1, ItemStack stack2)
-    {
-        if (stack1.isEmpty() && stack2.isEmpty()) {
-            return true;
-        } else if (!stack1.isEmpty() && !stack2.isEmpty()) {
-            if (stack1.getNbt() == null && stack2.getNbt() != null) {
-                return false;
-            } else {
-
-                NbtCompound copy1 = stack1.getNbt() == null ? null : stack1.getNbt().copy();
-                NbtCompound copy2 = stack2.getNbt() == null ? null : stack2.getNbt().copy();
-
-                if(copy1 != null)
-                {
-                    if(copy1.contains("Damage"))
-                    {
-                        copy1.remove("Damage");
-                    }
-                }
-
-                if(copy2 != null)
-                {
-                    if(copy2.contains("Damage"))
-                    {
-                        copy2.remove("Damage");
-                    }
-                }
-
-                return (stack1.getNbt() == null || copy1.equals(copy2));
-            }
-        } else {
+        if (!pStack.isOf(pOther.getItem())) {
             return false;
         }
+        if (pStack.isEmpty() && pOther.isEmpty()) {
+            return true;
+        }
+        return checkComponentsIgnoreDamage(pStack.getDefaultComponents(), pOther.getDefaultComponents());
+    }
+
+    public static boolean checkComponentsIgnoreDamage(ComponentMap map, ComponentMap other)
+    {
+        map.getTypes().removeIf(type -> type == DataComponentTypes.DAMAGE);
+        other.getTypes().removeIf(type -> type == DataComponentTypes.DAMAGE);
+        return Objects.equals(map, other);
     }
 }

@@ -5,6 +5,7 @@ import com.tiviacz.travelersbackpack.blocks.TravelersBackpackBlock;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.fluids.EffectFluidRegistry;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
@@ -25,6 +26,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.List;
 
 public class ServerActions
 {
@@ -140,7 +143,7 @@ public class ServerActions
                 ComponentUtils.getComponent(player).setWearable(stack);
                 ComponentUtils.getComponent(player).setContents(stack);
                 player.getMainHandStack().decrement(1);
-                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.0F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
+                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.0F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
 
                 //Sync
                 ComponentUtils.sync(player);
@@ -170,7 +173,7 @@ public class ServerActions
             if(ComponentUtils.getComponent(player).hasWearable())
             {
                 ComponentUtils.getComponent(player).removeWearable();
-                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.05F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
+                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.05F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
 
                 //Sync
                 ComponentUtils.sync(player);
@@ -306,6 +309,28 @@ public class ServerActions
 
         if(hose.getItem() instanceof HoseItem)
         {
+            List<Integer> settings = hose.getOrDefault(ModComponentTypes.HOSE_MODES, List.of(1, 1));
+
+            if(scrollDelta > 0)
+            {
+                int nextMode = settings.get(0) + 1;
+                hose.set(ModComponentTypes.HOSE_MODES, List.of(nextMode == 4 ? 1 : nextMode, settings.get(1)));
+            }
+
+            else if(scrollDelta < 0)
+            {
+                int nextMode = settings.get(0) - 1;
+                hose.set(ModComponentTypes.HOSE_MODES, List.of(nextMode == 0 ? 3 : nextMode, settings.get(1)));
+            }
+        }
+    }
+
+    /*public static void switchHoseMode(PlayerEntity player, double scrollDelta)
+    {
+        ItemStack hose = player.getMainHandStack();
+
+        if(hose.getItem() instanceof HoseItem)
+        {
             if(hose.getNbt() != null)
             {
                 int mode = HoseItem.getHoseMode(hose);
@@ -332,9 +357,28 @@ public class ServerActions
                 hose.getNbt().putInt("Mode", mode);
             }
         }
-    }
+    } */
 
     public static void toggleHoseTank(PlayerEntity player)
+    {
+        ItemStack hose = player.getMainHandStack();
+
+        if(hose.getItem() instanceof HoseItem)
+        {
+            List<Integer> settings = hose.getOrDefault(ModComponentTypes.HOSE_MODES, List.of(1, 1));
+
+            if(settings.get(1) == 1)
+            {
+                hose.set(ModComponentTypes.HOSE_MODES, List.of(settings.get(0), 2));
+            }
+            else
+            {
+                hose.set(ModComponentTypes.HOSE_MODES, List.of(settings.get(0), 1));
+            }
+        }
+    }
+
+/*    public static void toggleHoseTank(PlayerEntity player)
     {
         ItemStack hose = player.getMainHandStack();
 
@@ -356,5 +400,5 @@ public class ServerActions
                 hose.getNbt().putInt("Tank", tank);
             }
         }
-    }
+    } */
 }

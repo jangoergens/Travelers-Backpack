@@ -45,7 +45,7 @@ public class InventoryActions
             long amount = FluidConstants.BOTTLE;
             FluidVariant variant = FluidUtils.setPotionFluidVariant(stackIn);
 
-            if(tank.isResourceBlank() || variant.getNbt().equals(tank.getResource().getNbt()))
+            if(tank.isResourceBlank() || (variant.isOf(tank.getResource().getFluid()) && variant.componentsMatch(tank.getResource().getComponents()))) //.getNbt().equals(tank.getResource().getNbt()))
             {
                 if(tank.getAmount() + amount <= tank.getCapacity())
                 {

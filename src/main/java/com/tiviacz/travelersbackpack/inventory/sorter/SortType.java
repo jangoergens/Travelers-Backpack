@@ -1,18 +1,19 @@
 package com.tiviacz.travelersbackpack.inventory.sorter;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class SortType
 {
@@ -54,7 +55,7 @@ public class SortType
     private static String specialCases(ItemStack stack)
     {
         Item item = stack.getItem();
-        NbtCompound tag = stack.getNbt();
+        //NbtCompound tag = stack.getNbt();
 
         //if(tag != null && tag.contains("SkullOwner"))
        // {
@@ -98,25 +99,26 @@ public class SortType
 
     private static String enchantedBookNameCase(ItemStack stack)
     {
-        NbtList enchants = EnchantedBookItem.getEnchantmentNbt(stack);
+        Set<Object2IntMap.Entry<RegistryEntry<Enchantment>>> enchants = stack.get(DataComponentTypes.STORED_ENCHANTMENTS).getEnchantmentEntries();
         List<String> names = new ArrayList<>();
         StringBuilder enchantNames = new StringBuilder();
 
-        for(int i = 0; i < enchants.size(); i++)
+        for(Object2IntMap.Entry<RegistryEntry<Enchantment>> e : enchants)
         {
-            NbtCompound enchantTag = enchants.getCompound(i);
-            Identifier enchantID = Identifier.tryParse(enchantTag.getString("id"));
+            /*RegistryEntry<Enchantment> enchantment = e.getKey();
+            Identifier enchantID = Identifier.tryParse(enchantment.getIdAsString());
             if(enchantID == null)
             {
                 continue;
             }
-            Enchantment enchant = Registries.ENCHANTMENT.get(enchantID);
+            Enchantment enchant = enchantment.value();
             if(enchant == null)
             {
                 continue;
-            }
-            names.add(enchant.getName(enchantTag.getInt("lvl")).getString());
+            } */
+            names.add(Enchantment.getName(e.getKey(), e.getIntValue()).getString());
         }
+
         Collections.sort(names);
         for(String enchant : names)
         {

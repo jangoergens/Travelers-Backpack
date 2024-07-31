@@ -1,15 +1,13 @@
 package com.tiviacz.travelersbackpack.client.screen.widget;
 
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.sorter.InventorySorter;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.network.SorterPacket;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -112,9 +110,11 @@ public class ControlTab extends WidgetBase
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.SORT))
         {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.SORT_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.SORT_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
+            //ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
 
             screen.playUIClickSound();
             return true;
@@ -122,30 +122,37 @@ public class ControlTab extends WidgetBase
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.QUICK_STACK))
         {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.QUICK_STACK).writeBoolean(BackpackUtils.isShiftPressed());
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.QUICK_STACK).writeBoolean(BackpackUtils.isShiftPressed());
 
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+           // ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.QUICK_STACK, BackpackUtils.isShiftPressed()));
             screen.playUIClickSound();
             return true;
         }
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.TRANSFER_TO_BACKPACK))
         {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.TRANSFER_TO_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
+           // PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.TRANSFER_TO_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
 
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+           // ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.TRANSFER_TO_BACKPACK, BackpackUtils.isShiftPressed()));
+
             screen.playUIClickSound();
             return true;
         }
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.TRANSFER_TO_PLAYER))
         {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.TRANSFER_TO_PLAYER).writeBoolean(BackpackUtils.isShiftPressed());
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.TRANSFER_TO_PLAYER).writeBoolean(BackpackUtils.isShiftPressed());
 
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+           // ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.TRANSFER_TO_PLAYER, BackpackUtils.isShiftPressed()));
+
             screen.playUIClickSound();
             return true;
         }

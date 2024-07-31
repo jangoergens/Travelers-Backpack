@@ -4,10 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRenderHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
@@ -20,19 +17,11 @@ public class PotionFluidVariantRenderHandler implements FluidVariantRenderHandle
     @Override
     public int getColor(FluidVariant fluidVariant, @Nullable BlockRenderView view, @Nullable BlockPos pos)
     {
-        return getColor(fluidVariant.getNbt()) | 0xFF000000;
-    }
-
-    private static int getColor(@Nullable NbtCompound nbt)
-    {
-        if(nbt != null && nbt.contains("CustomPotionColor", NbtElement.NUMBER_TYPE))
+        if(fluidVariant.hasComponents() && fluidVariant.getComponents().entrySet().stream().anyMatch(entry -> entry.getKey().equals(DataComponentTypes.POTION_CONTENTS)))
         {
-            return nbt.getInt("CustomPotionColor");
+            return fluidVariant.getComponents().get(DataComponentTypes.POTION_CONTENTS).get().getColor();
         }
-        if(PotionUtil.getPotion(nbt) == Potions.EMPTY)
-        {
-            return EMPTY_COLOR;
-        }
-        return PotionUtil.getColor(PotionUtil.getPotionEffects(nbt));
+        return EMPTY_COLOR | 0xFF000000;
+        //return getColor(fluidVariant.getNbt()) | 0xFF000000;
     }
 }

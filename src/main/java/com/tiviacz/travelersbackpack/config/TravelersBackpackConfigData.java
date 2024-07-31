@@ -47,30 +47,19 @@ public class TravelersBackpackConfigData implements ConfigData
         @ConfigEntry.Gui.CollapsibleObject
         public NetheriteTierConfig netherite = new NetheriteTierConfig();
 
+        @ConfigEntry.Gui.CollapsibleObject
+        public CraftingUpgradeConfig crafting = new CraftingUpgradeConfig();
+
         @ConfigEntry.Gui.RequiresRestart
         public boolean enableTierUpgrades = true;
 
         @ConfigEntry.Gui.RequiresRestart
-        @Comment("Unused - keep for compatibility only, will be removed in future versions")
-        public boolean disableCrafting = false;
+        @Comment("Enables equipping the backpack on right-click from the ground")
+        public boolean rightClickEquip = true;
 
         @ConfigEntry.Gui.RequiresRestart
-        public boolean enableCraftingUpgrade = true;
-
-        @ConfigEntry.Gui.RequiresRestart
-        @Comment("New backpacks will have crafting grid by default")
-        public boolean craftingUpgradeByDefault = false;
-
-        @ConfigEntry.Gui.RequiresRestart
-        public boolean craftingSavesItems = true;
-
-        @ConfigEntry.Gui.RequiresRestart
-        @Comment("Enables wearing backpack directly from ground")
-        public boolean enableBackpackBlockQuickEquip = true;
-
-        @ConfigEntry.Gui.RequiresRestart
-        @Comment("Enables unequipping the backpack when player clicks with empty hand on the ground")
-        public boolean enableBackpackRightClickUnequip = false;
+        @Comment("Enables unequipping the backpack on right-click on the ground with empty hand")
+        public boolean rightClickUnequip = false;
 
         @Comment("Allows to use only equipped backpack")
         public boolean allowOnlyEquippedBackpack = false;
@@ -92,15 +81,11 @@ public class TravelersBackpackConfigData implements ConfigData
         public boolean toolSlotsAcceptEverything = false;
 
         @ConfigEntry.Gui.RequiresRestart
+        @Comment("Allows putting shulker boxes and other items with inventory in backpack")
         public boolean allowShulkerBoxes = false;
 
         @ConfigEntry.Gui.RequiresRestart
-        @Comment("Unused - keep for compatibility only, will be removed in future versions")
-        public long[] tanksCapacity = new long[]
-                {FluidConstants.BUCKET * 2, FluidConstants.BUCKET * 3, FluidConstants.BUCKET * 4, FluidConstants.BUCKET * 5, FluidConstants.BUCKET * 6};
-
-        @ConfigEntry.Gui.RequiresRestart
-        @Comment("Prevents backpack disappearing in void")
+        @Comment("Prevents backpack disappearing in void, spawns floating backpack above minimum Y when player dies in void")
         public boolean voidProtection = true;
 
         @ConfigEntry.Gui.RequiresRestart
@@ -204,6 +189,19 @@ public class TravelersBackpackConfigData implements ConfigData
         public long tankCapacity = FluidConstants.BUCKET * 7;
     }
 
+    public static class CraftingUpgradeConfig
+    {
+        @ConfigEntry.Gui.RequiresRestart
+        public boolean enableUpgrade = true;
+
+        @ConfigEntry.Gui.RequiresRestart
+        @Comment("Newly crafted backpacks will have crafting upgrade included by default")
+        public boolean includeByDefault = false;
+
+        @ConfigEntry.Gui.RequiresRestart
+        public boolean savesItems = true;
+    }
+
     public static class World
     {
         @ConfigEntry.Gui.RequiresRestart
@@ -287,6 +285,7 @@ public class TravelersBackpackConfigData implements ConfigData
         public boolean enableBackpackAbilities = true;
 
         @ConfigEntry.Gui.RequiresRestart
+        @Comment("Newly crafted backpacks will have ability enabled by default")
         public boolean forceAbilityEnabled = true;
 
         @ConfigEntry.Gui.RequiresRestart

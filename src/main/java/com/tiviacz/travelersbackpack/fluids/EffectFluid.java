@@ -35,7 +35,7 @@ public abstract class EffectFluid
 
     public EffectFluid(String uniqueId, String modid, String fluidName, long amountRequired)
     {
-        Fluid fluid = Registries.FLUID.get(new Identifier(modid, fluidName));
+        Fluid fluid = Registries.FLUID.get(Identifier.of(modid, fluidName));
         this.uniqueId = uniqueId;
         this.fluid = fluid;
         this.effectID = 0;

@@ -3,14 +3,13 @@ package com.tiviacz.travelersbackpack.mixin;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.component.entity.IEntityTravelersBackpackComponent;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.LocalDifficulty;
@@ -30,7 +29,7 @@ public abstract class MobEntityMixin extends LivingEntity
     }
 
     @Inject(at = @At(value = "TAIL"), method = "initialize")
-    protected void initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt, CallbackInfoReturnable<EntityData> cir)
+    protected void initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, CallbackInfoReturnable<EntityData> cir)
     {
         if(this instanceof Object && TravelersBackpackConfig.getConfig().world.spawnEntitiesWithBackpack)
         {
@@ -46,7 +45,7 @@ public abstract class MobEntityMixin extends LivingEntity
                             TravelersBackpackConfig.getRandomCompatibleNetherBackpackEntry(rand).getDefaultStack() :
                             TravelersBackpackConfig.getRandomCompatibleOverworldBackpackEntry(rand).getDefaultStack();
 
-                    backpack.getOrCreateNbt().putInt(ITravelersBackpackInventory.SLEEPING_BAG_COLOR, DyeColor.values()[rand.nextBetween(0, DyeColor.values().length - 1)].getId());
+                    backpack.set(ModComponentTypes.SLEEPING_BAG_COLOR, DyeColor.values()[rand.nextBetween(0, DyeColor.values().length - 1)].getId());
 
                     component.setWearable(backpack);
                     component.sync();

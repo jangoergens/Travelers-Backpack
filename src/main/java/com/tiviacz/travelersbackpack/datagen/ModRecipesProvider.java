@@ -7,7 +7,7 @@ import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.init.ModTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.advancement.AdvancementCriterion;
 import net.minecraft.data.server.recipe.*;
 import net.minecraft.item.Item;
@@ -16,17 +16,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.book.RecipeCategory;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class ModRecipesProvider extends FabricRecipeProvider
 {
-    public ModRecipesProvider(FabricDataOutput output)
+    public ModRecipesProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture)
     {
-        super(output);
+        super(output, registriesFuture);
     }
 
     @Override
@@ -40,16 +42,16 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
         //Upgrades
         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.BLANK_UPGRADE, 4)
-                .input('A', ModItems.BACKPACK_TANK).input('B', Items.LEATHER).input('C', ConventionalItemTags.CHESTS) //Missing wooden chests tag
+                .input('A', ModItems.BACKPACK_TANK).input('B', Items.LEATHER).input('C', ConventionalItemTags.WOODEN_CHESTS)
                 .pattern("BBB").pattern("ACA").pattern("BBB")
-                .criterion("has_chest", conditionsFromTag(ConventionalItemTags.CHESTS)).offerTo(exporter);
+                .criterion("has_chest", conditionsFromTag(ConventionalItemTags.WOODEN_CHESTS)).offerTo(exporter);
 
         createFullGrid(ModItems.IRON_TIER_UPGRADE, Ingredient.ofItems(ModItems.BLANK_UPGRADE),
                 Ingredient.fromTag(ConventionalItemTags.IRON_INGOTS), Items.IRON_INGOT, ConventionalItemTags.IRON_INGOTS).offerTo(exporter);
         createFullGrid(ModItems.GOLD_TIER_UPGRADE, Ingredient.ofItems(ModItems.BLANK_UPGRADE),
                 Ingredient.fromTag(ConventionalItemTags.GOLD_INGOTS), Items.GOLD_INGOT, ConventionalItemTags.GOLD_INGOTS).offerTo(exporter);
         createFullGrid(ModItems.DIAMOND_TIER_UPGRADE, Ingredient.ofItems(ModItems.BLANK_UPGRADE),
-                Ingredient.fromTag(ConventionalItemTags.DIAMONDS), Items.DIAMOND, ConventionalItemTags.DIAMONDS).offerTo(exporter);
+                Ingredient.fromTag(ConventionalItemTags.DIAMOND_GEMS), Items.DIAMOND, ConventionalItemTags.DIAMOND_GEMS).offerTo(exporter);
 
         SmithingTransformRecipeJsonBuilder.create(Ingredient.ofItems(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.ofItems(ModItems.BLANK_UPGRADE),
                         Ingredient.fromTag(ConventionalItemTags.NETHERITE_INGOTS), RecipeCategory.MISC, ModItems.NETHERITE_TIER_UPGRADE)
@@ -78,9 +80,9 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.STANDARD_TRAVELERS_BACKPACK).group("standard_travelers_backpack")
                 .input('X', Items.LEATHER).input('B', ConventionalItemTags.GOLD_INGOTS).input('C', ModItems.BACKPACK_TANK)
-                .input('D', ConventionalItemTags.CHESTS).input('S', ModTags.SLEEPING_BAGS) //Missing wooden chests tag
+                .input('D', ConventionalItemTags.WOODEN_CHESTS).input('S', ModTags.SLEEPING_BAGS)
                 .pattern("XBX").pattern("CDC").pattern("XSX")
-                .criterion("has_chest", conditionsFromTag(ConventionalItemTags.CHESTS)).offerTo(exporter);
+                .criterion("has_chest", conditionsFromTag(ConventionalItemTags.WOODEN_CHESTS)).offerTo(exporter);
 
         //Netherite backpack
         SmithingTransformRecipeJsonBuilder.create(Ingredient.ofItems(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
@@ -88,9 +90,9 @@ public class ModRecipesProvider extends FabricRecipeProvider
                         RecipeCategory.MISC, ModItems.NETHERITE_TRAVELERS_BACKPACK)
                 .criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromTag(ConventionalItemTags.NETHERITE_INGOTS)).offerTo(exporter, id("netherite"));
 
-        createBackpackSmallGrid(ModItems.DIAMOND_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.DIAMONDS), hasItem(Items.DIAMOND), conditionsFromTag(ConventionalItemTags.DIAMONDS)).offerTo(exporter);
+        createBackpackSmallGrid(ModItems.DIAMOND_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.DIAMOND_GEMS), hasItem(Items.DIAMOND), conditionsFromTag(ConventionalItemTags.DIAMOND_GEMS)).offerTo(exporter);
         createBackpackSmallGrid(ModItems.GOLD_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.GOLD_INGOTS), hasItem(Items.GOLD_INGOT), conditionsFromTag(ConventionalItemTags.GOLD_INGOTS)).offerTo(exporter);
-        createBackpackSmallGrid(ModItems.EMERALD_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.EMERALDS), hasItem(Items.EMERALD), conditionsFromTag(ConventionalItemTags.EMERALDS)).offerTo(exporter);
+        createBackpackSmallGrid(ModItems.EMERALD_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.EMERALD_GEMS), hasItem(Items.EMERALD), conditionsFromTag(ConventionalItemTags.EMERALD_GEMS)).offerTo(exporter);
         createBackpackSmallGrid(ModItems.IRON_TRAVELERS_BACKPACK, Ingredient.fromTag(ConventionalItemTags.IRON_INGOTS), hasItem(Items.IRON_INGOT), conditionsFromTag(ConventionalItemTags.IRON_INGOTS)).offerTo(exporter);
 
         createBackpackSmallGrid(ModItems.ENDERMAN_TRAVELERS_BACKPACK, Ingredient.ofItems(Items.ENDER_PEARL), hasItem(Items.ENDER_PEARL), conditionsFromItem(Items.ENDER_PEARL)).offerTo(exporter);
@@ -182,9 +184,9 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
         //Lapis
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.LAPIS_TRAVELERS_BACKPACK)
-                .input('A', Items.LAPIS_BLOCK).input('B', ConventionalItemTags.LAPIS).input('C', ModItems.STANDARD_TRAVELERS_BACKPACK)
+                .input('A', ConventionalItemTags.STORAGE_BLOCKS_LAPIS).input('B', ConventionalItemTags.LAPIS_GEMS).input('C', ModItems.STANDARD_TRAVELERS_BACKPACK)
                 .pattern("ABA").pattern("BCB").pattern("ABA")
-                .criterion(hasItem(Items.LAPIS_LAZULI), conditionsFromTag(ConventionalItemTags.LAPIS)).offerTo(exporter);
+                .criterion(hasItem(Items.LAPIS_LAZULI), conditionsFromTag(ConventionalItemTags.LAPIS_GEMS)).offerTo(exporter);
 
         //Magma Cube
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.MAGMA_CUBE_TRAVELERS_BACKPACK)
@@ -200,7 +202,7 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
         //Nether
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.NETHER_TRAVELERS_BACKPACK)
-                .input('A', ConventionalItemTags.QUARTZ).input('B', Items.NETHER_WART).input('C', Items.NETHERRACK)
+                .input('A', ConventionalItemTags.QUARTZ_GEMS).input('B', Items.NETHER_WART).input('C', Items.NETHERRACK)
                 .input('D', ModItems.STANDARD_TRAVELERS_BACKPACK).input('E', Items.BLACKSTONE).input('F', Items.LAVA_BUCKET)
                 .pattern("ABA").pattern("CDC").pattern("EFE")
                 .criterion(hasItem(Items.NETHER_WART), conditionsFromItem(Items.NETHER_WART)).offerTo(exporter);
@@ -219,9 +221,9 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
         //Quartz
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.QUARTZ_TRAVELERS_BACKPACK)
-                .input('A', Items.QUARTZ_BLOCK).input('B', ConventionalItemTags.QUARTZ).input('C', ModItems.STANDARD_TRAVELERS_BACKPACK)
+                .input('A', Items.QUARTZ_BLOCK).input('B', ConventionalItemTags.QUARTZ_GEMS).input('C', ModItems.STANDARD_TRAVELERS_BACKPACK)
                 .pattern("ABA").pattern("BCB").pattern("ABA")
-                .criterion(hasItem(Items.QUARTZ), conditionsFromTag(ConventionalItemTags.QUARTZ)).offerTo(exporter);
+                .criterion(hasItem(Items.QUARTZ), conditionsFromTag(ConventionalItemTags.QUARTZ_GEMS)).offerTo(exporter);
 
         //Sandstone
         ShapedBackpackRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.SANDSTONE_TRAVELERS_BACKPACK)
@@ -284,7 +286,7 @@ public class ModRecipesProvider extends FabricRecipeProvider
 
     public static Identifier id(String name)
     {
-        return new Identifier(TravelersBackpack.MODID, name);
+        return Identifier.of(TravelersBackpack.MODID, name);
     }
 
     public static void offerSleepingBagRecipe(RecipeExporter exporter, ItemConvertible output, ItemConvertible input)

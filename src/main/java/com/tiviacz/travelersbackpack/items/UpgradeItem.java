@@ -6,14 +6,12 @@ import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.inventory.Tiers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +30,7 @@ public class UpgradeItem extends Item
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType tooltipType)
     {
         if(TravelersBackpackConfig.getConfig().backpackSettings.enableTierUpgrades)
         {
@@ -65,7 +63,7 @@ public class UpgradeItem extends Item
 
         if(type == Upgrade.CRAFTING_UPGRADE)
         {
-            if(TravelersBackpackConfig.getConfig().backpackSettings.enableCraftingUpgrade)
+            if(TravelersBackpackConfig.getConfig().backpackSettings.crafting.enableUpgrade)
             {
                 tooltip.add(Text.translatable("item.travelersbackpack.crafting_upgrade_tooltip").formatted(Formatting.BLUE));
             }

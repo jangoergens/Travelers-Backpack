@@ -15,12 +15,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.CraftingResultSlot;
@@ -197,7 +197,7 @@ public class TravelersBackpackBaseScreenHandler extends ScreenHandler
     {
         if(inventory.getSettingsManager().hasCraftingGrid())
         {
-            slotChangedCraftingGrid(this, world, player, this.craftMatrix, this.craftResult);
+            slotChangedCraftingGrid(this, world, player, this.craftMatrix.createRecipeInput(), this.craftResult);
         }
     }
 
@@ -223,7 +223,7 @@ public class TravelersBackpackBaseScreenHandler extends ScreenHandler
         return slot.inventory != this.craftResult && super.canInsertIntoSlot(stack, slot);
     }
 
-    protected static void slotChangedCraftingGrid(ScreenHandler handler, World world, PlayerEntity player, RecipeInputInventory craftMatrix, CraftingResultInventory craftResult)
+    protected static void slotChangedCraftingGrid(ScreenHandler handler, World world, PlayerEntity player, CraftingRecipeInput craftMatrix, CraftingResultInventory craftResult)
     {
         /*if(!world.isClient)
         {
@@ -321,7 +321,7 @@ public class TravelersBackpackBaseScreenHandler extends ScreenHandler
                 {
                     for(Pair<Integer, ItemStack> pair : inventory.getSlotManager().getMemorySlots())
                     {
-                        if(ItemStackUtils.canCombine(pair.getSecond(), stack) && getSlot(pair.getFirst() + 1).getStack().getCount() != getSlot(pair.getFirst() + 1).getStack().getMaxCount())
+                        if(ItemStackUtils.isSameItemSameComponents(pair.getSecond(), stack) && getSlot(pair.getFirst() + 1).getStack().getCount() != getSlot(pair.getFirst() + 1).getStack().getMaxCount())
                         {
                             if(insertItem(stack, pair.getFirst() + 1, pair.getFirst() + 2, false))
                             {
@@ -401,7 +401,7 @@ public class TravelersBackpackBaseScreenHandler extends ScreenHandler
         clearSlotsAndPlaySound(playerIn, this.inventory.getFluidSlotsInventory(), 4);
         shiftTools(this.inventory);
 
-        if(!TravelersBackpackConfig.getConfig().backpackSettings.craftingSavesItems)
+        if(!TravelersBackpackConfig.getConfig().backpackSettings.crafting.savesItems)
         {
             clearSlotsAndPlaySound(playerIn, this.inventory.getCraftingGridInventory(), 9);
         }

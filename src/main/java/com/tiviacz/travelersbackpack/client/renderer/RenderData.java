@@ -1,19 +1,17 @@
 package com.tiviacz.travelersbackpack.client.renderer;
 
+import com.tiviacz.travelersbackpack.components.FluidTanks;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.inventory.FluidTank;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
-import com.tiviacz.travelersbackpack.inventory.Tiers;
-import net.fabricmc.fabric.impl.transfer.fluid.FluidVariantImpl;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.DyeColor;
 
 public class RenderData
 {
     private final ItemStack stack;
-    private final FluidTank leftTank = createFluidTank();
+    private final FluidTank leftTank = new FluidTank(81000); // createFluidTank();
 
-    private final FluidTank rightTank = createFluidTank();
+    private final FluidTank rightTank = new FluidTank(81000); //createFluidTank();
 
     public RenderData(ItemStack stack, boolean loadData)
     {
@@ -21,7 +19,7 @@ public class RenderData
 
         if(loadData)
         {
-            this.loadDataFromStack(stack);
+            this.loadDataFromStack();
         }
     }
 
@@ -42,28 +40,41 @@ public class RenderData
 
     public int getSleepingBagColor()
     {
-        if(this.stack.getOrCreateNbt().contains(ITravelersBackpackInventory.SLEEPING_BAG_COLOR))
+        return stack.getOrDefault(ModComponentTypes.SLEEPING_BAG_COLOR, DyeColor.RED.getId());
+       /* if(this.stack.getOrCreateNbt().contains(ITravelersBackpackInventory.SLEEPING_BAG_COLOR))
         {
             return this.stack.getOrCreateNbt().getInt(ITravelersBackpackInventory.SLEEPING_BAG_COLOR);
         }
-        return DyeColor.RED.getId();
+        return DyeColor.RED.getId(); */
     }
 
-    public void loadDataFromStack(ItemStack stack)
+    public void loadDataFromStack()
     {
-        if(!stack.isEmpty() && stack.hasNbt())
+        if(this.stack.contains(ModComponentTypes.FLUID_TANKS))
+        {
+            loadTanks();
+        }
+       /*+ if(!stack.isEmpty() && stack.hasNbt())
         {
             loadTanks(stack.getOrCreateNbt());
-        }
+        } */
     }
 
-    public void loadTanks(NbtCompound compound)
+    public void loadTanks()
     {
-        this.leftTank.readNbt(compound.getCompound(ITravelersBackpackInventory.LEFT_TANK));
-        this.rightTank.readNbt(compound.getCompound(ITravelersBackpackInventory.RIGHT_TANK));
+        FluidTanks tanks = stack.get(ModComponentTypes.FLUID_TANKS);
+
+        this.leftTank.setCapacity(tanks.capacity());
+        this.leftTank.setFluidVariant(tanks.leftTank().fluidVariant(), tanks.leftTank().amount());
+
+        this.rightTank.setCapacity(tanks.capacity());
+        this.rightTank.setFluidVariant(tanks.rightTank().fluidVariant(), tanks.rightTank().amount());
+
+        //this.leftTank.readNbt(compound.getCompound(ITravelersBackpackInventory.LEFT_TANK));
+        //this.rightTank.readNbt(compound.getCompound(ITravelersBackpackInventory.RIGHT_TANK));
     }
 
-    public FluidTank createFluidTank()
+ /*   public FluidTank createFluidTank()
     {
         return new FluidTank(Tiers.LEATHER.getTankCapacity())
         {
@@ -76,5 +87,5 @@ public class RenderData
                 return this;
             }
         };
-    }
+    } */
 }

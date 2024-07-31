@@ -1,13 +1,12 @@
 package com.tiviacz.travelersbackpack.items;
 
-import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.client.screen.tooltip.BackpackTooltipData;
 import com.tiviacz.travelersbackpack.common.BackpackAbilities;
 import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.inventory.Tiers;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
@@ -17,14 +16,15 @@ import net.fabricmc.api.Environment;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.client.item.TooltipData;
+import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
@@ -46,24 +46,22 @@ public class TravelersBackpackItem extends BlockItem
 {
     public TravelersBackpackItem(Block block)
     {
-        super(block, new Settings().fireproof().maxCount(1));
+        super(block, new Settings().fireproof().maxCount(1)
+                .component(ModComponentTypes.TIER, 0)); // Tier
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType tooltipType)
     {
-        if(stack.hasNbt())
+        if(stack.contains(ModComponentTypes.TIER))
         {
-            if(stack.getNbt().contains(ITravelersBackpackInventory.TIER))
-            {
-                tooltip.add(Text.translatable("tier.travelersbackpack." + Tiers.of(stack.getNbt().getInt(ITravelersBackpackInventory.TIER)).getName()));
-            }
+            tooltip.add(Text.translatable("tier.travelersbackpack." + Tiers.of(stack.get(ModComponentTypes.TIER)).getName()));
+        }
 
-            if(!BackpackUtils.isCtrlPressed())
-            {
-                tooltip.add(Text.translatable("item.travelersbackpack.inventory_tooltip").formatted(Formatting.BLUE));
-            }
+        if(stack.contains(ModComponentTypes.BACKPACK_CONTAINER) && !BackpackUtils.isCtrlPressed())
+        {
+            tooltip.add(Text.translatable("item.travelersbackpack.inventory_tooltip").formatted(Formatting.BLUE));
         }
 
         if(TravelersBackpackConfig.getConfig().client.obtainTips)
@@ -178,29 +176,16 @@ public class TravelersBackpackItem extends BlockItem
         {
             return false;
         }
-        NbtCompound nbtCompound = stack.getNbt();
-
-        if(nbtCompound != null && world.getBlockEntity(pos) instanceof TravelersBackpackBlockEntity blockEntity)
+        else
         {
-            if(!(world.isClient || !blockEntity.copyItemDataRequiresOperator() || player != null && player.isCreativeLevelTwoOp()))
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if(blockEntity != null)
             {
-                return false;
-            }
-
-            NbtCompound nbtCompound2 = blockEntity.createNbt();
-            NbtCompound nbtCompound3 = nbtCompound2.copy();
-            nbtCompound2.copyFrom(nbtCompound);
-
-            if(!nbtCompound2.equals(nbtCompound3))
-            {
-                if(stack.hasCustomName())
+                if(world.isClient || !blockEntity.copyItemDataRequiresOperator() || player != null && player.isCreativeLevelTwoOp())
                 {
-                    blockEntity.setCustomName(stack.getName());
+                    blockEntity.readComponents(stack);
+                    return true;
                 }
-
-                blockEntity.readNbt(nbtCompound2);
-                blockEntity.markDirty();
-                return true;
             }
         }
         return false;
@@ -244,5 +229,10 @@ public class TravelersBackpackItem extends BlockItem
     public boolean canBeNested()
     {
         return false;
+    }
+
+    public static void registerCauldronBehavior()
+    {
+        CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map().put(ModItems.STANDARD_TRAVELERS_BACKPACK, CauldronBehavior.CLEAN_DYEABLE_ITEM);
     }
 }

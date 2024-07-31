@@ -2,14 +2,13 @@ package com.tiviacz.travelersbackpack.fluids.effects;
 
 import com.tiviacz.travelersbackpack.fluids.EffectFluid;
 import com.tiviacz.travelersbackpack.init.ModFluids;
-import com.tiviacz.travelersbackpack.util.FluidUtils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.world.World;
 
 public class PotionEffect extends EffectFluid
@@ -24,7 +23,21 @@ public class PotionEffect extends EffectFluid
     {
         if(!world.isClient && entity instanceof PlayerEntity player)
         {
-            for(StatusEffectInstance effectinstance : PotionUtil.getPotionEffects(FluidUtils.getItemStackFromFluidStack(variant.getResource())))
+            if(variant.getResource().getComponents() == null || !variant.getResource().getComponents().get(DataComponentTypes.POTION_CONTENTS).isPresent()) return;
+
+            for(StatusEffectInstance mobEffectInstance : variant.getResource().getComponents().get(DataComponentTypes.POTION_CONTENTS).get().getEffects())
+            {
+                if(mobEffectInstance.getEffectType().value().isInstant())
+                {
+                    mobEffectInstance.getEffectType().value().applyInstantEffect(player, player, player, mobEffectInstance.getAmplifier(), 1.0D);
+                }
+                else
+                {
+                    player.addStatusEffect(new StatusEffectInstance(mobEffectInstance));
+                }
+            }
+
+         /*   for(StatusEffectInstance effectinstance : PotionUtil.getPotionEffects(FluidUtils.getItemStackFromFluidStack(variant.getResource())))
             {
                 if(effectinstance.getEffectType().isInstant())
                 {
@@ -34,7 +47,7 @@ public class PotionEffect extends EffectFluid
                 {
                     player.addStatusEffect(new StatusEffectInstance(effectinstance));
                 }
-            }
+            } */
         }
     }
 

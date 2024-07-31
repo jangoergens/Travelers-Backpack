@@ -5,9 +5,11 @@ import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 
 public class TravelersBackpackComponent implements ITravelersBackpackComponent
 {
+    private String WEARABLE = "Wearable";
     private ItemStack wearable = null;
     private final PlayerEntity player;
     private final TravelersBackpackInventory inventory;
@@ -62,7 +64,7 @@ public class TravelersBackpackComponent implements ITravelersBackpackComponent
 
             if(!stack.isEmpty())
             {
-                this.inventory.readAllData(stack.getOrCreateNbt());
+                this.inventory.readAllData();
             }
         }
     }
@@ -74,9 +76,9 @@ public class TravelersBackpackComponent implements ITravelersBackpackComponent
     }
 
     @Override
-    public void readFromNbt(NbtCompound tag)
+    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup)
     {
-        ItemStack wearable = ItemStack.fromNbt(tag);
+        ItemStack wearable = ItemStack.fromNbtOrEmpty(registryLookup, tag.getCompound(WEARABLE));
 
         if(wearable.isEmpty())
         {
@@ -91,17 +93,21 @@ public class TravelersBackpackComponent implements ITravelersBackpackComponent
     }
 
     @Override
-    public void writeToNbt(NbtCompound tag)
+    public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup)
     {
+        NbtCompound compound = new NbtCompound();
+
         if(hasWearable())
         {
             ItemStack wearable = getWearable();
-            wearable.writeNbt(tag);
+            compound = (NbtCompound)wearable.encodeAllowEmpty(registryLookup);
         }
-        if(!hasWearable())
-        {
-            ItemStack wearable = ItemStack.EMPTY;
-            wearable.writeNbt(tag);
-        }
+
+        tag.put(WEARABLE, compound);
+        //if(!hasWearable())
+       // {
+         //   ItemStack wearable = ItemStack.EMPTY;
+         //   wearable.encodeAllowEmpty(registryLookup);
+        //}
     }
 }

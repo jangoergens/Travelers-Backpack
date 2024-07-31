@@ -25,8 +25,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public abstract class PotionFluid extends FlowableFluid {
-
+public abstract class PotionFluid extends FlowableFluid
+{
     public Fluid getFlowing() {
         return ModFluids.POTION_FLOWING;
     }

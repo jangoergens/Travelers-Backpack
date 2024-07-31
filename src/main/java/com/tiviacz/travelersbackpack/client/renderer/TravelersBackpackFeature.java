@@ -2,13 +2,12 @@ package com.tiviacz.travelersbackpack.client.renderer;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.client.model.TravelersBackpackWearableModel;
-import com.tiviacz.travelersbackpack.common.recipes.BackpackDyeRecipe;
 import com.tiviacz.travelersbackpack.compat.trinkets.TrinketsCompat;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
-import com.tiviacz.travelersbackpack.util.RenderUtils;
 import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -21,10 +20,11 @@ import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ElytraItem;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.tuple.Triple;
+import net.minecraft.util.math.ColorHelper;
 
 @Environment(value = EnvType.CLIENT)
 public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>>
@@ -60,15 +60,16 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
                 if(!trinketsIntegration && !TravelersBackpackConfig.getConfig().client.renderBackpackWithElytra && entity.getEquippedStack(EquipmentSlot.CHEST).getItem() instanceof ElytraItem) return;
 
                 renderLayer(matrices, vertexConsumers, light, entity, inv);
-               /* if(TravelersBackpack.enableTrinkets())
+
+                /*if(TravelersBackpack.enableTrinkets())
                 {
                     if(TrinketsCompat.getTravelersBackpackTrinket(entity).getItem() instanceof TravelersBackpackItem)
                     {
                         renderLayer(matrices, vertexConsumers, light, entity, inv);
                     }
-                } */
+                }
 
-             /*   ItemStack stack = entity.getEquippedStack(EquipmentSlot.CHEST);
+                ItemStack stack = entity.getEquippedStack(EquipmentSlot.CHEST);
 
                 if(!TravelersBackpackConfig.getConfig().client.renderBackpackWithElytra)
                 {
@@ -101,21 +102,15 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
         boolean isColorable = false;
         boolean isCustomSleepingBag = false;
 
-        if(inv.getItemStack().getNbt() != null && inv.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK)
+        if(inv.getItemStack().contains(DataComponentTypes.DYED_COLOR) && inv.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK)
         {
-            if(BackpackDyeRecipe.hasColor(inv.getItemStack()))
-            {
-                isColorable = true;
-                id = new Identifier(TravelersBackpack.MODID, "textures/model/dyed.png");
-            }
+            isColorable = true;
+            id = Identifier.of(TravelersBackpack.MODID, "textures/model/dyed.png");
         }
 
-        if(inv.getItemStack().getNbt() != null)
+        if(inv.getItemStack().contains(ModComponentTypes.SLEEPING_BAG_COLOR))
         {
-            if(inv.getItemStack().getNbt().contains(ITravelersBackpackInventory.SLEEPING_BAG_COLOR))
-            {
-                isCustomSleepingBag = true;
-            }
+            isCustomSleepingBag = true;
         }
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(flag ? RenderLayer.getEntityTranslucentCull(id) : RenderLayer.getEntitySolid(id));
@@ -135,13 +130,12 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
 
         if(isColorable)
         {
-            Triple<Float, Float, Float> rgb = RenderUtils.intToRGB(BackpackDyeRecipe.getColor(inv.getItemStack()));
-            model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, rgb.getLeft(), rgb.getMiddle(), rgb.getRight(), 1.0F);
+            model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, ColorHelper.Argb.fullAlpha(inv.getItemStack().get(DataComponentTypes.DYED_COLOR).rgb()));
 
-            id = new Identifier(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
+            id = Identifier.of(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
             vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(id));
         }
-        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
 
         if(isCustomSleepingBag)
         {
@@ -153,7 +147,7 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
         }
 
         vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(id));
-        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.25F);
+        model.sleepingBag.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
 
         matrices.pop();
     }

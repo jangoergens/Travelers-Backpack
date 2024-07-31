@@ -9,13 +9,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public interface ITravelersBackpackInventory extends ITanks
 {
-    void writeItems(NbtCompound compound);
+   /* void writeItems(NbtCompound compound);
 
     void readItems(NbtCompound compound);
 
@@ -37,7 +36,7 @@ public interface ITravelersBackpackInventory extends ITanks
 
     void writeAllData(NbtCompound compound);
 
-    void readAllData(NbtCompound compound);
+    void readAllData(NbtCompound compound); */
 
     boolean hasColor();
 

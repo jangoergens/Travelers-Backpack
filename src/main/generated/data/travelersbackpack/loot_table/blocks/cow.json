@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_name",
+              "source": "block_entity"
+            },
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "travelersbackpack:tier",
+                "travelersbackpack:backpack_container",
+                "travelersbackpack:tools_container",
+                "travelersbackpack:crafting_container",
+                "travelersbackpack:fluid_tanks",
+                "travelersbackpack:ability_switch",
+                "travelersbackpack:settings",
+                "travelersbackpack:slots",
+                "travelersbackpack:sleeping_bag_color",
+                "minecraft:dyed_color"
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "travelersbackpack:cow"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

@@ -142,7 +142,7 @@ public class InventorySorter
 
                     ItemStack ext = ItemStack.EMPTY; //playerStacks.extractItem(i, Integer.MAX_VALUE, false);
 
-                    if(ItemStackUtils.canCombine(pair.getSecond(), extSimulate))
+                    if(ItemStackUtils.isSameItemSameComponents(pair.getSecond(), extSimulate))
                     {
                         ext = extractItem(inventory, player.getInventory(), i, Integer.MAX_VALUE, false);
 
@@ -270,7 +270,7 @@ public class InventorySorter
         {
             return false;
         }
-        return ItemStack.canCombine(stack1, stack2);
+        return ItemStack.areItemsAndComponentsEqual(stack1, stack2);
     }
 
     public static ItemStack insertItem(ITravelersBackpackInventory inventory, Inventory target, int slot, @NotNull ItemStack stack, boolean isTransferToPlayer)
@@ -283,7 +283,7 @@ public class InventorySorter
 
         if(target instanceof InventoryImproved && inventory.getSlotManager().isSlot(SlotManager.UNSORTABLE, slot)) return stack;
 
-        if(target instanceof InventoryImproved && inventory.getSlotManager().isSlot(SlotManager.MEMORY, slot) && inventory.getSlotManager().getMemorySlots().stream().noneMatch(pair -> pair.getFirst() == slot && ItemStackUtils.canCombine(pair.getSecond(), stack)) && !isTransferToPlayer)
+        if(target instanceof InventoryImproved && inventory.getSlotManager().isSlot(SlotManager.MEMORY, slot) && inventory.getSlotManager().getMemorySlots().stream().noneMatch(pair -> pair.getFirst() == slot && ItemStackUtils.isSameItemSameComponents(pair.getSecond(), stack)) && !isTransferToPlayer)
         {
             return stack;
         }
@@ -295,7 +295,7 @@ public class InventorySorter
 
         if(!existing.isEmpty())
         {
-            if(!canItemStacksStack(stack, existing))
+            if(!ItemStack.areItemsAndComponentsEqual(stack, existing))
                 return stack;
 
             limit -= existing.getCount();
@@ -357,14 +357,6 @@ public class InventorySorter
 
             return copyStackWithSize(existing, toExtract);
         }
-    }
-
-    public static boolean canItemStacksStack(@NotNull ItemStack a, @NotNull ItemStack b)
-    {
-        if(a.isEmpty() || !ItemStack.areItemsEqual(a, b) || a.hasNbt() != b.hasNbt())
-            return false;
-
-        return !a.hasNbt() || a.getNbt().equals(b.getNbt());
     }
 
     public static ItemStack copyStackWithSize(@NotNull ItemStack itemStack, int size)

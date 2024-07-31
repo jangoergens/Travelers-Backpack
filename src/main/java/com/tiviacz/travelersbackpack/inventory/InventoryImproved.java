@@ -7,6 +7,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 
 public abstract class InventoryImproved implements Inventory
@@ -16,6 +17,11 @@ public abstract class InventoryImproved implements Inventory
     public InventoryImproved(int size)
     {
         this.stacks = DefaultedList.ofSize(size, ItemStack.EMPTY);
+    }
+
+    public InventoryImproved(DefaultedList<ItemStack> stacks)
+    {
+        this.stacks = stacks;
     }
 
     public void setSize(int size)
@@ -96,18 +102,17 @@ public abstract class InventoryImproved implements Inventory
        this.markDirty();
     }
 
-    public NbtCompound writeNbt()
+    public NbtCompound writeNbt(RegistryWrapper.WrapperLookup lookup)
     {
         NbtList nbtTagList = new NbtList();
 
         for(int i = 0; i < this.stacks.size(); ++i)
         {
-            if (!this.stacks.get(i).isEmpty())
+            if(!this.stacks.get(i).isEmpty())
             {
                 NbtCompound itemTag = new NbtCompound();
                 itemTag.putInt("Slot", i);
-                this.stacks.get(i).writeNbt(itemTag);
-                nbtTagList.add(itemTag);
+                nbtTagList.add(this.stacks.get(i).encode(lookup, itemTag));
             }
         }
         NbtCompound nbt = new NbtCompound();
@@ -116,7 +121,7 @@ public abstract class InventoryImproved implements Inventory
         return nbt;
     }
 
-    public void readNbt(NbtCompound nbt)
+    public void readNbt(RegistryWrapper.WrapperLookup lookup, NbtCompound nbt)
     {
         this.setSize(nbt.contains("Size", 3) ? nbt.getInt("Size") : this.stacks.size());
         NbtList tagList = nbt.getList("Items", 10);
@@ -127,12 +132,12 @@ public abstract class InventoryImproved implements Inventory
             int slot = itemTags.getInt("Slot");
             if(slot >= 0 && slot < this.stacks.size())
             {
-                this.stacks.set(slot, ItemStack.fromNbt(itemTags));
+                ItemStack.fromNbt(lookup, itemTags).ifPresent(stack -> stacks.set(slot, stack));
             }
         }
     }
 
-    public void readNbtOld(NbtCompound nbt, boolean isInventory)
+  /*  public void readNbtOld(NbtCompound nbt, boolean isInventory)
     {
         this.setSize(nbt.contains("Size", 3) ? nbt.getInt("Size") : this.stacks.size());
         NbtList tagList = isInventory ? nbt.getList(ITravelersBackpackInventory.INVENTORY, 10) : nbt.getList(ITravelersBackpackInventory.CRAFTING_INVENTORY, 10);
@@ -147,7 +152,7 @@ public abstract class InventoryImproved implements Inventory
             }
         }
         //nbt.remove(isInventory ? ITravelersBackpackInventory.INVENTORY : ITravelersBackpackInventory.CRAFTING_INVENTORY);
-    }
+    } */
 
     @Override
     public abstract void markDirty();

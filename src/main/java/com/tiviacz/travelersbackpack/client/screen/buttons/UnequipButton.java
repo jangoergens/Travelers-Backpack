@@ -3,12 +3,10 @@ package com.tiviacz.travelersbackpack.client.screen.buttons;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
+import com.tiviacz.travelersbackpack.network.EquipBackpackPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 public class UnequipButton extends Button
@@ -56,10 +54,11 @@ public class UnequipButton extends Button
                 {
                     if(this.inButton((int)mouseX, (int)mouseY))
                     {
-                        PacketByteBuf buf = PacketByteBufs.create();
-                        buf.writeBoolean(false);
+                        //PacketByteBuf buf = PacketByteBufs.create();
+                        //buf.writeBoolean(false);
 
-                        ClientPlayNetworking.send(ModNetwork.EQUIP_BACKPACK_ID, buf);
+                        //ClientPlayNetworking.send(ModNetwork.EQUIP_BACKPACK_ID, buf);
+                        ClientPlayNetworking.send(new EquipBackpackPacket(false));
                         return true;
                     }
                 }

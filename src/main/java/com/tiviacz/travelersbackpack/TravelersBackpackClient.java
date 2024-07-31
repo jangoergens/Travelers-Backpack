@@ -34,9 +34,9 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
@@ -85,8 +85,7 @@ public class TravelersBackpackClient implements ClientModInitializer
     {
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) ->
         {
-            if(entityRenderer instanceof PlayerEntityRenderer renderer)
-            {
+            if(entityRenderer instanceof PlayerEntityRenderer renderer) {
                 registrationHelper.register(new TravelersBackpackFeature(renderer));
             }
             if(Reference.COMPATIBLE_TYPE_ENTRIES.contains(entityType))
@@ -101,7 +100,7 @@ public class TravelersBackpackClient implements ClientModInitializer
         for(Item item : ModItems.BACKPACKS)
         {
             BuiltinItemRendererRegistry.INSTANCE.register(item, (stack, mode, matrices, vertexConsumers, light, overlay)
-                    -> TravelersBackpackBlockEntityRenderer.renderByItem(new RenderData(stack, stack.hasNbt()), matrices, vertexConsumers, light, overlay));
+                    -> TravelersBackpackBlockEntityRenderer.renderByItem(new RenderData(stack, stack.contains(ModComponentTypes.FLUID_TANKS) || stack.contains(DataComponentTypes.DYED_COLOR) || stack.contains(ModComponentTypes.SLEEPING_BAG_COLOR)), matrices, vertexConsumers, light, overlay));
         }
     }
 
@@ -113,14 +112,14 @@ public class TravelersBackpackClient implements ClientModInitializer
     public static void setupFluidRendering()
     {
         FluidRenderHandlerRegistry.INSTANCE.register(ModFluids.POTION_STILL, ModFluids.POTION_FLOWING, new SimpleFluidRenderHandler(
-                new Identifier(TravelersBackpack.MODID, "block/potion_still"),
-                new Identifier(TravelersBackpack.MODID, "block/potion_flow"),
+                Identifier.of(TravelersBackpack.MODID, "block/potion_still"),
+                Identifier.of(TravelersBackpack.MODID, "block/potion_flow"),
                 13458603
         ));
 
         FluidRenderHandlerRegistry.INSTANCE.register(ModFluids.MILK_STILL, ModFluids.MILK_FLOWING, new SimpleFluidRenderHandler(
-                new Identifier(TravelersBackpack.MODID, "block/milk_still"),
-                new Identifier(TravelersBackpack.MODID, "block/milk_flow"),
+                Identifier.of(TravelersBackpack.MODID, "block/milk_still"),
+                Identifier.of(TravelersBackpack.MODID, "block/milk_flow"),
                 0xFFFFFFFF
         ));
 
@@ -150,11 +149,14 @@ public class TravelersBackpackClient implements ClientModInitializer
 
     public static void registerModelPredicate()
     {
-        ModelPredicateProviderRegistry.register(ModItems.HOSE, new Identifier(TravelersBackpack.MODID, "mode"), (itemStack, clientWorld, livingEntity, par) ->
+        ModelPredicateProviderRegistry.register(ModItems.HOSE, Identifier.of(TravelersBackpack.MODID, "mode"), (itemStack, clientWorld, livingEntity, par) ->
         {
-            NbtCompound compound = itemStack.getNbt();
-            if(compound == null) return 0.0F;
-            else return (float)compound.getInt("Mode") / 10.0F;
+            if(itemStack.contains(ModComponentTypes.HOSE_MODES))
+            {
+                int mode = itemStack.get(ModComponentTypes.HOSE_MODES).get(0);
+                return (float)mode / 10.0F;
+            }
+            return 0.0F;
         });
     }
 }

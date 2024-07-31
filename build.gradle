@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.5-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -37,13 +37,6 @@ repositories {
 	//maven { url = "https://jitpack.io" }
 	maven { url "https://maven.shedaniel.me/" }
 
-	maven {
-		url "https://maven.jamieswhiteshirt.com/libs-release"
-		content {
-			includeGroup "com.jamieswhiteshirt"
-		}
-	}
-
 	maven { url 'https://maven.nucleoid.xyz' }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven { url 'https://api.modrinth.com/maven' }
@@ -52,6 +45,8 @@ repositories {
 		name 'Gegy'
 		url 'https://maven.gegy.dev'
 	}
+
+	maven { url 'https://maven.wispforest.io/releases' }
 
 	/*maven { url = "https://www.cursemaven.com" }
 	maven { url = "https://maven.shedaniel.me/" }
@@ -89,17 +84,14 @@ dependencies {
 	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
 
 	//Cloth Config
-	modRuntimeOnly("dev.architectury:architectury-fabric:${project.architectury_version}")
+	modCompileOnly("dev.architectury:architectury-fabric:${project.architectury_version}")
 	modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-
-	//Reach Entity Attributes
-	include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.reach_entity_attributes_version}")
 
 	//OPTIONAL
 
 	//Crafting Tweaks
-	modImplementation "curse.maven:balm-fabric-500525:5139958"
-	modImplementation "curse.maven:crafting-tweaks-fabric-502516:5140220"
+	modCompileOnly "curse.maven:balm-fabric-500525:5442090"
+	modCompileOnly "curse.maven:crafting-tweaks-fabric-502516:5426914"
 
 	//ModMenu
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
@@ -107,23 +99,30 @@ dependencies {
 	//Trinkets
 	modCompileOnly "dev.emi:trinkets:${trinkets_version}"
 
+	//Accessories
+	//modImplementation("io.wispforest:accessories-fabric:${project.accessories_version}")
+	//modImplementation ("maven.modrinth:accessories-tc-layer:la5R19oI")
+
 	//REI
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
 
 	//JEI
-	modImplementation ("maven.modrinth:jei:xGApC30U")
+	modImplementation ("maven.modrinth:jei:heV8vLrF")
 
 	//Comforts
-	modCompileOnly ("maven.modrinth:comforts:9qOe1XXv")
+	modCompileOnly ("maven.modrinth:comforts:vUdakIzK")
 
 	//EMI
 	modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
 
 	//Universal Graves
-	modCompileOnly "curse.maven:universal-graves-497175:4610073"
+	modCompileOnly "curse.maven:universal-graves-497175:5435263"
+
+	//modRuntimeOnly("net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0")
+	//modRuntimeOnly("maven.modrinth:expanded-armor-enchanting:FsoLIMq8")
 
 	//Carry On
-	modRuntimeOnly "curse.maven:carryon-274259:5141763"
+	//modRuntimeOnly "curse.maven:carryon-274259:5141763"
 
 	//modRuntimeOnly("eu.pb4:sgui:1.2.2+1.20")
 	//modRuntimeOnly("eu.pb4:placeholder-api:2.1.1+1.20")
@@ -145,7 +144,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -154,8 +153,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
@@ -168,6 +167,7 @@ jar {
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
+			artifactId = project.archives_base_name
 			from components.java
 		}
 	}

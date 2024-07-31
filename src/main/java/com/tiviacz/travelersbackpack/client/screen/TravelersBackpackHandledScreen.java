@@ -7,15 +7,15 @@ import com.tiviacz.travelersbackpack.client.screen.widget.*;
 import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.handlers.KeybindHandler;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.inventory.screen.TravelersBackpackBaseScreenHandler;
 import com.tiviacz.travelersbackpack.inventory.sorter.InventorySorter;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.network.SorterPacket;
+import com.tiviacz.travelersbackpack.network.SpecialActionPacket;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -24,7 +24,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.sound.SoundCategory;
@@ -37,10 +36,10 @@ import java.util.List;
 
 public class TravelersBackpackHandledScreen extends HandledScreen<TravelersBackpackBaseScreenHandler>
 {
-    public static final Identifier BACKGROUND_TRAVELERS_BACKPACK = new Identifier(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
-    public static final Identifier SLOTS_TRAVELERS_BACKPACK = new Identifier(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
-    public static final Identifier SETTINGS_TRAVELERS_BACKPACK = new Identifier(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
-    public static final Identifier EXTRAS_TRAVELERS_BACKPACK = new Identifier(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
+    public static final Identifier BACKGROUND_TRAVELERS_BACKPACK = Identifier.of(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
+    public static final Identifier SLOTS_TRAVELERS_BACKPACK = Identifier.of(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
+    public static final Identifier SETTINGS_TRAVELERS_BACKPACK = Identifier.of(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
+    public static final Identifier EXTRAS_TRAVELERS_BACKPACK = Identifier.of(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
     public List<IButton> buttons = new ArrayList<>();
     public ControlTab controlTab;
     public ToolSlotsWidget toolSlotsWidget;
@@ -501,10 +500,12 @@ public class TravelersBackpackHandledScreen extends HandledScreen<TravelersBackp
         {
             if(this.tankLeft.inTank(this, (int)mouseX, (int)mouseY) && BackpackUtils.isShiftPressed())
             {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(inventory.getScreenID()).writeByte(Reference.EMPTY_TANK).writeDouble(1.0D);
+                //PacketByteBuf buf = PacketByteBufs.create();
+               // buf.writeByte(inventory.getScreenID()).writeByte(Reference.EMPTY_TANK).writeDouble(1.0D);
 
-                ClientPlayNetworking.send(ModNetwork.SPECIAL_ACTION_ID, buf);
+                //ClientPlayNetworking.send(ModNetwork.SPECIAL_ACTION_ID, buf);
+
+                ClientPlayNetworking.send(new SpecialActionPacket(inventory.getScreenID(), Reference.EMPTY_TANK, 1.0D));
 
                 if(inventory.getScreenID() == Reference.ITEM_SCREEN_ID) ServerActions.emptyTank(1, getScreenHandler().playerInventory.player, inventory.getWorld(), inventory.getScreenID());
             }
@@ -515,10 +516,12 @@ public class TravelersBackpackHandledScreen extends HandledScreen<TravelersBackp
         {
             if(this.tankRight.inTank(this, (int)mouseX, (int)mouseY) && BackpackUtils.isShiftPressed())
             {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(inventory.getScreenID()).writeByte(Reference.EMPTY_TANK).writeDouble(2.0D);
+                //PacketByteBuf buf = PacketByteBufs.create();
+               // buf.writeByte(inventory.getScreenID()).writeByte(Reference.EMPTY_TANK).writeDouble(2.0D);
 
-                ClientPlayNetworking.send(ModNetwork.SPECIAL_ACTION_ID, buf);
+               // ClientPlayNetworking.send(ModNetwork.SPECIAL_ACTION_ID, buf);
+
+                ClientPlayNetworking.send(new SpecialActionPacket(inventory.getScreenID(), Reference.EMPTY_TANK, 2.0D));
 
                 if(inventory.getScreenID() == Reference.ITEM_SCREEN_ID) ServerActions.emptyTank(2, getScreenHandler().playerInventory.player, inventory.getWorld(), inventory.getScreenID());
             }
@@ -539,9 +542,11 @@ public class TravelersBackpackHandledScreen extends HandledScreen<TravelersBackp
     {
         if(KeybindHandler.SORT_BACKPACK.matchesKey(keyCode, scanCode))
         {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(inventory.getScreenID()).writeByte(InventorySorter.SORT_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(inventory.getScreenID()).writeByte(InventorySorter.SORT_BACKPACK).writeBoolean(BackpackUtils.isShiftPressed());
+           // ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+
+            ClientPlayNetworking.send(new SorterPacket(inventory.getScreenID(), InventorySorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
 
             playUIClickSound();
             return true;

@@ -4,13 +4,11 @@ import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScree
 import com.tiviacz.travelersbackpack.common.BackpackAbilities;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
+import com.tiviacz.travelersbackpack.network.AbilitySliderPacket;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -108,10 +106,11 @@ public class AbilitySliderButton extends Button
             {
                 if(BackpackAbilities.isOnList(BackpackAbilities.BLOCK_ABILITIES_LIST, screen.inventory.getItemStack()) && this.inButton((int)mouseX, (int)mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.isWidgetVisible(4, screen.leftTankSlotWidget))
                 {
-                    PacketByteBuf buf = PacketByteBufs.create();
-                    buf.writeByte(screen.inventory.getScreenID()).writeBoolean(!screen.inventory.getAbilityValue());
+                    //PacketByteBuf buf = PacketByteBufs.create();
+                    //b/uf.writeByte(screen.inventory.getScreenID()).writeBoolean(!screen.inventory.getAbilityValue());
 
-                    ClientPlayNetworking.send(ModNetwork.ABILITY_SLIDER_ID, buf);
+                    //ClientPlayNetworking.send(ModNetwork.ABILITY_SLIDER_ID, buf);
+                    ClientPlayNetworking.send(new AbilitySliderPacket(screen.inventory.getScreenID(), !screen.inventory.getAbilityValue()));
                     screen.playUIClickSound();
                     return true;
                 }
@@ -123,10 +122,11 @@ public class AbilitySliderButton extends Button
             {
                 if(BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_LIST, screen.inventory.getItemStack()) && this.inButton((int)mouseX, (int)mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.isWidgetVisible(4, screen.leftTankSlotWidget))
                 {
-                    PacketByteBuf buf = PacketByteBufs.create();
-                    buf.writeByte(screen.inventory.getScreenID()).writeBoolean(!screen.inventory.getAbilityValue());
+                    //PacketByteBuf buf = PacketByteBufs.create();
+                    //buf.writeByte(screen.inventory.getScreenID()).writeBoolean(!screen.inventory.getAbilityValue());
 
-                    ClientPlayNetworking.send(ModNetwork.ABILITY_SLIDER_ID, buf);
+                    //ClientPlayNetworking.send(ModNetwork.ABILITY_SLIDER_ID, buf);
+                    ClientPlayNetworking.send(new AbilitySliderPacket(screen.inventory.getScreenID(), !screen.inventory.getAbilityValue()));
                     screen.playUIClickSound();
                     return true;
                 }

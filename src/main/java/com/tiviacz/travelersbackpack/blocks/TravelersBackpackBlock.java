@@ -17,7 +17,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
@@ -27,7 +26,6 @@ import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.hit.BlockHitResult;
@@ -96,7 +94,7 @@ public class TravelersBackpackBlock extends BlockWithEntity
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit)
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit)
     {
         if(world.getBlockEntity(pos) instanceof TravelersBackpackBlockEntity blockEntity)
         {
@@ -147,14 +145,14 @@ public class TravelersBackpackBlock extends BlockWithEntity
         return super.onBreak(world, pos, state, player);
     }
 
-    @Override
+  /*  @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack)
     {
         if(itemStack.getNbt() != null && world.getBlockEntity(pos) instanceof TravelersBackpackBlockEntity blockEntity)
         {
             blockEntity.readAllData(itemStack.getNbt());
         }
-    }
+    } */
 
     @Nullable
     public BlockState getPlacementState(ItemPlacementContext ctx)

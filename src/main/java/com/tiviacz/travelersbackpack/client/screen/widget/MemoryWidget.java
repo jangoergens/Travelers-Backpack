@@ -2,17 +2,17 @@ package com.tiviacz.travelersbackpack.client.screen.widget;
 
 import com.mojang.datafixers.util.Pair;
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.sorter.InventorySorter;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.network.MemoryPacket;
+import com.tiviacz.travelersbackpack.network.SorterPacket;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import com.tiviacz.travelersbackpack.util.TextUtils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
+
+import java.util.stream.Collectors;
 
 public class MemoryWidget extends WidgetBase
 {
@@ -62,21 +62,26 @@ public class MemoryWidget extends WidgetBase
         {
             setWidgetStatus(!this.isWidgetActive);
 
-            //Turns slot checking on server
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.MEMORY).writeBoolean(BackpackUtils.isShiftPressed());
+           // PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.MEMORY).writeBoolean(BackpackUtils.isShiftPressed());
 
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+           // ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+
+            //Turns slot checking on server
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.MEMORY, BackpackUtils.isShiftPressed()));
 
             //Turns slot checking on client
-            PacketByteBuf buf2 = PacketByteBufs.copy(PacketByteBufs.create().writeByte(screen.inventory.getScreenID()).writeBoolean(screen.inventory.getSlotManager().isSelectorActive(SlotManager.MEMORY))).writeIntArray(screen.inventory.getSlotManager().getMemorySlots().stream().mapToInt(Pair::getFirst).toArray());
+            //PacketByteBuf buf2 = PacketByteBufs.copy(PacketByteBufs.create().writeByte(screen.inventory.getScreenID()).writeBoolean(screen.inventory.getSlotManager().isSelectorActive(SlotManager.MEMORY))).writeIntArray(screen.inventory.getSlotManager().getMemorySlots().stream().mapToInt(Pair::getFirst).toArray());
 
-            for(ItemStack stack : screen.inventory.getSlotManager().getMemorySlots().stream().map(Pair::getSecond).toArray(ItemStack[]::new))
-            {
-                buf2.writeItemStack(stack);
-            }
+           // for(ItemStack stack : screen.inventory.getSlotManager().getMemorySlots().stream().map(Pair::getSecond).toArray(ItemStack[]::new))
+           // {
+            //    buf2.writeItemStack(stack);
+           // }
 
-            ClientPlayNetworking.send(ModNetwork.MEMORY_ID, buf2);
+            //ClientPlayNetworking.send(ModNetwork.MEMORY_ID, buf2);
+
+            //Turns slot checking on client
+            ClientPlayNetworking.send(new MemoryPacket(screen.inventory.getScreenID(), screen.inventory.getSlotManager().isSelectorActive(SlotManager.MEMORY), screen.inventory.getSlotManager().getMemorySlots().stream().map(Pair::getFirst).collect(Collectors.toList()), screen.inventory.getSlotManager().getMemorySlots().stream().map(Pair::getSecond).collect(Collectors.toList())));
             screen.inventory.getSlotManager().setSelectorActive(SlotManager.MEMORY, !screen.inventory.getSlotManager().isSelectorActive(SlotManager.MEMORY));
 
             screen.playUIClickSound();

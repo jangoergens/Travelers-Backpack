@@ -31,7 +31,7 @@ public class RightClickHandler
     {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) ->
         {
-            if(TravelersBackpackConfig.getConfig().backpackSettings.enableBackpackRightClickUnequip)
+            if(TravelersBackpackConfig.getConfig().backpackSettings.rightClickUnequip)
             {
                 if(ComponentUtils.isWearingBackpack(player) && !world.isClient)
                 {
@@ -45,7 +45,7 @@ public class RightClickHandler
                             if(item.place(new ItemPlacementContext(context)) == ActionResult.success(world.isClient))
                             {
                                 player.swingHand(Hand.MAIN_HAND, true);
-                                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.05F, (1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F) * 0.7F);
+                                world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.05F, (1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F) * 0.7F);
 
                                 if(TravelersBackpack.enableTrinkets())
                                 {
@@ -72,7 +72,7 @@ public class RightClickHandler
                     ItemScatterer.spawn(world, hitResult.getBlockPos().getX(), hitResult.getBlockPos().up().getY(), hitResult.getBlockPos().getZ(), oldSleepingBag);
                     player.getStackInHand(Hand.MAIN_HAND).decrement(1);
                 }
-                player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.0F, (1.0F + (player.getWorld().random.nextFloat() - player.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
+                player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.0F, (1.0F + (player.getWorld().random.nextFloat() - player.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
                 return ActionResult.SUCCESS;
             }
 
@@ -138,7 +138,7 @@ public class RightClickHandler
                 blockEntity.getRightTank().setCapacity(Tiers.LEATHER.getTankCapacity());
 
                 //Reset Settings
-                blockEntity.getSettingsManager().loadDefaults();
+                blockEntity.getSettingsManager().readDefaults();
 
                 player.swingHand(Hand.MAIN_HAND, true);
                 return ActionResult.SUCCESS;
@@ -146,7 +146,7 @@ public class RightClickHandler
 
             if(world.isClient) return ActionResult.PASS;
 
-            if(TravelersBackpackConfig.getConfig().backpackSettings.enableBackpackBlockQuickEquip && player.getWorld().getBlockEntity(hitResult.getBlockPos()) instanceof TravelersBackpackBlockEntity blockEntity)
+            if(TravelersBackpackConfig.getConfig().backpackSettings.rightClickEquip && player.getWorld().getBlockEntity(hitResult.getBlockPos()) instanceof TravelersBackpackBlockEntity blockEntity)
             {
                 if(player.isSneaking())
                 {

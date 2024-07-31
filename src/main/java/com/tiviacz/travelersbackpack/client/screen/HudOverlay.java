@@ -16,6 +16,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -27,10 +28,10 @@ import java.util.List;
 
 public class HudOverlay
 {
-    private static final Identifier OVERLAY = new Identifier(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
+    private static final Identifier OVERLAY = Identifier.of(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
     private static float animationProgress = 0.0F;
 
-    public static void render(DrawContext context, float tickDelta)
+    public static void render(DrawContext context, RenderTickCounter tickCounter)
     {
         if(!TravelersBackpackConfig.getConfig().client.overlay.enableOverlay || !ComponentUtils.isWearingBackpack(MinecraftClient.getInstance().player)) return;
 
@@ -58,7 +59,7 @@ public class HudOverlay
                 }
                 for(int i = 0; i < getTools(inv.getToolSlotsInventory()).size(); i++)
                 {
-                    drawItemStack(client, context, getTools(inv.getToolSlotsInventory()).get(i), scaledWidth - 30, (int)(scaledHeight + 11 - (animationProgress * (i * 15))));
+                    drawItemStack(tickCounter, client, context, getTools(inv.getToolSlotsInventory()).get(i), scaledWidth - 30, (int)(scaledHeight + 11 - (animationProgress * (i * 15))));
                 }
             }
             else if(!tools.isEmpty())
@@ -67,7 +68,7 @@ public class HudOverlay
                 {
                     for(int i = 0; i < getTools(inv.getToolSlotsInventory()).size(); i++)
                     {
-                        drawItemStack(client, context, getTools(inv.getToolSlotsInventory()).get(i), scaledWidth - 30, (int)(scaledHeight + 11 - (animationProgress * (i * 15))));
+                        drawItemStack(tickCounter, client, context, getTools(inv.getToolSlotsInventory()).get(i), scaledWidth - 30, (int)(scaledHeight + 11 - (animationProgress * (i * 15))));
                     }
                     animationProgress -= 0.05F;
                 }
@@ -75,13 +76,13 @@ public class HudOverlay
                 {
                     if(!inv.getToolSlotsInventory().getStack(0).isEmpty())
                     {
-                        drawItemStack(client, context, inv.getToolSlotsInventory().getStack(0), scaledWidth - 30, scaledHeight - 4);
+                        drawItemStack(tickCounter, client, context, inv.getToolSlotsInventory().getStack(0), scaledWidth - 30, scaledHeight - 4);
                     }
                     if(tools.size() > 1)
                     {
                         if(!inv.getToolSlotsInventory().getStack(tools.size() - 1).isEmpty())
                         {
-                            drawItemStack(client, context, inv.getToolSlotsInventory().getStack(tools.size() - 1), scaledWidth - 30, scaledHeight + 11);
+                            drawItemStack(tickCounter, client, context, inv.getToolSlotsInventory().getStack(tools.size() - 1), scaledWidth - 30, scaledHeight + 11);
                         }
                     }
                 }
@@ -137,7 +138,7 @@ public class HudOverlay
         RenderUtils.renderScreenTank(drawContext, fluidStorage, startX, startY, 0, height, width);
     }
 
-    public static void drawItemStack(MinecraftClient client, DrawContext context, ItemStack stack, int x, int y)
+    public static void drawItemStack(RenderTickCounter counter, MinecraftClient client, DrawContext context, ItemStack stack, int x, int y)
     {
         //Item
         context.drawItem(stack, x, y);
@@ -164,7 +165,7 @@ public class HudOverlay
             {
                 ClientPlayerEntity clientPlayerEntity = client.player;
 
-                float f = clientPlayerEntity == null ? 0.0F : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(), client.getTickDelta());
+                float f = clientPlayerEntity == null ? 0.0F : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(), counter.getTickDelta(true));
 
                 if(f > 0.0F)
                 {

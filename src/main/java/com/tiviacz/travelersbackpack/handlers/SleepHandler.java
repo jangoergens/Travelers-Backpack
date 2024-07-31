@@ -1,14 +1,13 @@
 package com.tiviacz.travelersbackpack.handlers;
 
 import com.tiviacz.travelersbackpack.blocks.SleepingBagBlock;
-import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 
 public class SleepHandler
 {
-    public static void registerListener()
+    public static void registerListener() //#TODO check on other fabrics
     {
-        EntitySleepEvents.ALLOW_SETTING_SPAWN.register((player, sleepingPos) ->
-                !(!player.getWorld().isClient && player.getWorld().getBlockState(sleepingPos).getBlock() instanceof SleepingBagBlock && !TravelersBackpackConfig.getConfig().backpackSettings.enableSleepingBagSpawnPoint));
+        //Handled in SleepingBagBlock to create forced spawn point
+        EntitySleepEvents.ALLOW_SETTING_SPAWN.register((player, sleepingPos) -> !(!player.getWorld().isClient && player.getWorld().getBlockState(sleepingPos).getBlock() instanceof SleepingBagBlock));
     }
 }

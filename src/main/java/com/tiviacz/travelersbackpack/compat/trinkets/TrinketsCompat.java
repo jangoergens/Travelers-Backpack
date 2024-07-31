@@ -45,7 +45,15 @@ public class TrinketsCompat
 
     public static TravelersBackpackInventory getTrinketsTravelersBackpackInventory(PlayerEntity player)
     {
-        return ComponentUtils.getComponent(player).getInventory();
+        TravelersBackpackInventory trinketsInventory = ComponentUtils.getComponent(player).getInventory();
+
+        if(trinketsInventory.getItemStack() != getTravelersBackpackTrinket(player))
+        {
+            trinketsInventory.setStack(getTravelersBackpackTrinket(player));
+            trinketsInventory.readAllData();
+        }
+
+        return trinketsInventory;
     }
 
     @Environment(value = EnvType.CLIENT)
@@ -58,7 +66,7 @@ public class TrinketsCompat
     {
         TrinketsApi.getTrinketComponent(player).ifPresent(t -> t.forEach((slotReference, itemStack) ->
         {
-            if(ItemStack.canCombine(stack, itemStack))
+            if(ItemStack.areItemsAndComponentsEqual(stack, itemStack))
             {
                 slotReference.inventory().clear();
             }

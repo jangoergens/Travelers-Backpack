@@ -8,7 +8,6 @@ import com.tiviacz.travelersbackpack.component.ITravelersBackpackComponent;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -61,7 +60,7 @@ public class ClearBackpackCommand
             ITravelersBackpackComponent component = ComponentUtils.getComponent(player);
 
             ItemStack stack = component.getWearable();
-            stack.setNbt(new NbtCompound());
+            //stack.setNbt(new NbtCompound());
 
             component.setWearable(ItemStack.EMPTY);
             component.setContents(ItemStack.EMPTY);

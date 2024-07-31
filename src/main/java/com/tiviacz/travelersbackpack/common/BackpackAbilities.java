@@ -1,6 +1,6 @@
 package com.tiviacz.travelersbackpack.common;
 
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
+import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
@@ -16,6 +16,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
@@ -24,6 +25,7 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -38,9 +40,11 @@ import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -51,7 +55,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 public class BackpackAbilities
 {
@@ -106,7 +109,7 @@ public class BackpackAbilities
 
             if(stack.getItem() == ModItems.ENDERMAN_TRAVELERS_BACKPACK)
             {
-                attributeAbility(player, false, ReachEntityAttributes.REACH, ENDERMAN_REACH_DISTANCE_MODIFIER);
+                attributeAbility(player, false, EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
             }
 
             if(stack.getItem() == ModItems.BLAZE_TRAVELERS_BACKPACK)
@@ -189,7 +192,7 @@ public class BackpackAbilities
 
         if(stack.getItem() == ModItems.ENDERMAN_TRAVELERS_BACKPACK)
         {
-            attributeAbility(player, true, ReachEntityAttributes.REACH, ENDERMAN_REACH_DISTANCE_MODIFIER);
+            attributeAbility(player, true, EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
         }
     }
 
@@ -237,22 +240,22 @@ public class BackpackAbilities
         }
     }
 
-    public final EntityAttributeModifier NETHERITE_ARMOR_MODIFIER = new EntityAttributeModifier(UUID.fromString("49d951a4-ca9c-48b5-b549-61ef67ee53aa"), "NetheriteBackpackBonusArmor", 4.0D, EntityAttributeModifier.Operation.ADDITION);
-    public final EntityAttributeModifier DIAMOND_ARMOR_MODIFIER = new EntityAttributeModifier(UUID.fromString("294425c4-8dc6-4640-a336-d9fd72950e20"), "DiamondBackpackBonusArmor", 3.0D, EntityAttributeModifier.Operation.ADDITION);
-    public final EntityAttributeModifier IRON_ARMOR_MODIFIER = new EntityAttributeModifier(UUID.fromString("fcf6706b-dfd9-40d6-aa25-62c4fb7a83fa"), "IronBackpackBonusArmor", 2.0D, EntityAttributeModifier.Operation.ADDITION);
-    public final EntityAttributeModifier GOLD_ARMOR_MODIFIER = new EntityAttributeModifier(UUID.fromString("21060f97-da7a-4460-a4e4-c94fae72ab00"), "GoldBackpackBonusArmor", 2.0D, EntityAttributeModifier.Operation.ADDITION);
-    public final EntityAttributeModifier ENDERMAN_REACH_DISTANCE_MODIFIER = new EntityAttributeModifier(UUID.fromString("a3d7a647-1ed9-4317-94c2-ca889cd33657"), "EndermanReachDistanceBonus", 1.0D, EntityAttributeModifier.Operation.ADDITION);
+    public final EntityAttributeModifier NETHERITE_ARMOR_MODIFIER = new EntityAttributeModifier(Identifier.of(TravelersBackpack.MODID, "netherite_backpack_armor"), 4.0D, EntityAttributeModifier.Operation.ADD_VALUE);
+    public final EntityAttributeModifier DIAMOND_ARMOR_MODIFIER = new EntityAttributeModifier(Identifier.of(TravelersBackpack.MODID, "diamond_backpack_armor"), 3.0D, EntityAttributeModifier.Operation.ADD_VALUE);
+    public final EntityAttributeModifier IRON_ARMOR_MODIFIER = new EntityAttributeModifier(Identifier.of(TravelersBackpack.MODID, "iron_backpack_armor"), 2.0D, EntityAttributeModifier.Operation.ADD_VALUE);
+    public final EntityAttributeModifier GOLD_ARMOR_MODIFIER = new EntityAttributeModifier(Identifier.of(TravelersBackpack.MODID, "gold_backpack_armor"), 2.0D, EntityAttributeModifier.Operation.ADD_VALUE);
+    public final EntityAttributeModifier ENDERMAN_REACH_DISTANCE_MODIFIER = new EntityAttributeModifier(Identifier.of(TravelersBackpack.MODID, "enderman_backpack_reach"), 1.0D, EntityAttributeModifier.Operation.ADD_VALUE);
 
-    public void attributeAbility(PlayerEntity player, boolean isRemoval, EntityAttribute attribute, EntityAttributeModifier modifier)
+    public void attributeAbility(PlayerEntity player, boolean isRemoval, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier)
     {
         EntityAttributeInstance armor = player.getAttributeInstance(attribute);
 
-        if(isRemoval && armor != null && armor.hasModifier(modifier))
+        if(isRemoval && armor != null && armor.hasModifier(modifier.id()))
         {
-            armor.tryRemoveModifier(modifier.getId());
+            armor.removeModifier(modifier.id());
         }
 
-        if(!isRemoval && armor != null && !armor.hasModifier(modifier))
+        if(!isRemoval && armor != null && !armor.hasModifier(modifier.id()))
         {
             armor.addPersistentModifier(modifier);
         }
@@ -265,7 +268,7 @@ public class BackpackAbilities
         attributeAbility(player, true, EntityAttributes.GENERIC_ARMOR, IRON_ARMOR_MODIFIER);
         attributeAbility(player, true, EntityAttributes.GENERIC_ARMOR, GOLD_ARMOR_MODIFIER);
 
-        attributeAbility(player, true, ReachEntityAttributes.REACH, ENDERMAN_REACH_DISTANCE_MODIFIER);
+        attributeAbility(player, true, EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
     }
 
     public void lapisAbility(PlayerEntity player)
@@ -550,9 +553,9 @@ public class BackpackAbilities
                 World level = player.getWorld();
                 BlockState state = level.getBlockState(player.getBlockPos().offset(player.getMovementDirection()));
                 player.getWorld().addParticle(new BlockStateParticleEffect(ParticleTypes.BLOCK, state),
-                        player.getX() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(EntityPose.STANDING).width,
+                        player.getX() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(EntityPose.STANDING).width(),
                         player.getY() + 0.1D,
-                        player.getZ() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(EntityPose.STANDING).width,
+                        player.getZ() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(EntityPose.STANDING).width(),
                         0.0D, 1.5D, 0.0D);
             }
         }
@@ -575,11 +578,15 @@ public class BackpackAbilities
     {
         if(ABILITIES.checkBackpack(player, ModItems.BEE_TRAVELERS_BACKPACK))
         {
-            boolean flag = target.damage(player.getDamageSources().sting(player), 1.0F);
+            DamageSource damageSource = player.getDamageSources().sting(player);
+            boolean flag = target.damage(damageSource, 1.0F);
 
             if(flag)
             {
-                player.applyDamageEffects(player, target);
+                if(player.getWorld() instanceof ServerWorld serverWorld)
+                {
+                    EnchantmentHelper.onTargetDamaged(serverWorld, target, damageSource);
+                }
 
                 if(target instanceof LivingEntity living)
                 {
@@ -649,7 +656,7 @@ public class BackpackAbilities
         return ComponentUtils.isWearingBackpack(player) && ComponentUtils.getBackpackInv(player).getItemStack().getItem() == item && ComponentUtils.getBackpackInv(player).getAbilityValue();
     }
 
-    public void addTimedStatusEffect(PlayerEntity player, StatusEffect effect, int minDuration, int maxDuration, int amplifier, boolean ambient, boolean showParticle, boolean showIcon)
+    public void addTimedStatusEffect(PlayerEntity player, RegistryEntry<StatusEffect> effect, int minDuration, int maxDuration, int amplifier, boolean ambient, boolean showParticle, boolean showIcon)
     {
         if(!player.hasStatusEffect(effect))
         {

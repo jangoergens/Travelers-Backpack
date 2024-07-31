@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
+import com.tiviacz.travelersbackpack.init.ModScreenHandlerTypes;
 import com.tiviacz.travelersbackpack.inventory.screen.TravelersBackpackItemScreenHandler;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -13,7 +14,6 @@ import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -62,12 +62,11 @@ public class AccessBackpackCommand
         {
             if(!self.getWorld().isClient)
             {
-                self.openHandledScreen(new ExtendedScreenHandlerFactory()
+                self.openHandledScreen(new ExtendedScreenHandlerFactory<ModScreenHandlerTypes.ItemScreenData>()
                 {
                     @Override
-                    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf)
-                    {
-                        buf.writeByte(Reference.WEARABLE_SCREEN_ID).writeInt(serverPlayer.getId());
+                    public ModScreenHandlerTypes.ItemScreenData getScreenOpeningData(ServerPlayerEntity player) {
+                        return new ModScreenHandlerTypes.ItemScreenData(Reference.WEARABLE_SCREEN_ID, serverPlayer.getId());
                     }
 
                     @Override

@@ -2,10 +2,12 @@ package com.tiviacz.travelersbackpack.util;
 
 import com.tiviacz.travelersbackpack.init.ModFluids;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.registry.entry.RegistryEntry;
 
 public class FluidUtils
 {
@@ -13,9 +15,9 @@ public class FluidUtils
     {
         FluidVariant newVariant;
 
-        if(stack.getNbt() != null)
+        if(stack.contains(DataComponentTypes.POTION_CONTENTS))
         {
-            newVariant = FluidVariant.of(ModFluids.POTION_STILL, stack.getNbt());
+            newVariant = FluidVariant.of(ModFluids.POTION_STILL, stack.getComponentChanges());
         }
         else
         {
@@ -24,18 +26,13 @@ public class FluidUtils
         return newVariant;
     }
 
-    public static Potion getPotionTypeFromFluidStack(FluidVariant variant)
+    public static RegistryEntry<Potion> getPotionTypeFromFluidVariant(FluidVariant variant)
     {
-        return PotionUtil.getPotion(variant.getNbt());
+        return variant.getComponents().get(DataComponentTypes.POTION_CONTENTS).get().potion().get();
     }
 
     public static ItemStack getItemStackFromFluidStack(FluidVariant variant)
     {
-        return PotionUtil.setPotion(new ItemStack(Items.POTION), getPotionTypeFromFluidStack(variant));
-    }
-
-    public static ItemStack getItemStackFromPotionType(Potion potion)
-    {
-        return PotionUtil.setPotion(new ItemStack(Items.POTION), potion);
+        return PotionContentsComponent.createStack(Items.POTION, getPotionTypeFromFluidVariant(variant));
     }
 }

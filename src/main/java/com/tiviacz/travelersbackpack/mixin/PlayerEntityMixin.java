@@ -1,5 +1,6 @@
 package com.tiviacz.travelersbackpack.mixin;
 
+import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.common.BackpackAbilities;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
@@ -44,7 +45,8 @@ public abstract class PlayerEntityMixin extends LivingEntity
             {
                 if(TravelersBackpackConfig.getConfig().backpackAbilities.enableBackpackAbilities && BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_LIST, ComponentUtils.getWearingBackpack(player)))
                 {
-                    TravelersBackpackInventory.abilityTick(player);
+                    //If trinkets enabled tick ability in trinkets tick method
+                    if(!TravelersBackpack.enableTrinkets()) TravelersBackpackInventory.abilityTick(player);
                     if(!checkAbilitiesForRemoval && BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_REMOVAL_LIST, ComponentUtils.getWearingBackpack(player))) checkAbilitiesForRemoval = true;
                 }
 

@@ -1,16 +1,15 @@
 package com.tiviacz.travelersbackpack.client.screen.widget;
 
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.sorter.InventorySorter;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.network.SlotPacket;
+import com.tiviacz.travelersbackpack.network.SorterPacket;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import com.tiviacz.travelersbackpack.util.TextUtils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -117,14 +116,17 @@ public class SortWidget extends WidgetBase
                 this.zOffset = 0;
             }
 
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.SORT).writeBoolean(BackpackUtils.isShiftPressed());
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(screen.inventory.getScreenID()).writeByte(InventorySorter.SORT).writeBoolean(BackpackUtils.isShiftPressed());
 
             //Turns slot checking on server
-            ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
+            ClientPlayNetworking.send(new SorterPacket(screen.inventory.getScreenID(), InventorySorter.SORT, BackpackUtils.isShiftPressed()));
+
+            //ClientPlayNetworking.send(ModNetwork.SORTER_ID, buf);
 
             //Turns slot checking on client
-            ClientPlayNetworking.send(ModNetwork.SLOT_ID, PacketByteBufs.copy(PacketByteBufs.create().writeByte(screen.inventory.getScreenID()).writeBoolean(screen.inventory.getSlotManager().isSelectorActive(SlotManager.UNSORTABLE))).writeIntArray(screen.inventory.getSlotManager().getUnsortableSlots().stream().mapToInt(i -> i).toArray()));
+            ClientPlayNetworking.send(new SlotPacket(screen.inventory.getScreenID(), screen.inventory.getSlotManager().isSelectorActive(SlotManager.UNSORTABLE), screen.inventory.getSlotManager().getUnsortableSlots()));
+            //ClientPlayNetworking.send(ModNetwork.SLOT_ID, PacketByteBufs.copy(PacketByteBufs.create().writeByte(screen.inventory.getScreenID()).writeBoolean(screen.inventory.getSlotManager().isSelectorActive(SlotManager.UNSORTABLE))).writeIntArray(screen.inventory.getSlotManager().getUnsortableSlots().stream().mapToInt(i -> i).toArray()));
             screen.inventory.getSlotManager().setSelectorActive(SlotManager.UNSORTABLE, !screen.inventory.getSlotManager().isSelectorActive(SlotManager.UNSORTABLE));
 
             screen.playUIClickSound();

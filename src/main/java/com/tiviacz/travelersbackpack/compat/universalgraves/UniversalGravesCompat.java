@@ -17,7 +17,7 @@ public class UniversalGravesCompat implements GraveInventoryMask
 
     public static void register()
     {
-        GravesApi.registerInventoryMask(new Identifier("universal_graves", "travelers_backpack"), INSTANCE);
+        GravesApi.registerInventoryMask(Identifier.of("universal_graves", "travelers_backpack"), INSTANCE);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class UniversalGravesCompat implements GraveInventoryMask
             //Sync
             ComponentUtils.sync(serverPlayerEntity);
 
-            serverPlayerEntity.getWorld().playSound(null, serverPlayerEntity.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.0F, (1.0F + (serverPlayerEntity.getWorld().random.nextFloat() - serverPlayerEntity.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
+            serverPlayerEntity.getWorld().playSound(null, serverPlayerEntity.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.0F, (1.0F + (serverPlayerEntity.getWorld().random.nextFloat() - serverPlayerEntity.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
 
             itemStack.setCount(0);
             return true;

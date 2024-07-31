@@ -1,9 +1,9 @@
 package com.tiviacz.travelersbackpack.compat.rei;
 
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.SettingsManager;
 import com.tiviacz.travelersbackpack.inventory.screen.TravelersBackpackBaseScreenHandler;
 import com.tiviacz.travelersbackpack.inventory.screen.slot.DisabledSlot;
+import com.tiviacz.travelersbackpack.network.SettingsPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import me.shedaniel.rei.api.common.display.SimpleGridMenuDisplay;
 import me.shedaniel.rei.api.common.plugins.REIServerPlugin;
@@ -15,9 +15,7 @@ import me.shedaniel.rei.api.common.transfer.info.simple.SimpleMenuInfoProvider;
 import me.shedaniel.rei.api.common.transfer.info.stack.SlotAccessor;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -111,10 +109,12 @@ public class ReiCompat implements REIServerPlugin
                 //Open Tab
                 context.getMenu().inventory.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1);
 
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(context.getMenu().inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)1);
+                //PacketByteBuf buf = PacketByteBufs.create();
+                //buf.writeByte(context.getMenu().inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)1);
 
-                ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+                //ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+
+                ClientPlayNetworking.send(new SettingsPacket(context.getMenu().inventory.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
             }
             SimpleGridMenuInfo.super.validate(context);
         }

@@ -49,6 +49,6 @@ public class TravelersBackpackPlugin implements IModPlugin
     @Override
     public Identifier getPluginUid()
     {
-        return new Identifier(TravelersBackpack.MODID, "travelersbackpack");
+        return Identifier.of(TravelersBackpack.MODID, "travelersbackpack");
     }
 }

@@ -1,16 +1,12 @@
 package com.tiviacz.travelersbackpack.init;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
-import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
+import com.tiviacz.travelersbackpack.components.FluidTanks;
 import com.tiviacz.travelersbackpack.inventory.Tiers;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -20,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class ModItemGroups
 {
-    public static final RegistryKey<ItemGroup> TRAVELERS_BACKPACK = RegistryKey.of(RegistryKeys.ITEM_GROUP, new Identifier(TravelersBackpack.MODID, "travelers_backpack"));
+    public static final RegistryKey<ItemGroup> TRAVELERS_BACKPACK = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(TravelersBackpack.MODID, "travelers_backpack"));
 
     public static void registerItemGroup()
     {
@@ -32,16 +28,17 @@ public class ModItemGroups
     public static ItemStack createTabStack()
     {
         ItemStack stack = new ItemStack(ModItems.STANDARD_TRAVELERS_BACKPACK);
+        stack.set(ModComponentTypes.FLUID_TANKS, FluidTanks.createTanksForCreativeTab());
 
-        NbtCompound leftTank = new NbtCompound();
-        leftTank.put("variant", FluidVariant.of(Fluids.WATER).toNbt());
-        leftTank.putLong("amount", TravelersBackpackConfig.getConfig().backpackSettings.leather.tankCapacity);
-        stack.getOrCreateNbt().put(ITravelersBackpackInventory.LEFT_TANK, leftTank);
+       // NbtCompound leftTank = new NbtCompound();
+        //leftTank.put("variant", FluidVariant.of(Fluids.WATER).toNbt());
+       // leftTank.putLong("amount", TravelersBackpackConfig.getConfig().backpackSettings.leather.tankCapacity);
+       // stack.getOrCreateNbt().put(ITravelersBackpackInventory.LEFT_TANK, leftTank);
 
-        NbtCompound rightTank = new NbtCompound();
-        rightTank.put("variant", FluidVariant.of(Fluids.LAVA).toNbt());
-        rightTank.putLong("amount", TravelersBackpackConfig.getConfig().backpackSettings.leather.tankCapacity);
-        stack.getOrCreateNbt().put(ITravelersBackpackInventory.RIGHT_TANK, rightTank);
+       // NbtCompound rightTank = new NbtCompound();
+       //// rightTank.put("variant", FluidVariant.of(Fluids.LAVA).toNbt());
+      //  rightTank.putLong("amount", TravelersBackpackConfig.getConfig().backpackSettings.leather.tankCapacity);
+       // stack.getOrCreateNbt().put(ITravelersBackpackInventory.RIGHT_TANK, rightTank);
 
         return stack;
     }
@@ -145,8 +142,9 @@ public class ModItemGroups
     public static ItemStack createTieredBackpack(Tiers.Tier tier)
     {
         ItemStack stack = new ItemStack(ModItems.STANDARD_TRAVELERS_BACKPACK);
-        NbtCompound tag = stack.getOrCreateNbt();
-        tag.putInt(ITravelersBackpackInventory.TIER, tier.getOrdinal());
+        stack.set(ModComponentTypes.TIER, tier.getOrdinal());
+        //NbtCompound tag = stack.getOrCreateNbt();
+        //tag.putInt(ITravelersBackpackInventory.TIER, tier.getOrdinal());
         return stack;
     }
 }

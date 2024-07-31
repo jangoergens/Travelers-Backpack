@@ -1,0 +1,16 @@
+{
+  "type": "travelersbackpack:backpack_upgrade",
+  "addition": {
+    "tag": "travelersbackpack:backpack_upgrades"
+  },
+  "base": {
+    "item": "travelersbackpack:sandstone"
+  },
+  "result": {
+    "count": 1,
+    "id": "travelersbackpack:sandstone"
+  },
+  "template": {
+    "item": "minecraft:leather"
+  }
+}

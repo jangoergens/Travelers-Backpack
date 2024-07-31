@@ -5,13 +5,11 @@ import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScree
 import com.tiviacz.travelersbackpack.compat.craftingtweaks.ICraftingTweaks;
 import com.tiviacz.travelersbackpack.compat.craftingtweaks.TravelersBackpackCraftingGridAddition;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.inventory.SettingsManager;
+import com.tiviacz.travelersbackpack.network.SettingsPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
 public class CraftingWidget extends WidgetBase
@@ -144,10 +142,12 @@ public class CraftingWidget extends WidgetBase
         boolean showCraftingWidget = screen.inventory.getSettingsManager().showCraftingGrid();
         screen.inventory.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1));
 
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeByte(screen.inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)(showCraftingWidget ? 0 : 1));
+        //PacketByteBuf buf = PacketByteBufs.create();
+        //buf.writeByte(screen.inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)(showCraftingWidget ? 0 : 1));
 
-        ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+        //ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+
+        ClientPlayNetworking.send(new SettingsPacket(screen.inventory.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1)));
 
         super.setWidgetStatus(status);
     }
@@ -212,10 +212,12 @@ public class CraftingWidget extends WidgetBase
                     boolean shiftClickToBackpack = screen.inventory.getSettingsManager().shiftClickToBackpack();
                     screen.inventory.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1));
 
-                    PacketByteBuf buf = PacketByteBufs.create();
-                    buf.writeByte(screen.inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHIFT_CLICK_TO_BACKPACK).writeByte((byte)(shiftClickToBackpack ? 0 : 1));
+                   // PacketByteBuf buf = PacketByteBufs.create();
+                   // buf.writeByte(screen.inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHIFT_CLICK_TO_BACKPACK).writeByte((byte)(shiftClickToBackpack ? 0 : 1));
 
-                    ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+                   // ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+
+                    ClientPlayNetworking.send(new SettingsPacket(screen.inventory.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1)));
 
                     this.screen.playUIClickSound();
                 }

@@ -40,7 +40,7 @@ public class ResourceUtils
 
         for(String name : Reference.BACKPACK_NAMES)
         {
-            Identifier res = new Identifier(TravelersBackpack.MODID, "textures/model/" + name.toLowerCase(Locale.ENGLISH) + ".png");
+            Identifier res = Identifier.of(TravelersBackpack.MODID, "textures/model/" + name.toLowerCase(Locale.ENGLISH) + ".png");
             TEXTURE_IDENTIFIERS.add(res);
         }
     }
@@ -51,7 +51,7 @@ public class ResourceUtils
 
         for(DyeColor color : DyeColor.values())
         {
-            Identifier id = new Identifier(TravelersBackpack.MODID, "textures/model/bags/" + color.getName().toLowerCase(Locale.ENGLISH) + "_sleeping_bag" + ".png");
+            Identifier id = Identifier.of(TravelersBackpack.MODID, "textures/model/bags/" + color.getName().toLowerCase(Locale.ENGLISH) + "_sleeping_bag" + ".png");
             SLEEPING_BAG_TEXTURE_RESOURCE_LOCATIONS.add(id);
         }
     }

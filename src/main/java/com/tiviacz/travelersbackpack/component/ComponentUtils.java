@@ -7,11 +7,6 @@ import com.tiviacz.travelersbackpack.component.entity.IEntityTravelersBackpackCo
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
 import dev.emi.trinkets.api.TrinketsApi;
-import dev.onyxstudios.cca.api.v3.component.ComponentKey;
-import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
-import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
-import dev.onyxstudios.cca.api.v3.entity.RespawnCopyStrategy;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,11 +16,16 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.component.ComponentRegistry;
+import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
+import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
+import org.ladysnake.cca.api.v3.entity.RespawnCopyStrategy;
 
 public class ComponentUtils implements EntityComponentInitializer
 {
-    public static final ComponentKey<ITravelersBackpackComponent> WEARABLE = ComponentRegistry.getOrCreate(new Identifier(TravelersBackpack.MODID, "travelersbackpack"), ITravelersBackpackComponent.class);
-    public static final ComponentKey<IEntityTravelersBackpackComponent> ENTITY_WEARABLE = ComponentRegistry.getOrCreate(new Identifier(TravelersBackpack.MODID, "travelersbackpack_entity"), IEntityTravelersBackpackComponent.class);
+    public static final ComponentKey<ITravelersBackpackComponent> WEARABLE = ComponentRegistry.getOrCreate(Identifier.of(TravelersBackpack.MODID, "travelersbackpack"), ITravelersBackpackComponent.class);
+    public static final ComponentKey<IEntityTravelersBackpackComponent> ENTITY_WEARABLE = ComponentRegistry.getOrCreate(Identifier.of(TravelersBackpack.MODID, "travelersbackpack_entity"), IEntityTravelersBackpackComponent.class);
 
     public static ITravelersBackpackComponent getComponent(PlayerEntity player)
     {
@@ -83,7 +83,7 @@ public class ComponentUtils implements EntityComponentInitializer
         {
             player.getComponent(WEARABLE).setWearable(stack);
             player.getComponent(WEARABLE).setContents(stack);
-            player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS, 1.0F, (1.0F + (player.getWorld().random.nextFloat() - player.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
+            player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.0F, (1.0F + (player.getWorld().random.nextFloat() - player.getWorld().random.nextFloat()) * 0.2F) * 0.7F);
         }
 
         sync(player);

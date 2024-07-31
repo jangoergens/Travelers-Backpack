@@ -1,12 +1,12 @@
 package com.tiviacz.travelersbackpack.component;
 
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
-import dev.onyxstudios.cca.api.v3.component.Component;
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.entity.PlayerComponent;
 import net.minecraft.item.ItemStack;
+import org.ladysnake.cca.api.v3.component.ComponentV3;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
+import org.ladysnake.cca.api.v3.entity.RespawnableComponent;
 
-public interface ITravelersBackpackComponent extends PlayerComponent<Component>, AutoSyncedComponent
+public interface ITravelersBackpackComponent extends ComponentV3, AutoSyncedComponent, RespawnableComponent
 {
     boolean hasWearable();
 

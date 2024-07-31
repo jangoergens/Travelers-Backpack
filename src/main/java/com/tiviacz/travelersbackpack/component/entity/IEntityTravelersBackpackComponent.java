@@ -1,8 +1,8 @@
 package com.tiviacz.travelersbackpack.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.Component;
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.minecraft.item.ItemStack;
+import org.ladysnake.cca.api.v3.component.Component;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
 public interface IEntityTravelersBackpackComponent extends Component, AutoSyncedComponent
 {

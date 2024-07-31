@@ -3,6 +3,7 @@ package com.tiviacz.travelersbackpack.items;
 import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.fluids.EffectFluidRegistry;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModFluids;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
@@ -21,7 +22,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidDrainable;
 import net.minecraft.block.FluidFillable;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.CowEntity;
@@ -32,7 +32,6 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.sound.SoundCategory;
@@ -54,7 +53,7 @@ public class HoseItem extends Item
 {
     public HoseItem(Item.Settings settings)
     {
-        super(settings);
+        super(settings.component(ModComponentTypes.HOSE_MODES, List.of(0, 0)));
     }
 
     @Override
@@ -68,7 +67,7 @@ public class HoseItem extends Item
     }
 
     @Override
-    public int getMaxUseTime(ItemStack stack)
+    public int getMaxUseTime(ItemStack stack, LivingEntity user)
     {
         return 24;
     }
@@ -82,11 +81,17 @@ public class HoseItem extends Item
         {
             //Configure nbt
 
-            if(stack.getNbt() == null)
+            if(stack.getOrDefault(ModComponentTypes.HOSE_MODES, List.of(0, 0)).get(0) == NO_ASSIGN)
+            {
+                this.setDataMode(stack);
+                return TypedActionResult.pass(stack);
+            }
+
+           /* if(stack.getNbt() == null)
             {
                 this.setCompoundTag(stack);
                 return TypedActionResult.pass(stack);
-            }
+            } */
 
             TravelersBackpackInventory inv = ComponentUtils.getBackpackInv(player);
             SingleVariantStorage<FluidVariant> tank = this.getSelectedFluidTank(stack, inv);
@@ -173,11 +178,17 @@ public class HoseItem extends Item
         {
             //Configure nbt
 
-            if(stack.getNbt() == null)
+            if(stack.getOrDefault(ModComponentTypes.HOSE_MODES, List.of(0, 0)).get(0) == NO_ASSIGN)
+            {
+                this.setDataMode(stack);
+                return ActionResult.PASS;
+            }
+
+         /*   if(stack.getNbt() == null)
             {
                 this.setCompoundTag(stack);
                 return ActionResult.PASS;
-            }
+            } */
 
             Storage<FluidVariant> fluidVariantStorage = null;
             TravelersBackpackInventory inv = ComponentUtils.getBackpackInv(player);
@@ -525,7 +536,7 @@ public class HoseItem extends Item
     public static final int SPILL_MODE = 2;
     public static final int DRINK_MODE = 3;
 
-    public static int getHoseMode(ItemStack stack)
+ /*   public static int getHoseMode(ItemStack stack)
     {
         if(stack.getNbt() != null)
         {
@@ -546,6 +557,29 @@ public class HoseItem extends Item
             //2 = Right tank
         }
         return 0;
+    } */
+
+    public static int getHoseMode(ItemStack stack)
+    {
+        if(stack.contains(ModComponentTypes.HOSE_MODES))
+        {
+            //1 = Suck mode
+            //2 = Spill mode
+            //3 = Drink mode
+            return stack.get(ModComponentTypes.HOSE_MODES).get(0);
+        }
+        return NO_ASSIGN;
+    }
+
+    public static int getHoseTank(ItemStack stack)
+    {
+        if(stack.contains(ModComponentTypes.HOSE_MODES))
+        {
+            //1 = Left tank
+            //2 = Right tank
+            return stack.get(ModComponentTypes.HOSE_MODES).get(1);
+        }
+        return 0;
     }
 
     public SingleVariantStorage<FluidVariant> getSelectedFluidTank(ItemStack stack, TravelersBackpackInventory inv)
@@ -560,9 +594,9 @@ public class HoseItem extends Item
         {
             if(!ComponentUtils.isWearingBackpack(player))
             {
-                if(stack.getNbt() != null)
+                if(stack.getOrDefault(ModComponentTypes.HOSE_MODES, List.of(0, 0)).get(0) != NO_ASSIGN)
                 {
-                    stack.setNbt(null);
+                    stack.set(ModComponentTypes.HOSE_MODES, List.of(0, 0));
                 }
             }
         }
@@ -577,31 +611,33 @@ public class HoseItem extends Item
         }
         else
         {
-            if(stack.getNbt() != null)
+            if(stack.contains(ModComponentTypes.HOSE_MODES))
             {
-                NbtCompound compound = stack.getNbt();
+                int mode = stack.get(ModComponentTypes.HOSE_MODES).get(0);
 
-                if(compound.getInt("Mode") == SUCK_MODE)
+                if(mode == SUCK_MODE)
                 {
                     tooltip.add(Text.translatable("hose.travelersbackpack.current_mode_suck").formatted(Formatting.BLUE));
                 }
 
-                if(compound.getInt("Mode") == SPILL_MODE)
+                if(mode == SPILL_MODE)
                 {
                     tooltip.add(Text.translatable("hose.travelersbackpack.current_mode_spill").formatted(Formatting.BLUE));
                 }
 
-                if(compound.getInt("Mode") == DRINK_MODE)
+                if(mode == DRINK_MODE)
                 {
                     tooltip.add(Text.translatable("hose.travelersbackpack.current_mode_drink").formatted(Formatting.BLUE));
                 }
 
-                if(compound.getInt("Tank") == 1)
+                int tank = stack.get(ModComponentTypes.HOSE_MODES).get(1);
+
+                if(tank == 1)
                 {
                     tooltip.add(Text.translatable("hose.travelersbackpack.current_tank_left").formatted(Formatting.BLUE));
                 }
 
-                if(compound.getInt("Tank") == 2)
+                if(tank == 2)
                 {
                     tooltip.add(Text.translatable("hose.travelersbackpack.current_tank_right").formatted(Formatting.BLUE));
                 }
@@ -635,9 +671,10 @@ public class HoseItem extends Item
         return Text.literal(localizedName + mode);
     }
 
-    public void setCompoundTag(ItemStack stack)
+    public void setDataMode(ItemStack stack)
     {
-        NbtCompound tag = stack.getOrCreateNbt();
+        stack.set(ModComponentTypes.HOSE_MODES, List.of(1, 1));
+        /*NbtCompound tag = stack.getOrCreateNbt();
 
         if(!tag.containsUuid("Tank"))
         {
@@ -647,6 +684,6 @@ public class HoseItem extends Item
         if(!tag.containsUuid("Mode"))
         {
             tag.putInt("Mode", 1);
-        }
+        } */
     }
 }

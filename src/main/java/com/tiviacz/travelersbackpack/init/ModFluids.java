@@ -17,6 +17,6 @@ public class ModFluids
 
     private static FlowableFluid register(String name, FlowableFluid flowableFluid)
     {
-        return Registry.register(Registries.FLUID, new Identifier(TravelersBackpack.MODID, name), flowableFluid);
+        return Registry.register(Registries.FLUID, Identifier.of(TravelersBackpack.MODID, name), flowableFluid);
     }
 }

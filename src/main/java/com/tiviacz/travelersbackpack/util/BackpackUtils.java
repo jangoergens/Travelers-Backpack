@@ -6,15 +6,13 @@ import com.tiviacz.travelersbackpack.common.BackpackManager;
 import com.tiviacz.travelersbackpack.compat.trinkets.TrinketsCompat;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import com.tiviacz.travelersbackpack.network.SendMessagePacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -45,11 +43,6 @@ public class BackpackUtils
 
     private static boolean placeBackpack(World world, PlayerEntity player, BlockPos placePos, ItemStack stack)
     {
-        if(stack.getNbt() == null)
-        {
-            stack.setNbt(new NbtCompound());
-        }
-
         Block block = Block.getBlockFromItem(stack.getItem());
         int y = placePos.getY();
 
@@ -110,27 +103,15 @@ public class BackpackUtils
         }
     }
 
-    /**
-     *
-     * @param world Current world
-     * @param player Current player
-     * @param targetPos Final position to place backpack
-     * @param block Block to place
-     * @param stack Backpack stack
-     */
     private static void placeBackpackInTheWorld(World world, PlayerEntity player, BlockPos targetPos, Block block, ItemStack stack)
     {
-        PacketByteBuf data = PacketByteBufs.create();
-        data.writeBoolean(false);
-        data.writeBlockPos(targetPos);
-        ServerPlayNetworking.send((ServerPlayerEntity)player, ModNetwork.SEND_MESSAGE_ID, data);
-
+        ServerPlayNetworking.send((ServerPlayerEntity)player, new SendMessagePacket(false, targetPos));
         LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
 
         world.playSound(player, targetPos.getX(), targetPos.getY(), targetPos.getZ(), block.getDefaultState().getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, 0.5F, 1.0F);
-        ((TravelersBackpackBlockEntity)world.getBlockEntity(targetPos)).readAllData(stack.getNbt());
+        world.getBlockEntity(targetPos).readComponents(stack);
 
-        if(stack.hasCustomName())
+        if(stack.contains(DataComponentTypes.CUSTOM_NAME))
         {
             ((TravelersBackpackBlockEntity)world.getBlockEntity(targetPos)).setCustomName(stack.getName());
         }
@@ -174,242 +155,6 @@ public class BackpackUtils
         }
         return false;
     }
-
-    public static BlockPos findBlock3D(World world, int x, int y, int z, Block block, int hRange, int vRange)
-    {
-        for(int i = (y - vRange); i <= (y + vRange); i++)
-        {
-            for(int j = (x - hRange); j <= (x + hRange); j++)
-            {
-                for(int k = (z - hRange); k <= (z + hRange); k++)
-                {
-                    if(world.getBlockState(new BlockPos(j, i, k)).getBlock() == block)
-                    {
-                        return new BlockPos(j, i, k);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-   /* public static void onPlayerDeath(World world, PlayerEntity player, ItemStack stack)
-    {
-        if(!world.isClient) BackpackManager.addBackpack((ServerPlayerEntity)player, stack);
-
-        if(TravelersBackpackConfig.getConfig().backpackSettings.backpackDeathPlace)
-        {
-            if(TravelersBackpackConfig.getConfig().backpackSettings.backpackForceDeathPlace)
-            {
-                if(!forcePlace(world, player, stack))
-                {
-                   // ItemEntity backpackItemEntity = player.dropStack(stack, 1);
-
-                  //  if(backpackItemEntity != null)
-                  //  {
-                  //      backpackItemEntity.setCovetedItem();
-                  //  }
-                    int y = dropAboveVoid(player, world, player.getX(), player.getY(), player.getZ(), stack);
-
-                    if(!world.isClient)
-                    {
-                        ComponentUtils.getComponent(player).removeWearable();
-                    }
-
-                    player.sendMessage(Text.translatable("information.travelersbackpack.backpack_drop", player.getBlockPos().getX(), y, player.getBlockPos().getZ()), false);
-                    LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.getBlockPos().getX() + " Y: " + y + " Z: " + player.getBlockPos().getZ());
-                }
-            }
-            else if(!tryPlace(world, player, stack))
-            {
-                //player.entityDropItem(stack, 1); //Not too op though?
-                //int offsetY = Math.max(0, -((int) player.getPosY()) + 1) + 1;
-                //ItemEntity backpackItemEntity = player.dropStack(stack, 1);
-
-                //if(backpackItemEntity != null)
-                //{
-                //    backpackItemEntity.setCovetedItem();
-                //}
-                int y = dropAboveVoid(player, world, player.getX(), player.getY(), player.getZ(), stack);
-
-                if(!world.isClient)
-                {
-                    ComponentUtils.getComponent(player).removeWearable();
-                }
-
-                player.sendMessage(Text.translatable("information.travelersbackpack.backpack_drop", player.getBlockPos().getX(), y, player.getBlockPos().getZ()), false);
-                LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.getBlockPos().getX() + " Y: " + y + " Z: " + player.getBlockPos().getZ());
-            }
-        }
-        else
-        {
-            if(TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration) return;
-
-            //ItemEntity backpackItemEntity = player.dropStack(stack, 1);
-
-           // if(backpackItemEntity != null)
-            //{
-           //     backpackItemEntity.setCovetedItem();
-           // }
-            int y = dropAboveVoid(player, world, player.getX(), player.getY(), player.getZ(), stack);
-
-            player.sendMessage(Text.translatable("information.travelersbackpack.backpack_drop", player.getBlockPos().getX(), y, player.getBlockPos().getZ()), false);
-            LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.getBlockPos().getX() + " Y: " + y + " Z: " + player.getBlockPos().getZ());
-
-            if(!world.isClient)
-            {
-                ComponentUtils.getComponent(player).removeWearable();
-            }
-        }
-    }
-
-    public static int dropAboveVoid(PlayerEntity player, World world, double x, double y, double z, ItemStack stack)
-    {
-        int tempY = player.getBlockPos().getY();
-
-        if(TravelersBackpackConfig.getConfig().backpackSettings.voidProtection)
-        {
-            if(y <= world.getBottomY())
-            {
-                tempY = world.getBottomY() + 5;
-            }
-        }
-
-        for(int i = tempY; i < world.getHeight(); i++)
-        {
-            if(world.getBlockState(new BlockPos((int)x, i, (int)z)).isAir())
-            {
-                tempY = i;
-                break;
-            }
-        }
-
-        if(player.getRecentDamageSource() == player.getDamageSources().outOfWorld())
-        {
-            if(!world.isClient)
-            {
-                ItemEntity itemEntity = new ItemEntity(world, x, tempY, z, stack);
-                itemEntity.setNoGravity(true);
-                itemEntity.setCovetedItem();
-
-                itemEntity.setVelocity(world.random.nextGaussian() * (double)0.05F, world.random.nextGaussian() * (double)0.05F + (double)0.2F, world.random.nextGaussian() * (double)0.05F);
-                world.spawnEntity(itemEntity);
-            }
-        }
-        else
-        {
-            ItemScatterer.spawn(world, x, tempY, z, stack);
-        }
-        return tempY;
-    }
-
-    private static boolean forcePlace(World world, PlayerEntity player, ItemStack stack)
-    {
-        if(stack.getNbt() == null)
-        {
-            stack.setNbt(new NbtCompound());
-        }
-
-        Block block = Block.getBlockFromItem(stack.getItem());
-        BlockPos playerPos = player.getBlockPos();
-        int y = playerPos.getY();
-
-        if(TravelersBackpackConfig.getConfig().backpackSettings.voidProtection)
-        {
-            if(y <= world.getBottomY())
-            {
-                y = world.getBottomY() + 5;
-            }
-        }
-
-        for(int i = y; i < world.getHeight(); i++)
-        {
-            if(world.getBlockState(new BlockPos(playerPos.getX(), i, playerPos.getZ())).isAir())
-            {
-                y = i;
-                break;
-            }
-        }
-
-     /* if(y <= world.getDimension().minY() || y >= world.getHeight())
-        {
-            for(int i = 1; i < world.getHeight(); i++)
-            {
-                BlockPos pos = new BlockPos(playerPos.getX(), i, playerPos.getZ());
-
-                if(world.getBlockState(pos).isAir() || world.getBlockState(pos).getHardness(world, pos) > -1)
-                {
-                    y = i;
-                    break;
-                }
-            }
-        }
-
-        BlockPos targetPos = new BlockPos(playerPos.getX(), y, playerPos.getZ());
-
-        if(world.getBlockState(targetPos).getHardness(world, targetPos) > -1)
-        {
-            while(world.getBlockEntity(targetPos) != null)
-            {
-                targetPos = targetPos.up();
-            }
-
-            if(!world.setBlockState(targetPos, block.getDefaultState()))
-            {
-                return false;
-            }
-
-            player.sendMessage(Text.translatable("information.travelersbackpack.backpack_coords", targetPos.getX(), targetPos.getY(), targetPos.getZ()), false);
-            LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
-
-            world.playSound(player, playerPos.getX(), y, playerPos.getZ(), block.getDefaultState().getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, 0.5F, 1.0F);
-            ((TravelersBackpackBlockEntity)world.getBlockEntity(targetPos)).readAllData(stack.getNbt());
-
-            if(ComponentUtils.isWearingBackpack(player) && !world.isClient)
-            {
-                ComponentUtils.getComponent(player).removeWearable();
-            }
-
-            return true;
-        }
-        return false;
-    } */
-
-  /*  public static boolean placeBackpack(ItemStack stack, PlayerEntity player, World world, int x, int y, int z)
-    {
-        if(stack.getNbt() == null)
-        {
-            stack.setNbt(new NbtCompound());
-        }
-
-        Block block = Block.getBlockFromItem(stack.getItem());
-
-        if(y <= world.getDimension().minY() || y >= world.getHeight()) return false;
-
-        BlockPos targetPos = new BlockPos(x, y, z);
-
-        if(!world.setBlockState(targetPos, block.getDefaultState()))
-        {
-            return false;
-        }
-
-        player.sendMessage(Text.translatable("information.travelersbackpack.backpack_coords", targetPos.getX(), targetPos.getY(), targetPos.getZ()), false);
-        LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
-
-        world.playSound(player, x, y, z, block.getDefaultState().getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, 0.5F, 1.0F);
-        ((TravelersBackpackBlockEntity)world.getBlockEntity(targetPos)).readAllData(stack.getNbt());
-
-        if(stack.hasCustomName())
-        {
-            ((TravelersBackpackBlockEntity)world.getBlockEntity(targetPos)).setCustomName(stack.getName());
-        }
-
-        if(ComponentUtils.isWearingBackpack(player) && !world.isClient)
-        {
-            ComponentUtils.getComponent(player).removeWearable();
-        }
-        return true;
-    } */
 
     public static String getConvertedTime(int ticks) {
 
@@ -552,5 +297,23 @@ public class BackpackUtils
     private static boolean areCoordinatesTheSame(BlockPos pos1, BlockPos pos2)
     {
         return pos1 == pos2;
+    }
+
+    public static BlockPos findBlock3D(World world, int x, int y, int z, Block block, int hRange, int vRange)
+    {
+        for(int i = (y - vRange); i <= (y + vRange); i++)
+        {
+            for(int j = (x - hRange); j <= (x + hRange); j++)
+            {
+                for(int k = (z - hRange); k <= (z + hRange); k++)
+                {
+                    if(world.getBlockState(new BlockPos(j, i, k)).getBlock() == block)
+                    {
+                        return new BlockPos(j, i, k);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

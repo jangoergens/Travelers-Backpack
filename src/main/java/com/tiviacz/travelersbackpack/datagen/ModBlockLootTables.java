@@ -1,33 +1,32 @@
 package com.tiviacz.travelersbackpack.datagen;
 
 import com.tiviacz.travelersbackpack.blocks.SleepingBagBlock;
-import com.tiviacz.travelersbackpack.datagen.loot.LootItemHasColorCondition;
-import com.tiviacz.travelersbackpack.datagen.loot.LootItemHasSleepingBagColorCondition;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
-import com.tiviacz.travelersbackpack.inventory.SettingsManager;
-import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootTableProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.enums.BedPart;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.BlockStatePropertyLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.function.CopyComponentsLootFunction;
 import net.minecraft.loot.function.CopyNameLootFunction;
-import net.minecraft.loot.function.CopyNbtLootFunction;
-import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.predicate.StatePredicate;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.StringIdentifiable;
+
+import java.util.concurrent.CompletableFuture;
 
 public class ModBlockLootTables extends FabricBlockLootTableProvider
 {
-    protected ModBlockLootTables(FabricDataOutput dataOutput)
+    protected ModBlockLootTables(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup)
     {
-        super(dataOutput);
+        super(dataOutput, registryLookup);
     }
 
     @Override
@@ -62,6 +61,25 @@ public class ModBlockLootTables extends FabricBlockLootTableProvider
                 .pool(addSurvivesExplosionCondition(block, LootPool.builder().rolls(ConstantLootNumberProvider.create(1.0F))
                         .with(ItemEntry.builder(block)
                                 .apply(CopyNameLootFunction.builder(CopyNameLootFunction.Source.BLOCK_ENTITY))
+                                .apply(CopyComponentsLootFunction.builder(CopyComponentsLootFunction.Source.BLOCK_ENTITY)
+                                        .include(ModComponentTypes.TIER)
+                                        .include(ModComponentTypes.BACKPACK_CONTAINER)
+                                        .include(ModComponentTypes.TOOLS_CONTAINER)
+                                        .include(ModComponentTypes.CRAFTING_CONTAINER)
+                                        .include(ModComponentTypes.FLUID_TANKS)
+                                        .include(ModComponentTypes.ABILITY_SWITCH)
+                                        .include(ModComponentTypes.SETTINGS)
+                                        .include(ModComponentTypes.SLOTS)
+                                        .include(ModComponentTypes.SLEEPING_BAG_COLOR)
+                                        .include(DataComponentTypes.DYED_COLOR)))));
+    }
+
+    /*protected LootTable.Builder createBackpackDrop(Block block)
+    {
+        return LootTable.builder()
+                .pool(addSurvivesExplosionCondition(block, LootPool.builder().rolls(ConstantLootNumberProvider.create(1.0F))
+                        .with(ItemEntry.builder(block)
+                                .apply(CopyNameLootFunction.builder(CopyNameLootFunction.Source.BLOCK_ENTITY))
                                 .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
                                         .withOperation(ITravelersBackpackInventory.TIER, ITravelersBackpackInventory.TIER)
                                         .withOperation(ITravelersBackpackInventory.INVENTORY, ITravelersBackpackInventory.INVENTORY)
@@ -81,7 +99,7 @@ public class ModBlockLootTables extends FabricBlockLootTableProvider
                                                 .withOperation(ITravelersBackpackInventory.SLEEPING_BAG_COLOR, ITravelersBackpackInventory.SLEEPING_BAG_COLOR)
                                                 .conditionally(LootItemHasSleepingBagColorCondition.hasSleepingBagColor()))
                                 )));
-    }
+    } */
 
     public <T extends Comparable<T> & StringIdentifiable> LootTable.Builder createSleepingBagDrops(Block drop)
     {

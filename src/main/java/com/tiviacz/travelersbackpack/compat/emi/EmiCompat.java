@@ -1,11 +1,11 @@
 package com.tiviacz.travelersbackpack.compat.emi;
 
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
 import com.tiviacz.travelersbackpack.init.ModScreenHandlerTypes;
 import com.tiviacz.travelersbackpack.inventory.SettingsManager;
 import com.tiviacz.travelersbackpack.inventory.screen.TravelersBackpackBaseScreenHandler;
 import com.tiviacz.travelersbackpack.inventory.screen.slot.DisabledSlot;
+import com.tiviacz.travelersbackpack.network.SettingsPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
@@ -15,9 +15,7 @@ import dev.emi.emi.api.recipe.handler.EmiCraftContext;
 import dev.emi.emi.api.recipe.handler.StandardRecipeHandler;
 import dev.emi.emi.api.widget.Bounds;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import org.jetbrains.annotations.Nullable;
 
@@ -98,10 +96,12 @@ public class EmiCompat implements EmiPlugin
         {
             context.getScreenHandler().inventory.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1);
 
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeByte(context.getScreenHandler().inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)1);
+            //PacketByteBuf buf = PacketByteBufs.create();
+            //buf.writeByte(context.getScreenHandler().inventory.getScreenID()).writeByte(SettingsManager.CRAFTING).writeInt(SettingsManager.SHOW_CRAFTING_GRID).writeByte((byte)1);
 
-            ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+            //ClientPlayNetworking.send(ModNetwork.SETTINGS_ID, buf);
+
+            ClientPlayNetworking.send(new SettingsPacket(context.getScreenHandler().inventory.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
 
             return StandardRecipeHandler.super.craft(recipe, context);
         }

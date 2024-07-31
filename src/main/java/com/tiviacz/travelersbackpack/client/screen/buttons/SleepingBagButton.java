@@ -1,9 +1,8 @@
 package com.tiviacz.travelersbackpack.client.screen.buttons;
 
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
-import com.tiviacz.travelersbackpack.init.ModNetwork;
+import com.tiviacz.travelersbackpack.network.SleepingBagPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
 
 public class SleepingBagButton extends Button
@@ -35,7 +34,8 @@ public class SleepingBagButton extends Button
         {
             if(this.inButton((int) mouseX, (int) mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget))
             {
-                ClientPlayNetworking.send(ModNetwork.DEPLOY_SLEEPING_BAG_ID, PacketByteBufs.create().writeBlockPos(screen.inventory.getPosition()));
+                //ClientPlayNetworking.send(ModNetwork.DEPLOY_SLEEPING_BAG_ID, PacketByteBufs.create().writeBlockPos(screen.inventory.getPosition()));
+                ClientPlayNetworking.send(new SleepingBagPacket(screen.inventory.getPosition()));
                 return true;
             }
         }

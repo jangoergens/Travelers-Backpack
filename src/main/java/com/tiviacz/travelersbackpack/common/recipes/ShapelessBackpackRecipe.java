@@ -2,23 +2,21 @@ package com.tiviacz.travelersbackpack.common.recipes;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.tiviacz.travelersbackpack.init.ModRecipeSerializers;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShearsItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.ShapelessRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.dynamic.Codecs;
-
-import java.util.Iterator;
 
 public class ShapelessBackpackRecipe extends ShapelessRecipe
 {
@@ -28,20 +26,19 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
     }
 
     @Override
-    public ItemStack craft(final RecipeInputInventory inv, DynamicRegistryManager manager)
+    public ItemStack craft(CraftingRecipeInput craftingRecipeInput, RegistryWrapper.WrapperLookup wrapperLookup)
     {
-        final ItemStack output = super.craft(inv, manager);
+        final ItemStack output = this.result.copy();
 
         if(!output.isEmpty())
         {
-            for(int i = 0; i < inv.size(); i++)
+            for(int i = 0; i < craftingRecipeInput.getSize(); i++)
             {
-                final ItemStack ingredient = inv.getStack(i);
+                final ItemStack ingredient = craftingRecipeInput.getStackInSlot(i);
 
                 if(!ingredient.isEmpty() && ingredient.getItem() instanceof TravelersBackpackItem)
                 {
-                    final NbtCompound compound = ingredient.getNbt();
-                    output.setNbt(compound);
+                    output.applyUnvalidatedChanges(ingredient.getComponentChanges());
                     break;
                 }
             }
@@ -63,13 +60,13 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
     }
 
     @Override
-    public DefaultedList<ItemStack> getRemainder(RecipeInputInventory inventoryCrafting)
+    public DefaultedList<ItemStack> getRemainder(CraftingRecipeInput craftingRecipeInput)
     {
-        final DefaultedList<ItemStack> remainingItems = DefaultedList.ofSize(inventoryCrafting.size(), ItemStack.EMPTY);
+        final DefaultedList<ItemStack> remainingItems = DefaultedList.ofSize(craftingRecipeInput.getSize(), ItemStack.EMPTY);
 
         for(int i = 0; i < remainingItems.size(); ++i)
         {
-            final ItemStack itemstack = inventoryCrafting.getStack(i);
+            final ItemStack itemstack = craftingRecipeInput.getStackInSlot(i);
 
             if(!itemstack.isEmpty() && itemstack.getItem() instanceof ShearsItem)
             {
@@ -89,67 +86,51 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
         return ModRecipeSerializers.BACKPACK_SHAPELESS;
     }
 
-    public static class Serializer implements RecipeSerializer<ShapelessBackpackRecipe> {
-        private static final Codec<ShapelessBackpackRecipe> CODEC = RecordCodecBuilder.create((instance) -> {
-            return instance.group(Codecs.createStrictOptionalFieldCodec(Codec.STRING, "group", "").forGetter((recipe) -> {
-                return recipe.getGroup();
-            }), CraftingRecipeCategory.CODEC.fieldOf("category").orElse(CraftingRecipeCategory.MISC).forGetter((recipe) -> {
-                return recipe.getCategory();
-            }), ItemStack.RECIPE_RESULT_CODEC.fieldOf("result").forGetter((recipe) -> {
-                return recipe.result;
-            }), Ingredient.DISALLOW_EMPTY_CODEC.listOf().fieldOf("ingredients").flatXmap((ingredients) -> {
-                Ingredient[] ingredients2 = (Ingredient[])ingredients.stream().filter((ingredient) -> {
-                    return !ingredient.isEmpty();
-                }).toArray((i) -> {
-                    return new Ingredient[i];
-                });
-                if (ingredients2.length == 0) {
-                    return DataResult.error(() -> {
-                        return "No ingredients for shapeless recipe";
-                    });
-                } else {
-                    return ingredients2.length > 9 ? DataResult.error(() -> {
-                        return "Too many ingredients for shapeless recipe";
-                    }) : DataResult.success(DefaultedList.copyOf(Ingredient.EMPTY, ingredients2));
-                }
-            }, DataResult::success).forGetter((recipe) -> {
-                return recipe.getIngredients();
-            })).apply(instance, ShapelessBackpackRecipe::new);
-        });
+    public static class Serializer implements RecipeSerializer<ShapelessBackpackRecipe>
+    {
+        private static final MapCodec<ShapelessBackpackRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(Codec.STRING.optionalFieldOf("group", "").forGetter(recipe -> recipe.getGroup()),
+                CraftingRecipeCategory.CODEC.fieldOf("category").orElse(CraftingRecipeCategory.MISC).forGetter(recipe -> recipe.getCategory()),
+                ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter(recipe -> recipe.result), Ingredient.DISALLOW_EMPTY_CODEC.listOf().fieldOf("ingredients").flatXmap(ingredients -> {
+            Ingredient[] ingredients2 = ingredients.stream().filter(ingredient -> !ingredient.isEmpty()).toArray(Ingredient[]::new);
+            if (ingredients2.length == 0) {
+                return DataResult.error(() -> "No ingredients for shapeless recipe");
+            }
+            if (ingredients2.length > 9) {
+                return DataResult.error(() -> "Too many ingredients for shapeless recipe");
+            }
+            return DataResult.success(DefaultedList.copyOf(Ingredient.EMPTY, ingredients2));
+        }, DataResult::success).forGetter(recipe -> recipe.getIngredients())).apply(instance, ShapelessBackpackRecipe::new));
 
-        public Serializer() {
-        }
+        public static final PacketCodec<RegistryByteBuf, ShapelessBackpackRecipe> PACKET_CODEC = PacketCodec.ofStatic(ShapelessBackpackRecipe.Serializer::write, ShapelessBackpackRecipe.Serializer::read);
 
-        public Codec<ShapelessBackpackRecipe> codec() {
+        @Override
+        public MapCodec<ShapelessBackpackRecipe> codec() {
             return CODEC;
         }
 
-        public ShapelessBackpackRecipe read(PacketByteBuf packetByteBuf) {
-            String string = packetByteBuf.readString();
-            CraftingRecipeCategory craftingRecipeCategory = (CraftingRecipeCategory)packetByteBuf.readEnumConstant(CraftingRecipeCategory.class);
-            int i = packetByteBuf.readVarInt();
+        @Override
+        public PacketCodec<RegistryByteBuf, ShapelessBackpackRecipe> packetCodec() {
+            return PACKET_CODEC;
+        }
+
+        private static ShapelessBackpackRecipe read(RegistryByteBuf buf) {
+            String string = buf.readString();
+            CraftingRecipeCategory craftingRecipeCategory = buf.readEnumConstant(CraftingRecipeCategory.class);
+            int i = buf.readVarInt();
             DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(i, Ingredient.EMPTY);
-
-            for(int j = 0; j < defaultedList.size(); ++j) {
-                defaultedList.set(j, Ingredient.fromPacket(packetByteBuf));
-            }
-
-            ItemStack itemStack = packetByteBuf.readItemStack();
+            defaultedList.replaceAll(empty -> Ingredient.PACKET_CODEC.decode(buf));
+            ItemStack itemStack = ItemStack.PACKET_CODEC.decode(buf);
             return new ShapelessBackpackRecipe(string, craftingRecipeCategory, itemStack, defaultedList);
         }
 
-        public void write(PacketByteBuf packetByteBuf, ShapelessBackpackRecipe shapelessRecipe) {
-            packetByteBuf.writeString(shapelessRecipe.getGroup());
-            packetByteBuf.writeEnumConstant(shapelessRecipe.getCategory());
-            packetByteBuf.writeVarInt(shapelessRecipe.getIngredients().size());
-            Iterator var3 = shapelessRecipe.getIngredients().iterator();
-
-            while(var3.hasNext()) {
-                Ingredient ingredient = (Ingredient)var3.next();
-                ingredient.write(packetByteBuf);
+        private static void write(RegistryByteBuf buf, ShapelessBackpackRecipe recipe) {
+            buf.writeString(recipe.getGroup());
+            buf.writeEnumConstant(recipe.getCategory());
+            buf.writeVarInt(recipe.getIngredients().size());
+            for (Ingredient ingredient : recipe.getIngredients()) {
+                Ingredient.PACKET_CODEC.encode(buf, ingredient);
             }
-
-            packetByteBuf.writeItemStack(shapelessRecipe.result);
+            ItemStack.PACKET_CODEC.encode(buf, recipe.result);
         }
     }
 }

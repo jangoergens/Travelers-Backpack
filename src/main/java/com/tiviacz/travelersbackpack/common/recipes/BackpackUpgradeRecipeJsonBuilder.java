@@ -43,7 +43,7 @@ public class BackpackUpgradeRecipeJsonBuilder
     }
 
     public void offerTo(RecipeExporter exporter, String recipeId) {
-        this.offerTo(exporter, new Identifier(recipeId));
+        this.offerTo(exporter, Identifier.of(recipeId));
     }
 
     public void offerTo(RecipeExporter exporter, Identifier recipeId) {

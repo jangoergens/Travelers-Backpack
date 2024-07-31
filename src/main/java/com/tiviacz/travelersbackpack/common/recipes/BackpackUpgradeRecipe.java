@@ -1,23 +1,28 @@
 package com.tiviacz.travelersbackpack.common.recipes;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.tiviacz.travelersbackpack.components.BackpackContainerComponent;
+import com.tiviacz.travelersbackpack.components.FluidTanks;
+import com.tiviacz.travelersbackpack.components.Settings;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.init.ModRecipeSerializers;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
-import com.tiviacz.travelersbackpack.inventory.SettingsManager;
 import com.tiviacz.travelersbackpack.inventory.Tiers;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SmithingTransformRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.SmithingRecipeInput;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class BackpackUpgradeRecipe extends SmithingTransformRecipe
 {
@@ -37,9 +42,46 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
     }
 
     @Override
-    public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager)
+    public ItemStack craft(SmithingRecipeInput smithingRecipeInput, RegistryWrapper.WrapperLookup wrapperLookup)
     {
-        ItemStack itemstack = this.result.copy();
+        ItemStack result = smithingRecipeInput.getStackInSlot(1).copyComponentsToNewStack(this.result.getItem(), this.result.getCount());
+        result.applyUnvalidatedChanges(this.result.getComponentChanges());
+
+        ItemStack base = smithingRecipeInput.getStackInSlot(1);
+        ItemStack addition = smithingRecipeInput.getStackInSlot(2);
+
+        int tier = base.getOrDefault(ModComponentTypes.TIER, 0);
+
+        if(addition.isOf(Tiers.of(tier).getTierUpgradeIngredient()))
+        {
+            upgradeInventory(result, Tiers.of(tier).getNextTier());
+            return result;
+        }
+
+        if(addition.isOf(ModItems.CRAFTING_UPGRADE))
+        {
+            if(base.contains(ModComponentTypes.SETTINGS))
+            {
+                List<List<Byte>> oldSettings = base.get(ModComponentTypes.SETTINGS);
+                List<Byte> craftingSettings = oldSettings.get(0);
+                if(craftingSettings.get(0) == (byte)0)
+                {
+                    List<Byte> newCraftingSettings = Arrays.asList((byte)1, craftingSettings.get(1), craftingSettings.get(2));
+                    List<List<Byte>> newSettings = Arrays.asList(newCraftingSettings, oldSettings.get(1));
+                    result.set(ModComponentTypes.SETTINGS, newSettings);
+                    return result;
+                }
+            }
+            else
+            {
+                List<Byte> newCraftingSettings = Arrays.asList((byte)1, (byte)0, (byte)1);
+                List<List<Byte>> newSettings = Settings.createSettings(newCraftingSettings, Settings.createDefaultToolSettings());
+                result.set(ModComponentTypes.SETTINGS, newSettings);
+                return result;
+            }
+        }
+        return ItemStack.EMPTY;
+      /* ItemStack itemstack = this.result.copy();
         NbtCompound nbtCompound = inventory.getStack(1).getNbt();
 
         if(nbtCompound != null)
@@ -90,10 +132,31 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
                 }
             }
         }
-        return ItemStack.EMPTY;
+        return ItemStack.EMPTY; */
     }
 
-    public void upgradeInventory(NbtCompound compound, Tiers.Tier tier)
+    public void upgradeInventory(ItemStack stack, Tiers.Tier nextTier)
+    {
+        //Tier
+        stack.set(ModComponentTypes.TIER, nextTier.getOrdinal());
+
+        //Inventory
+        DefaultedList<ItemStack> oldContents = stack.getOrDefault(ModComponentTypes.BACKPACK_CONTAINER, BackpackContainerComponent.fromStacks(nextTier.getStorageSlots(), DefaultedList.ofSize(nextTier.getStorageSlots(), ItemStack.EMPTY))).getStacks();
+        BackpackContainerComponent newContents = BackpackContainerComponent.upgradeContents(nextTier.getStorageSlots(), oldContents);
+        stack.set(ModComponentTypes.BACKPACK_CONTAINER, newContents);
+
+        //Tools
+        DefaultedList<ItemStack> oldTools = stack.getOrDefault(ModComponentTypes.TOOLS_CONTAINER, BackpackContainerComponent.fromStacks(nextTier.getToolSlots(), DefaultedList.ofSize(nextTier.getToolSlots(), ItemStack.EMPTY))).getStacks();
+        BackpackContainerComponent newTools = BackpackContainerComponent.upgradeContents(nextTier.getToolSlots(), oldTools);
+        stack.set(ModComponentTypes.TOOLS_CONTAINER, newTools);
+
+        //Tanks
+        FluidTanks oldTanks = stack.getOrDefault(ModComponentTypes.FLUID_TANKS, FluidTanks.createTanks(nextTier.getTankCapacity()));
+        FluidTanks newTanks = new FluidTanks(nextTier.getTankCapacity(), new FluidTanks.Tank(oldTanks.leftTank().fluidVariant(), oldTanks.leftTank().amount()), new FluidTanks.Tank(oldTanks.rightTank().fluidVariant(), oldTanks.rightTank().amount()));
+        stack.set(ModComponentTypes.FLUID_TANKS, newTanks);
+    }
+
+   /* public void upgradeInventory(NbtCompound compound, Tiers.Tier tier)
     {
         compound.putInt(ITravelersBackpackInventory.TIER, tier.getNextTier().getOrdinal());
 
@@ -128,15 +191,15 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
                 compound.getCompound(ITravelersBackpackInventory.RIGHT_TANK).putLong("capacity", tier.getNextTier().getTankCapacity());
             }
         }
-    }
+    } */
 
     @Override
-    public boolean matches(Inventory inventory, World world)
+    public boolean matches(SmithingRecipeInput smithingRecipeInput, World world)
     {
-        ItemStack addition = inventory.getStack(2);
+        ItemStack addition = smithingRecipeInput.getStackInSlot(2);
         boolean flag = true;
 
-        if(!TravelersBackpackConfig.getConfig().backpackSettings.enableCraftingUpgrade)
+        if(!TravelersBackpackConfig.getConfig().backpackSettings.crafting.enableUpgrade)
         {
             flag = !addition.isOf(ModItems.CRAFTING_UPGRADE);
         }
@@ -146,10 +209,10 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
             flag = !(addition.isOf(ModItems.IRON_TIER_UPGRADE) || addition.isOf(ModItems.GOLD_TIER_UPGRADE)
                     || addition.isOf(ModItems.DIAMOND_TIER_UPGRADE) || addition.isOf(ModItems.NETHERITE_TIER_UPGRADE));
         }
-        return matchesTier(inventory, world) && flag && super.matches(inventory, world);
+        return /*matchesTier(inventory, world) && */flag && super.matches(smithingRecipeInput, world);
     }
 
-    public boolean matchesTier(Inventory inventory, World world)
+ /*   public boolean matchesTier(Inventory inventory, World world)
     {
         ItemStack base = inventory.getStack(1);
         ItemStack addition = inventory.getStack(2);
@@ -178,7 +241,7 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
             };
         }
         return false;
-    }
+    } */
 
     @Override
     public RecipeSerializer<?> getSerializer()
@@ -186,39 +249,39 @@ public class BackpackUpgradeRecipe extends SmithingTransformRecipe
         return ModRecipeSerializers.BACKPACK_UPGRADE;
     }
 
-    public static class Serializer implements RecipeSerializer<BackpackUpgradeRecipe> {
-        private static final Codec<BackpackUpgradeRecipe> CODEC = RecordCodecBuilder.create((instance) -> {
-            return instance.group(Ingredient.ALLOW_EMPTY_CODEC.fieldOf("template").forGetter((recipe) -> {
-                return recipe.template;
-            }), Ingredient.ALLOW_EMPTY_CODEC.fieldOf("base").forGetter((recipe) -> {
-                return recipe.base;
-            }), Ingredient.ALLOW_EMPTY_CODEC.fieldOf("addition").forGetter((recipe) -> {
-                return recipe.addition;
-            }), ItemStack.RECIPE_RESULT_CODEC.fieldOf("result").forGetter((recipe) -> {
-                return recipe.result;
-            })).apply(instance, BackpackUpgradeRecipe::new);
-        });
+    public static class Serializer implements RecipeSerializer<BackpackUpgradeRecipe>
+    {
+        private static final MapCodec<BackpackUpgradeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(Ingredient.ALLOW_EMPTY_CODEC.fieldOf("template").forGetter(recipe -> recipe.template),
+                        Ingredient.ALLOW_EMPTY_CODEC.fieldOf("base").forGetter(recipe -> recipe.base),
+                        Ingredient.ALLOW_EMPTY_CODEC.fieldOf("addition").forGetter(recipe -> recipe.addition),
+                        ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter(recipe -> recipe.result)).apply(instance, BackpackUpgradeRecipe::new));
 
-        public Serializer() {
-        }
+        public static final PacketCodec<RegistryByteBuf, BackpackUpgradeRecipe> PACKET_CODEC = PacketCodec.ofStatic(BackpackUpgradeRecipe.Serializer::write, BackpackUpgradeRecipe.Serializer::read);
 
-        public Codec<BackpackUpgradeRecipe> codec() {
+        @Override
+        public MapCodec<BackpackUpgradeRecipe> codec() {
             return CODEC;
         }
 
-        public BackpackUpgradeRecipe read(PacketByteBuf packetByteBuf) {
-            Ingredient ingredient = Ingredient.fromPacket(packetByteBuf);
-            Ingredient ingredient2 = Ingredient.fromPacket(packetByteBuf);
-            Ingredient ingredient3 = Ingredient.fromPacket(packetByteBuf);
-            ItemStack itemStack = packetByteBuf.readItemStack();
+        @Override
+        public PacketCodec<RegistryByteBuf, BackpackUpgradeRecipe> packetCodec() {
+            return PACKET_CODEC;
+        }
+
+        private static BackpackUpgradeRecipe read(RegistryByteBuf buf) {
+            Ingredient ingredient = Ingredient.PACKET_CODEC.decode(buf);
+            Ingredient ingredient2 = Ingredient.PACKET_CODEC.decode(buf);
+            Ingredient ingredient3 = Ingredient.PACKET_CODEC.decode(buf);
+            ItemStack itemStack = ItemStack.PACKET_CODEC.decode(buf);
             return new BackpackUpgradeRecipe(ingredient, ingredient2, ingredient3, itemStack);
         }
 
-        public void write(PacketByteBuf packetByteBuf, BackpackUpgradeRecipe backpackUpgradeRecipe) {
-            backpackUpgradeRecipe.template.write(packetByteBuf);
-            backpackUpgradeRecipe.base.write(packetByteBuf);
-            backpackUpgradeRecipe.addition.write(packetByteBuf);
-            packetByteBuf.writeItemStack(backpackUpgradeRecipe.result);
+        private static void write(RegistryByteBuf buf, BackpackUpgradeRecipe recipe) {
+            Ingredient.PACKET_CODEC.encode(buf, recipe.template);
+            Ingredient.PACKET_CODEC.encode(buf, recipe.base);
+            Ingredient.PACKET_CODEC.encode(buf, recipe.addition);
+            ItemStack.PACKET_CODEC.encode(buf, recipe.result);
         }
     }
 }

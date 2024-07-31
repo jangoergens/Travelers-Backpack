@@ -3,8 +3,8 @@ package com.tiviacz.travelersbackpack.client.renderer;
 import com.tiviacz.travelersbackpack.client.model.TravelersBackpackWearableModel;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
 import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -54,12 +54,9 @@ public class TravelersBackpackEntityFeature extends FeatureRenderer<LivingEntity
 
         boolean isCustomSleepingBag = false;
 
-        if(stack.getNbt() != null)
+        if(stack.contains(ModComponentTypes.SLEEPING_BAG_COLOR))
         {
-            if(stack.getNbt().contains(ITravelersBackpackInventory.SLEEPING_BAG_COLOR))
-            {
-                isCustomSleepingBag = true;
-            }
+            isCustomSleepingBag = true;
         }
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(flag ? RenderLayer.getEntityTranslucentCull(id) : RenderLayer.getEntitySolid(id));
@@ -83,11 +80,11 @@ public class TravelersBackpackEntityFeature extends FeatureRenderer<LivingEntity
         matrices.translate(0, 0.175, 0.325);
         matrices.scale(0.85F, 0.85F, 0.85F);
 
-        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
 
         if(isCustomSleepingBag)
         {
-            id = ResourceUtils.getSleepingBagTexture(stack.getOrCreateNbt().getInt(ITravelersBackpackInventory.SLEEPING_BAG_COLOR));
+            id = ResourceUtils.getSleepingBagTexture(stack.get(ModComponentTypes.SLEEPING_BAG_COLOR));
         }
         else
         {
@@ -95,7 +92,7 @@ public class TravelersBackpackEntityFeature extends FeatureRenderer<LivingEntity
         }
 
         vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(id));
-        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.25F);
+        model.sleepingBag.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
 
         matrices.pop();
     }

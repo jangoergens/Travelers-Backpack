@@ -11,7 +11,6 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 
@@ -19,7 +18,7 @@ import java.util.Objects;
 
 public class TravelersBackpackItemScreenHandler extends TravelersBackpackBaseScreenHandler
 {
-    public TravelersBackpackItemScreenHandler(int windowID, PlayerInventory playerInventory, PacketByteBuf data)
+    public TravelersBackpackItemScreenHandler(int windowID, PlayerInventory playerInventory, ModScreenHandlerTypes.ItemScreenData data)
     {
         this(windowID, playerInventory, createInventory(playerInventory, data));
     }
@@ -29,13 +28,13 @@ public class TravelersBackpackItemScreenHandler extends TravelersBackpackBaseScr
         super(ModScreenHandlerTypes.TRAVELERS_BACKPACK_ITEM, windowID, playerInventory, inventory);
     }
 
-    private static TravelersBackpackInventory createInventory(final PlayerInventory playerInventory, final PacketByteBuf data)
+    private static TravelersBackpackInventory createInventory(final PlayerInventory playerInventory, final ModScreenHandlerTypes.ItemScreenData data)
     {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
 
         final ItemStack stack; //= data.readItemStack(); //Get ItemStack from hand or capability to avoid sending a lot of information by packetBuffer
-        final byte screenID = data.readByte();
+        final byte screenID = data.screenID();
 
         if(screenID == Reference.ITEM_SCREEN_ID)
         {
@@ -43,9 +42,9 @@ public class TravelersBackpackItemScreenHandler extends TravelersBackpackBaseScr
         }
         else
         {
-            if(data.writerIndex() == 94)
+            if(data.entityID() != -1)
             {
-                final int entityId = data.readInt();
+                final int entityId = data.entityID();
                 stack = ComponentUtils.getWearingBackpack((PlayerEntity)playerInventory.player.getWorld().getEntityById(entityId));
 
                 if(stack.getItem() instanceof TravelersBackpackItem)

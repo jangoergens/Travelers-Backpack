@@ -59,7 +59,8 @@ public class ToolSlot extends Slot
                     stack.getItem() instanceof FlintAndSteelItem ||
                     stack.getItem() instanceof RangedWeaponItem ||
                     stack.getItem() instanceof BrushItem ||
-                    stack.getItem() instanceof TridentItem;
+                    stack.getItem() instanceof TridentItem ||
+                    stack.getItem() instanceof MaceItem;
         }
         return false;
     }

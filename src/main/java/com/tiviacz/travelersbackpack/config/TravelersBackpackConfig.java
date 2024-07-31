@@ -107,13 +107,14 @@ public class TravelersBackpackConfig
         nbt.putInt("backpackSettings.netherite.inventorySlotCount", data.backpackSettings.netherite.inventorySlotCount);
         nbt.putInt("backpackSettings.netherite.toolSlotCount", data.backpackSettings.netherite.toolSlotCount);
         nbt.putLong("backpackSettings.netherite.tankCapacity", data.backpackSettings.netherite.tankCapacity);
+        //Crafting Upgrade
+        nbt.putBoolean("backpackSettings.crafting.enableUpgrade", data.backpackSettings.crafting.enableUpgrade);
+        nbt.putBoolean("backpackSettings.crafting.includeByDefault", data.backpackSettings.crafting.includeByDefault);
+        nbt.putBoolean("backpackSettings.crafting.savesItems", data.backpackSettings.crafting.savesItems);
 
         nbt.putBoolean("backpackSettings.enableTierUpgrades", data.backpackSettings.enableTierUpgrades);
-        nbt.putBoolean("backpackSettings.enableCraftingUpgrade", data.backpackSettings.enableCraftingUpgrade);
-        nbt.putBoolean("backpackSettings.craftingUpgradeByDefault", data.backpackSettings.craftingUpgradeByDefault);
-        nbt.putBoolean("backpackSettings.craftingSavesItems", data.backpackSettings.craftingSavesItems);
-        nbt.putBoolean("backpackSettings.enableBackpackBlockQuickEquip", data.backpackSettings.enableBackpackBlockQuickEquip);
-        nbt.putBoolean("backpackSettings.enableBackpackRightClickUnequip", data.backpackSettings.enableBackpackRightClickUnequip);
+        nbt.putBoolean("backpackSettings.rightClickEquip", data.backpackSettings.rightClickEquip);
+        nbt.putBoolean("backpackSettings.rightClickUnequip", data.backpackSettings.rightClickUnequip);
         nbt.putBoolean("backpackSettings.allowOnlyEquippedBackpack", data.backpackSettings.allowOnlyEquippedBackpack);
         nbt.putBoolean("backpackSettings.invulnerableBackpack", data.backpackSettings.invulnerableBackpack);
         nbt.putString("backpackSettings.toolSlotsAcceptableItems", String.join(",", data.backpackSettings.toolSlotsAcceptableItems));
@@ -195,13 +196,14 @@ public class TravelersBackpackConfig
         data.backpackSettings.netherite.inventorySlotCount = nbt.getInt("backpackSettings.netherite.inventorySlotCount");
         data.backpackSettings.netherite.toolSlotCount = nbt.getInt("backpackSettings.netherite.toolSlotCount");
         data.backpackSettings.netherite.tankCapacity = nbt.getLong("backpackSettings.netherite.tankCapacity");
+        //Crafting
+        data.backpackSettings.crafting.enableUpgrade = nbt.getBoolean("backpackSettings.crafting.enableUpgrade");
+        data.backpackSettings.crafting.includeByDefault = nbt.getBoolean("backpackSettings.crafting.includeByDefault");
+        data.backpackSettings.crafting.savesItems = nbt.getBoolean("backpackSettings.crafting.savesItems");
 
         data.backpackSettings.enableTierUpgrades = nbt.getBoolean("backpackSettings.enableTierUpgrades");
-        data.backpackSettings.enableCraftingUpgrade = nbt.getBoolean("backpackSettings.enableCraftingUpgrade");
-        data.backpackSettings.craftingUpgradeByDefault = nbt.getBoolean("backpackSettings.craftingUpgradeByDefault");
-        data.backpackSettings.craftingSavesItems = nbt.getBoolean("backpackSettings.craftingSavesItems");
-        data.backpackSettings.enableBackpackBlockQuickEquip = nbt.getBoolean("backpackSettings.enableBackpackBlockQuickEquip");
-        data.backpackSettings.enableBackpackRightClickUnequip = nbt.getBoolean("backpackSettings.enableBackpackRightClickUnequip");
+        data.backpackSettings.rightClickEquip = nbt.getBoolean("backpackSettings.rightClickEquip");
+        data.backpackSettings.rightClickUnequip = nbt.getBoolean("backpackSettings.rightClickUnequip");
         data.backpackSettings.allowOnlyEquippedBackpack = nbt.getBoolean("backpackSettings.allowOnlyEquippedBackpack");
         data.backpackSettings.invulnerableBackpack = nbt.getBoolean("backpackSettings.invulnerableBackpack");
         data.backpackSettings.toolSlotsAcceptableItems = nbt.getString("backpackSettings.toolSlotsAcceptableItems").split(",");
