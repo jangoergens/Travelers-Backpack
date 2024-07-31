@@ -84,7 +84,8 @@ public class ContainerSorter
                 j++;
             }
 
-            container.setDataChanged(ITravelersBackpackContainer.INVENTORY_DATA);
+            //#TODO
+            //container.setDataChanged(ITravelersBackpackContainer.INVENTORY_DATA);
         }
     }
 
@@ -268,7 +269,7 @@ public class ContainerSorter
         {
             return false;
         }
-        return ItemStack.isSameItemSameTags(stack1, stack2);
+        return ItemStack.isSameItemSameComponents(stack1, stack2);
     }
 
     public static class CustomWrapper implements IItemHandlerModifiable

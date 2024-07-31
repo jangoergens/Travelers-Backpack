@@ -34,8 +34,7 @@ public class SleepingBagButton extends Button
         {
             if(this.inButton((int) mouseX, (int) mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget))
             {
-                PacketDistributor.SERVER.noArg().send(new ServerboundSleepingBagPacket(screen.container.getPosition()));
-                //TravelersBackpack.NETWORK.send(new ServerboundSleepingBagPacket(screen.container.getPosition()), PacketDistributor.SERVER.noArg());
+                PacketDistributor.sendToServer(new ServerboundSleepingBagPacket(screen.container.getPosition()));
                 return true;
             }
         }

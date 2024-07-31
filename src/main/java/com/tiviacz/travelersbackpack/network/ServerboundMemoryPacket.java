@@ -6,87 +6,50 @@ import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackBlockEntity
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackItemMenu;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
 import com.tiviacz.travelersbackpack.util.Reference;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.Optional;
+import java.util.List;
 
-public class ServerboundMemoryPacket implements CustomPacketPayload
+public record ServerboundMemoryPacket(byte screenID, boolean isActive, List<Integer> selectedSlots, List<ItemStack> stacks) implements CustomPacketPayload
 {
-    public static final ResourceLocation ID = new ResourceLocation(TravelersBackpack.MODID, "memory");
+    public static final Type<ServerboundMemoryPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "memory"));
 
-    private final byte screenID;
-    private final boolean isActive;
-    private final int[] selectedSlots;
-    private final ItemStack[] stacks;
+    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundMemoryPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE, ServerboundMemoryPacket::screenID,
+            ByteBufCodecs.BOOL, ServerboundMemoryPacket::isActive,
+            ByteBufCodecs.INT.apply(ByteBufCodecs.list()), ServerboundMemoryPacket::selectedSlots,
+            ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list()), ServerboundMemoryPacket::stacks,
+            ServerboundMemoryPacket::new
+    );
 
-    public ServerboundMemoryPacket(byte screenID, boolean isActive, int[] selectedSlots, ItemStack[] stacks)
+    public static void handle(final ServerboundMemoryPacket message, IPayloadContext ctx)
     {
-        this.screenID = screenID;
-        this.isActive = isActive;
-        this.selectedSlots = selectedSlots;
-        this.stacks = stacks;
-    }
-
-    public static ServerboundMemoryPacket read(final FriendlyByteBuf buffer)
-    {
-        final byte screenID = buffer.readByte();
-        final boolean isActive = buffer.readBoolean();
-        final int[] selectedSlots = buffer.readVarIntArray();
-        final ItemStack[] stacks = new ItemStack[selectedSlots.length];
-
-        for(int i = 0; i < selectedSlots.length; i++)
+        ctx.enqueueWork(() ->
         {
-            stacks[i] = buffer.readItem();
-        }
+            Player player = ctx.player();
 
-        return new ServerboundMemoryPacket(screenID, isActive, selectedSlots, stacks);
-    }
-
-    @Override
-    public void write(FriendlyByteBuf pBuffer)
-    {
-        pBuffer.writeByte(screenID);
-        pBuffer.writeBoolean(isActive);
-        pBuffer.writeVarIntArray(selectedSlots);
-
-        for(int i = 0; i < selectedSlots.length; i++)
-        {
-            pBuffer.writeItem(stacks[i]);
-        }
-    }
-
-    @Override
-    public ResourceLocation id()
-    {
-        return ID;
-    }
-
-    public static void handle(final ServerboundMemoryPacket message, PlayPayloadContext ctx)
-    {
-        ctx.workHandler().submitAsync(() ->
-        {
-            final Optional<Player> player = ctx.player();
-
-            if(player.isPresent() && player.get() instanceof ServerPlayer serverPlayer)
+            if(player instanceof ServerPlayer serverPlayer)
             {
                 if(message.screenID == Reference.WEARABLE_SCREEN_ID)
                 {
                     SlotManager manager = AttachmentUtils.getBackpackInv(serverPlayer).getSlotManager();
                     manager.setSelectorActive(SlotManager.MEMORY, message.isActive);
-                    manager.setMemorySlots(message.selectedSlots, message.stacks, true);
+                    manager.setMemorySlots(message.selectedSlots(), message.stacks, true);
                     manager.setSelectorActive(SlotManager.MEMORY, !message.isActive);
                 }
                 if(message.screenID == Reference.ITEM_SCREEN_ID)
                 {
                     SlotManager manager = ((TravelersBackpackItemMenu)serverPlayer.containerMenu).container.getSlotManager();
                     manager.setSelectorActive(SlotManager.MEMORY, message.isActive);
-                    manager.setMemorySlots(message.selectedSlots, message.stacks, true);
+                    manager.setMemorySlots(message.selectedSlots(), message.stacks, true);
                     manager.setSelectorActive(SlotManager.MEMORY, !message.isActive);
                 }
                 if(message.screenID == Reference.BLOCK_ENTITY_SCREEN_ID)
@@ -98,5 +61,10 @@ public class ServerboundMemoryPacket implements CustomPacketPayload
                 }
             }
         });
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

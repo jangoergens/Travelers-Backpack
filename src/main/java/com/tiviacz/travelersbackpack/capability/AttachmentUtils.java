@@ -1,8 +1,6 @@
 package com.tiviacz.travelersbackpack.capability;
 
-import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.capability.entity.IEntityTravelersBackpack;
-import com.tiviacz.travelersbackpack.compat.curios.TravelersBackpackCurios;
 import com.tiviacz.travelersbackpack.init.ModAttachmentTypes;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
@@ -47,12 +45,13 @@ public class AttachmentUtils
         AttachmentUtils.getEntityAttachment(livingEntity).ifPresent(IEntityTravelersBackpack::synchronise);
     }
 
+    //#TODO here
     public static boolean isWearingBackpack(Player player)
     {
-        if(TravelersBackpack.enableCurios())
-        {
-            return TravelersBackpackCurios.getCurioTravelersBackpack(player).isPresent();
-        }
+        //if(TravelersBackpack.enableCurios())
+        //{
+        //    return TravelersBackpackCurios.getCurioTravelersBackpack(player).isPresent();
+        //}
 
         Optional<ITravelersBackpack> data = getAttachment(player);
         ItemStack backpack = data.map(ITravelersBackpack::getWearable).orElse(ItemStack.EMPTY);
@@ -70,10 +69,10 @@ public class AttachmentUtils
 
     public static ItemStack getWearingBackpack(Player player)
     {
-        if(TravelersBackpack.enableCurios())
-        {
-            return TravelersBackpackCurios.getCurioTravelersBackpackStack(player);
-        }
+        //if(TravelersBackpack.enableCurios())
+        //{
+        //    return TravelersBackpackCurios.getCurioTravelersBackpackStack(player);
+        //}
 
         Optional<ITravelersBackpack> data = getAttachment(player);
         ItemStack backpack = data.map(ITravelersBackpack::getWearable).orElse(ItemStack.EMPTY);
@@ -99,7 +98,7 @@ public class AttachmentUtils
         {
             data.ifPresent(inv -> inv.setWearable(stack));
             data.ifPresent(inv -> inv.setContents(stack));
-            player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, (1.0F + (player.level().random.nextFloat() - player.level().random.nextFloat()) * 0.2F) * 0.7F);
+            player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS, 1.0F, (1.0F + (player.level().random.nextFloat() - player.level().random.nextFloat()) * 0.2F) * 0.7F);
 
             //Sync
             synchronise(player);
@@ -110,10 +109,10 @@ public class AttachmentUtils
     @Nullable
     public static TravelersBackpackContainer getBackpackInv(Player player)
     {
-        if(TravelersBackpack.enableCurios())
-        {
-            return TravelersBackpackCurios.getCurioTravelersBackpackInventory(player);
-        }
+        //if(TravelersBackpack.enableCurios())
+        //{
+        //    return TravelersBackpackCurios.getCurioTravelersBackpackInventory(player);
+        //}
 
         ItemStack wearable = getWearingBackpack(player);
 

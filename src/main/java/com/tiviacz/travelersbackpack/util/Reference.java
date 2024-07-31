@@ -29,7 +29,6 @@ public class Reference
     public static final String NO_BACKPACK = "action.travelersbackpack.unequip_nobackpack";
     public static final String NO_SPACE = "action.travelersbackpack.unequip_nospace";
     public static final String OTHER_BACKPACK = "action.travelersbackpack.equip_otherbackpack";
-    public static final String FAIL = "action.travelersbackpack.equip_fail";
     public static final String DEPLOY = "action.travelersbackpack.deploy_sleeping_bag";
 
     public static String[] BACKPACK_NAMES = {

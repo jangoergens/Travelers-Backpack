@@ -51,7 +51,7 @@ public class AccessBackpackCommand
 
         if(hasBackpack)
         {
-            self.openMenu(AttachmentUtils.getBackpackInv(serverPlayer), packetBuffer -> packetBuffer.writeByte(Reference.WEARABLE_SCREEN_ID).writeInt(serverPlayer.getId()));
+            self.openMenu(AttachmentUtils.getBackpackInv(serverPlayer), packetBuffer -> packetBuffer.writeByte(Reference.WEARABLE_SCREEN_ID).writeBoolean(true).writeInt(serverPlayer.getId()));
             source.sendSuccess(() -> Component.literal("Accessing backpack of " + serverPlayer.getDisplayName().getString()), true);
             return 1;
         }

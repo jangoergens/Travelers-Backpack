@@ -6,46 +6,34 @@ import com.tiviacz.travelersbackpack.inventory.SettingsManager;
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackBlockEntityMenu;
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackItemMenu;
 import com.tiviacz.travelersbackpack.util.Reference;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
-
-import java.util.Optional;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ServerboundSettingsPacket(byte screenID, byte dataArray, int place, byte value) implements CustomPacketPayload
 {
-    public static final ResourceLocation ID = new ResourceLocation(TravelersBackpack.MODID, "settings");
+    public static final Type<ServerboundSettingsPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "settings"));
 
-    public ServerboundSettingsPacket(final FriendlyByteBuf buffer)
-    {
-        this(buffer.readByte(), buffer.readByte(), buffer.readInt(), buffer.readByte());
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSettingsPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE, ServerboundSettingsPacket::screenID,
+            ByteBufCodecs.BYTE, ServerboundSettingsPacket::dataArray,
+            ByteBufCodecs.INT, ServerboundSettingsPacket::place,
+            ByteBufCodecs.BYTE, ServerboundSettingsPacket::value,
+            ServerboundSettingsPacket::new
+    );
 
-    @Override
-    public void write(FriendlyByteBuf pBuffer)
+    public static void handle(final ServerboundSettingsPacket message, IPayloadContext ctx)
     {
-        pBuffer.writeByte(screenID);
-        pBuffer.writeByte(dataArray);
-        pBuffer.writeInt(place);
-        pBuffer.writeByte(value);
-    }
-
-    @Override
-    public ResourceLocation id()
-    {
-        return ID;
-    }
-
-    public static void handle(final ServerboundSettingsPacket message, PlayPayloadContext ctx)
-    {
-        ctx.workHandler().submitAsync(() ->
+        ctx.enqueueWork(() ->
         {
-            final Optional<Player> player = ctx.player();
+            Player player = ctx.player();
 
-            if(player.isPresent() && player.get() instanceof ServerPlayer serverPlayer)
+            if(player instanceof ServerPlayer serverPlayer)
             {
                 if(message.screenID == Reference.WEARABLE_SCREEN_ID)
                 {
@@ -64,5 +52,10 @@ public record ServerboundSettingsPacket(byte screenID, byte dataArray, int place
                 }
             }
         });
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

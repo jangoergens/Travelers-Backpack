@@ -6,15 +6,16 @@ import net.blay09.mods.craftingtweaks.api.CraftingGridBuilder;
 import net.blay09.mods.craftingtweaks.api.CraftingGridProvider;
 import net.blay09.mods.craftingtweaks.api.CraftingTweaksAPI;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.DistExecutor;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 public class TravelersBackpackCraftingGridProvider implements CraftingGridProvider
 {
-    public TravelersBackpackCraftingGridProvider()
-    {
+    public TravelersBackpackCraftingGridProvider() {
         CraftingTweaksAPI.registerCraftingGridProvider(this);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> TravelersBackpackCraftingGridAddition::registerCraftingTweaksAddition);
+        if(FMLEnvironment.dist.isClient())
+        {
+            TravelersBackpackCraftingGridAddition.registerCraftingTweaksAddition();
+        }
     }
 
     @Override

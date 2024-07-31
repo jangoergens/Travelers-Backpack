@@ -60,11 +60,12 @@ public class SettingsWidget extends WidgetBase
                     //Update Crafting Widget, so slots will hide
                     this.screen.container.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)0);
                     //TravelersBackpack.NETWORK.send(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)0), PacketDistributor.SERVER.noArg());
-                    PacketDistributor.SERVER.noArg().send(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)0));
+                    PacketDistributor.sendToServer(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)0));
                     this.screen.craftingWidget.getCraftingTweaksAddition().onCraftingSlotsHidden();
                 }
             }
             this.screen.children().stream().filter(w -> w instanceof WidgetBase).filter(w -> ((WidgetBase) w).isSettingsChild()).forEach(w -> ((WidgetBase) w).setVisible(true));
+
             this.screen.playUIClickSound();
             return true;
         }
@@ -80,7 +81,7 @@ public class SettingsWidget extends WidgetBase
                     //Update Crafting Widget, so slots will reveal
                     this.screen.container.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1);
                     //TravelersBackpack.NETWORK.send(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1), PacketDistributor.SERVER.noArg());
-                    PacketDistributor.SERVER.noArg().send(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
+                    PacketDistributor.sendToServer(new ServerboundSettingsPacket(this.screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
                     this.screen.craftingWidget.getCraftingTweaksAddition().onCraftingSlotsDisplayed();
                 }
             }

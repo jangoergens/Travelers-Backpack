@@ -1,8 +1,11 @@
 package com.tiviacz.travelersbackpack.inventory.sorter;
 
 import com.mojang.datafixers.util.Pair;
+import com.tiviacz.travelersbackpack.components.Slots;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.util.Reference;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -60,11 +63,11 @@ public class SlotManager
         return false;
     }
 
-    public void setUnsortableSlots(int[] slots, boolean isFinal)
+    public void setUnsortableSlots(List<Integer> slots, boolean isFinal)
     {
         if(isSelectorActive(UNSORTABLE))
         {
-            unsortableSlots = Arrays.stream(slots).boxed().collect(Collectors.toList());
+            unsortableSlots = slots;
 
             if(isFinal)
             {
@@ -73,15 +76,15 @@ public class SlotManager
         }
     }
 
-    public void setMemorySlots(int[] slots, ItemStack[] stacks, boolean isFinal)
+    public void setMemorySlots(List<Integer> slots, List<ItemStack> stacks, boolean isFinal)
     {
         if(isSelectorActive(MEMORY))
         {
             List<Pair<Integer, ItemStack>> pairs = new ArrayList<>();
 
-            for(int i = 0; i < stacks.length; i++)
+            for(int i = 0; i < stacks.size(); i++)
             {
-                pairs.add(Pair.of(slots[i], stacks[i]));
+                pairs.add(Pair.of(slots.get(i), stacks.get(i)));
             }
 
             //Sort
@@ -175,43 +178,78 @@ public class SlotManager
         compound.putIntArray(UNSORTABLE_SLOTS, getUnsortableSlots().stream().mapToInt(i -> i).toArray());
     }
 
+    public void saveUnsortableSlots(ItemStack stack)
+    {
+        Slots newSlots = new Slots(getUnsortableSlots(), getMemorySlots());
+        stack.set(ModDataComponents.SLOTS, newSlots);
+    }
+
     public void loadUnsortableSlots(CompoundTag compound)
     {
         this.unsortableSlots = Arrays.stream(compound.getIntArray(UNSORTABLE_SLOTS)).boxed().collect(Collectors.toList());
     }
 
-    public void saveMemorySlots(CompoundTag compound)
+    public void loadUnsortableSlots(ItemStack stack)
+    {
+        this.unsortableSlots = new ArrayList<>(stack.getOrDefault(ModDataComponents.SLOTS, Slots.createDefault()).unsortables());
+    }
+
+    public void saveMemorySlots(HolderLookup.Provider provider, CompoundTag compound)
     {
         ListTag memorySlotsList = new ListTag();
 
         for(Pair<Integer, ItemStack> pair : memorySlots)
         {
-            CompoundTag itemTag = new CompoundTag();
-            itemTag.putInt("Slot", pair.getFirst());
-            pair.getSecond().save(itemTag);
-            memorySlotsList.add(itemTag);
+            if(!pair.getSecond().isEmpty())
+            {
+                CompoundTag itemTag = new CompoundTag();
+                itemTag.putInt("Slot", pair.getFirst());
+                memorySlotsList.add(pair.getSecond().save(provider, itemTag));
+            }
         }
-
         compound.put(MEMORY_SLOTS, memorySlotsList);
     }
 
-    public void loadMemorySlots(CompoundTag compound)
+    public void saveMemorySlots(ItemStack stack)
+    {
+        Slots newSlots = new Slots(getUnsortableSlots(), getMemorySlots());
+        stack.set(ModDataComponents.SLOTS, newSlots);
+    }
+
+    public void loadMemorySlots(HolderLookup.Provider provider, CompoundTag compound)
     {
         ListTag tagList = compound.getList(MEMORY_SLOTS, Tag.TAG_COMPOUND);
         List<Pair<Integer, ItemStack>> pairs = new ArrayList<>();
 
         for(int i = 0; i < tagList.size(); i++)
         {
-            CompoundTag itemTag = tagList.getCompound(i);
-            int slot = itemTag.getInt("Slot");
+            CompoundTag itemTags = tagList.getCompound(i);
+            int slot = itemTags.getInt("Slot");
 
             if(slot <= container.getHandler().getSlots() - 1)
             {
-                Pair<Integer, ItemStack> pair = Pair.of(slot, ItemStack.of(itemTag));
+                Pair<Integer, ItemStack> pair = Pair.of(slot, ItemStack.parseOptional(provider, itemTags));
                 pairs.add(pair);
             }
         }
 
         this.memorySlots = pairs;
+    }
+
+    public void loadMemorySlots(ItemStack stack)
+    {
+        this.memorySlots = new ArrayList<>(stack.getOrDefault(ModDataComponents.SLOTS, Slots.createDefault()).memory());
+    }
+
+    public Slots getSlots()
+    {
+        return new Slots(getUnsortableSlots(), getMemorySlots());
+    }
+
+    public SlotManager getManager(Slots slots)
+    {
+        this.unsortableSlots = new ArrayList<>(slots.unsortables());
+        this.memorySlots = new ArrayList<>(slots.memory());
+        return this;
     }
 }

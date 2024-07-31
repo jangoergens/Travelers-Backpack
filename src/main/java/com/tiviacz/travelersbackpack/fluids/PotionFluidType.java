@@ -1,23 +1,21 @@
 package com.tiviacz.travelersbackpack.fluids;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class PotionFluidType extends FluidType
 {
-    public static final ResourceLocation POTION_STILL_RL = new ResourceLocation(TravelersBackpack.MODID, "block/potion_still");
-    public static final ResourceLocation POTION_FLOW_RL = new ResourceLocation(TravelersBackpack.MODID, "block/potion_flow");
+    public static final ResourceLocation POTION_STILL_RL = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "block/potion_still");
+    public static final ResourceLocation POTION_FLOW_RL = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "block/potion_flow");
 
     public PotionFluidType(Properties properties)
     {
@@ -33,7 +31,7 @@ public class PotionFluidType extends FluidType
     @Override
     public String getDescriptionId(FluidStack stack)
     {
-        return PotionUtils.getPotion(stack.getTag()).getName("item.minecraft.potion.effect.");
+        return Potion.getName(stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion(), this.getDescriptionId() + ".effect.");
     }
 
     @Override
@@ -58,22 +56,7 @@ public class PotionFluidType extends FluidType
             @Override
             public int getTintColor(FluidStack stack)
             {
-                return getTintColor(stack.getTag()) | 0xFF000000;
-            }
-
-            private static int getTintColor(@Nullable CompoundTag tag)
-            {
-                if(tag != null && tag.contains("CustomPotionColor", Tag.TAG_ANY_NUMERIC))
-                {
-                    return tag.getInt("CustomPotionColor");
-                }
-
-                if(PotionUtils.getPotion(tag) == Potions.EMPTY)
-                {
-                    return EMPTY_COLOR;
-                }
-
-                return PotionUtils.getColor(PotionUtils.getAllEffects(tag));
+                return stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor();
             }
 
             @Override

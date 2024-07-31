@@ -5,12 +5,12 @@ import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.capability.AttachmentUtils;
 import com.tiviacz.travelersbackpack.capability.ITravelersBackpack;
 import com.tiviacz.travelersbackpack.common.BackpackManager;
-import com.tiviacz.travelersbackpack.compat.curios.TravelersBackpackCurios;
+import com.tiviacz.travelersbackpack.compat.accessories.AccessoriesUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.network.ClientboundSendMessagePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -46,11 +46,6 @@ public class BackpackUtils
 
     private static boolean placeBackpack(Level level, Player player, BlockPos placePos, ItemStack stack)
     {
-        if(stack.getTag() == null)
-        {
-            stack.setTag(new CompoundTag());
-        }
-
         Block block = Block.byItem(stack.getItem());
         int y = placePos.getY();
 
@@ -121,13 +116,13 @@ public class BackpackUtils
      */
     private static void placeBackpackInTheWorld(Level level, Player player, BlockPos targetPos, Block block, ItemStack stack)
     {
-        PacketDistributor.PLAYER.with((ServerPlayer)player).send(new ClientboundSendMessagePacket(false, targetPos));
+        PacketDistributor.sendToPlayer((ServerPlayer)player, new ClientboundSendMessagePacket(false, targetPos));
         LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
 
         level.playSound(player, targetPos.getX(), targetPos.getY(), targetPos.getZ(), block.defaultBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1.0F);
-        ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).loadAllData(stack.getTag());
+        level.getBlockEntity(targetPos).applyComponentsFromItemStack(stack);
 
-        if(stack.hasCustomHoverName())
+        if(stack.has(DataComponents.CUSTOM_NAME))
         {
             ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).setCustomName(stack.getHoverName());
         }
@@ -137,10 +132,10 @@ public class BackpackUtils
             AttachmentUtils.getAttachment(player).ifPresent(ITravelersBackpack::removeWearable);
         }
 
-        //Get rid of duplicated backpack if placed with Curios integration enabled
-        if(TravelersBackpack.enableCurios())
+        //Get rid of duplicated backpack if placed with Accessories integration enabled
+        if(TravelersBackpack.enableAccessories())
         {
-            TravelersBackpackCurios.rightClickUnequip(player, stack);
+            AccessoriesUtils.rightClickUnequip(player, stack);
         }
 
     }

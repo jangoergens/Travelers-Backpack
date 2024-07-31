@@ -40,7 +40,7 @@ public class ResourceUtils
 
         for(String name : Reference.BACKPACK_NAMES)
         {
-            ResourceLocation res = new ResourceLocation(TravelersBackpack.MODID, "textures/model/" + name.toLowerCase(Locale.ENGLISH) + ".png");
+            ResourceLocation res = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/" + name.toLowerCase(Locale.ENGLISH) + ".png");
             TEXTURE_RESOURCE_LOCATIONS.add(res);
         }
     }
@@ -51,7 +51,7 @@ public class ResourceUtils
 
         for(DyeColor color : DyeColor.values())
         {
-            ResourceLocation res = new ResourceLocation(TravelersBackpack.MODID, "textures/model/bags/" + color.getName().toLowerCase(Locale.ENGLISH) + "_sleeping_bag" + ".png");
+            ResourceLocation res = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/bags/" + color.getName().toLowerCase(Locale.ENGLISH) + "_sleeping_bag" + ".png");
             SLEEPING_BAG_TEXTURE_RESOURCE_LOCATIONS.add(res);
         }
     }

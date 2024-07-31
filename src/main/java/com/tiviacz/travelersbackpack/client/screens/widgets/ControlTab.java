@@ -111,32 +111,28 @@ public class ControlTab extends WidgetBase
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.SORT))
         {
-            //TravelersBackpack.NETWORK.send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()), PacketDistributor.SERVER.noArg());
-            PacketDistributor.SERVER.noArg().send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
+            PacketDistributor.sendToServer(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
             screen.playUIClickSound();
             return true;
         }
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.QUICK_STACK))
         {
-            //TravelersBackpack.NETWORK.send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.QUICK_STACK, BackpackUtils.isShiftPressed()), PacketDistributor.SERVER.noArg());
-            PacketDistributor.SERVER.noArg().send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.QUICK_STACK, BackpackUtils.isShiftPressed()));
+            PacketDistributor.sendToServer(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.QUICK_STACK, BackpackUtils.isShiftPressed()));
             screen.playUIClickSound();
             return true;
         }
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.TRANSFER_TO_BACKPACK))
         {
-            //TravelersBackpack.NETWORK.send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_BACKPACK, BackpackUtils.isShiftPressed()), PacketDistributor.SERVER.noArg());
-            PacketDistributor.SERVER.noArg().send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_BACKPACK, BackpackUtils.isShiftPressed()));
+            PacketDistributor.sendToServer(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_BACKPACK, BackpackUtils.isShiftPressed()));
             screen.playUIClickSound();
             return true;
         }
 
         if(isButtonHovered((int)mouseX, (int)mouseY, Buttons.TRANSFER_TO_PLAYER))
         {
-            //TravelersBackpack.NETWORK.send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_PLAYER, BackpackUtils.isShiftPressed()), PacketDistributor.SERVER.noArg());
-            PacketDistributor.SERVER.noArg().send(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_PLAYER, BackpackUtils.isShiftPressed()));
+            PacketDistributor.sendToServer(new ServerboundSorterPacket(screen.container.getScreenID(), ContainerSorter.TRANSFER_TO_PLAYER, BackpackUtils.isShiftPressed()));
             screen.playUIClickSound();
             return true;
         }

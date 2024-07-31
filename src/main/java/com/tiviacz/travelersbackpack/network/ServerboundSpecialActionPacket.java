@@ -6,44 +6,32 @@ import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
-
-import java.util.Optional;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ServerboundSpecialActionPacket(byte screenID, byte typeOfAction, double scrollDelta) implements CustomPacketPayload
 {
-    public static final ResourceLocation ID = new ResourceLocation(TravelersBackpack.MODID, "special_action");
+    public static final Type<ServerboundSpecialActionPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "special_action"));
 
-    public ServerboundSpecialActionPacket(final FriendlyByteBuf buffer)
-    {
-        this(buffer.readByte(), buffer.readByte(), buffer.readDouble());
-    }
+    public static final StreamCodec<FriendlyByteBuf, ServerboundSpecialActionPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE, ServerboundSpecialActionPacket::screenID,
+            ByteBufCodecs.BYTE, ServerboundSpecialActionPacket::typeOfAction,
+            ByteBufCodecs.DOUBLE, ServerboundSpecialActionPacket::scrollDelta,
+            ServerboundSpecialActionPacket::new
+    );
 
-    @Override
-    public void write(FriendlyByteBuf pBuffer)
+    public static void handle(final ServerboundSpecialActionPacket message, IPayloadContext ctx)
     {
-        pBuffer.writeByte(screenID);
-        pBuffer.writeByte(typeOfAction);
-        pBuffer.writeDouble(scrollDelta);
-    }
-
-    @Override
-    public ResourceLocation id()
-    {
-        return ID;
-    }
-
-    public static void handle(final ServerboundSpecialActionPacket message, PlayPayloadContext ctx)
-    {
-        ctx.workHandler().submitAsync(() ->
+        ctx.enqueueWork(() ->
         {
-            final Optional<Player> player = ctx.player();
+            Player player = ctx.player();
 
-            if(player.isPresent() && player.get() instanceof ServerPlayer serverPlayer)
+            if(player instanceof ServerPlayer serverPlayer)
             {
                 if(message.typeOfAction == Reference.SWAP_TOOL)
                 {
@@ -74,5 +62,10 @@ public record ServerboundSpecialActionPacket(byte screenID, byte typeOfAction, d
                 }
             }
         });
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

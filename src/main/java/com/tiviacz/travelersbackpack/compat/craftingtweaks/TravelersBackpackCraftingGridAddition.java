@@ -5,8 +5,8 @@ import com.tiviacz.travelersbackpack.client.screens.TravelersBackpackScreen;
 import com.tiviacz.travelersbackpack.client.screens.widgets.CraftingWidget;
 import net.blay09.mods.craftingtweaks.CraftingTweaksProviderManager;
 import net.blay09.mods.craftingtweaks.api.CraftingTweaksClientAPI;
+import net.blay09.mods.craftingtweaks.api.TweakType;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.Slot;
@@ -25,7 +25,7 @@ public class TravelersBackpackCraftingGridAddition implements ICraftingTweaks
     private TravelersBackpackScreen screen;
 
     private static final Method ADD_RENDERABLE_WIDGET = ObfuscationReflectionHelper.findMethod(Screen.class, "addRenderableWidget", GuiEventListener.class);
-    private final List<Button> buttons = new ArrayList<>();
+    private final List<AbstractWidget> widgets = new ArrayList<>();
 
     public static void registerCraftingTweaksAddition()
     {
@@ -33,11 +33,11 @@ public class TravelersBackpackCraftingGridAddition implements ICraftingTweaks
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void addButton(Button button)
+    private void addButton(AbstractWidget widget)
     {
-        buttons.add(button);
+        widgets.add(widget);
         try {
-            ADD_RENDERABLE_WIDGET.invoke(screen, button);
+            ADD_RENDERABLE_WIDGET.invoke(screen, widget);
         }
         catch(IllegalAccessException | InvocationTargetException e) {
             TravelersBackpack.LOGGER.error("Error calling addButton in Screen class", e);
@@ -48,7 +48,7 @@ public class TravelersBackpackCraftingGridAddition implements ICraftingTweaks
     @Override
     public void onCraftingSlotsHidden()
     {
-        if(buttons.isEmpty())
+        if(widgets.isEmpty())
         {
             return;
         }
@@ -60,9 +60,9 @@ public class TravelersBackpackCraftingGridAddition implements ICraftingTweaks
             return;
         }
 
-        buttons.forEach(screenChildren::remove);
-        buttons.forEach(screenRenderables::remove);
-        buttons.clear();
+        widgets.forEach(screenChildren::remove);
+        widgets.forEach(screenRenderables::remove);
+        widgets.clear();
     }
 
     @Override
@@ -70,9 +70,9 @@ public class TravelersBackpackCraftingGridAddition implements ICraftingTweaks
     {
         Slot thirdSlot = screen.getMenu().getSlot(screen.container.getCombinedHandler().getSlots() - 6);
         CraftingTweaksProviderManager.getDefaultCraftingGrid(screen.getMenu()).ifPresent(craftingGrid -> {
-            addButton(CraftingTweaksClientAPI.createRotateButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 0)));
-            addButton(CraftingTweaksClientAPI.createBalanceButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 1)));
-            addButton(CraftingTweaksClientAPI.createClearButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 2)));
+            addButton(CraftingTweaksClientAPI.createTweakButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 0), TweakType.Rotate));
+            addButton(CraftingTweaksClientAPI.createTweakButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 1), TweakType.Balance));
+            addButton(CraftingTweaksClientAPI.createTweakButtonRelative(craftingGrid, screen, getButtonX(thirdSlot), getButtonY(thirdSlot, 2), TweakType.Clear));
         });
     }
 

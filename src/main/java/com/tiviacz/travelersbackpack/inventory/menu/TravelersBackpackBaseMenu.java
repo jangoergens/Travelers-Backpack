@@ -19,14 +19,16 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class TravelersBackpackBaseMenu extends AbstractContainerMenu
@@ -195,7 +197,8 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
         super.sendAllDataToRemote();
 
         //Sync on opening
-        this.slotsChanged(new RecipeWrapper(container.getCraftingGridHandler()));
+        canCraft(inventory.player.level(), inventory.player);
+        ///this.slotsChanged(new RecipeWrapper(container.getCraftingGridHandler()));
     }
 
     @Override
@@ -285,22 +288,28 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
     public ItemStack handleShiftCraft(Player player, Slot resultSlot)
     {
         ItemStack outputCopy = ItemStack.EMPTY;
+        CraftingInput input = craftSlots.asCraftInput();
 
-        if(resultSlot != null && resultSlot.hasItem())
-        {
+        if (resultSlot != null && resultSlot.hasItem()) {
             craftSlots.checkChanges = false;
-            RecipeHolder<CraftingRecipe> recipe = (RecipeHolder<CraftingRecipe>)resultSlots.getRecipeUsed();
-            while(recipe != null && recipe.value().matches(craftSlots, player.level()))
-            {
-                ItemStack recipeOutput = resultSlot.getItem().copy();
+            RecipeHolder<CraftingRecipe> recipe = (RecipeHolder<CraftingRecipe>) resultSlots.getRecipeUsed();
+            while (recipe != null && recipe.value().matches(input, player.level())) {
+                ItemStack recipeOutput = recipe.value().assemble(input, player.level().registryAccess());
+                //#TODO
+                if (recipeOutput.isEmpty()) {
+                    throw new RuntimeException("A recipe matched but produced an empty output - Offending Recipe : " + recipe.id() + " - This is NOT a bug in Traveler's Backpack!");
+                }
+                //#TODO
                 outputCopy = recipeOutput.copy();
 
-                recipeOutput.getItem().onCraftedBy(recipeOutput, player.level(), player);
+                recipeOutput.onCraftedBy(player.level(), player, 1);
+                EventHooks.firePlayerCraftingEvent(player, recipeOutput, craftSlots);
 
                 if(!player.level().isClientSide)
                 {
                     if(container.getSettingsManager().shiftClickToBackpack())
                     {
+                        //TODO TRANSFER TO MEMORY SLOTS HERE
                         if(!moveItemStackTo(recipeOutput, BACKPACK_INV_START, BACKPACK_INV_END + 1, false))
                         {
                             if(!moveItemStackTo(recipeOutput, PLAYER_INV_START, PLAYER_HOT_END + 1, true))
@@ -323,48 +332,92 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
                     }
                 }
 
-                resultSlot.onQuickCraft(recipeOutput, outputCopy);
-                resultSlot.setChanged();
-
-                if(!player.level().isClientSide && recipeOutput.getCount() == outputCopy.getCount())
-                {
-                    craftSlots.checkChanges = true;
-                    return ItemStack.EMPTY;
-                }
-
-                resultSlots.setRecipeUsed(recipe);
+                ((ResultSlot) resultSlot).removeCount += outputCopy.getCount();
+                // Handles the actual work of removing the input items.
                 resultSlot.onTake(player, recipeOutput);
+                resetStackedContents(input);
+                //#TODO
             }
             craftSlots.checkChanges = true;
             slotChangedCraftingGrid(player.level(), player);
-            container.setDataChanged(ITravelersBackpackContainer.CRAFTING_INVENTORY_DATA);
+
+            //#TODO
+            //Have to setDataChanged here because it's getting called from client natively
+            //if(!player.level().isClientSide) container.setDataChanged(ITravelersBackpackContainer.INVENTORY_DATA);
         }
-        craftSlots.checkChanges = true;
-        return resultSlots.getRecipeUsed() == null ? ItemStack.EMPTY : outputCopy;
+        return outputCopy;
     }
 
-    public void slotChangedCraftingGrid(Level level, Player player)
+    //#TODO
+
+    public void resetStackedContents(CraftingInput input)
+    {
+        StackedContents contents = input.stackedContents();
+        contents.clear();
+        for(ItemStack i : input.items())
+        {
+            if(!i.isEmpty())
+            {
+                contents.accountStack(i, 1);
+            }
+        }
+    }
+
+    public void slotChangedCraftingGrid(Level world, Player player)
+    {
+        if(!world.isClientSide && craftSlots.checkChanges)
+        {
+            ItemStack itemstack = ItemStack.EMPTY;
+            CraftingInput input = craftSlots.asCraftInput();
+
+            RecipeHolder<CraftingRecipe> oldRecipe = (RecipeHolder<CraftingRecipe>) resultSlots.getRecipeUsed();
+            RecipeHolder<CraftingRecipe> recipe = oldRecipe;
+            if (recipe == null || !recipe.value().matches(input, world)) recipe = world.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, world).orElse(null);
+
+            if (recipe != null) itemstack = recipe.value().assemble(input, world.registryAccess());
+
+            // Need to check if the output is empty, because if the recipe book is being used, the recipe will already be set.
+            if (oldRecipe != recipe || resultSlots.getItem(0).isEmpty()) {
+                PacketDistributor.sendToPlayer((ServerPlayer) player, new ClientboundUpdateRecipePacket(recipe, itemstack));
+                resultSlots.setItem(0, itemstack);
+                resultSlots.setRecipeUsed(recipe);
+            }
+            else if (recipe != null) {
+                // https://github.com/Shadows-of-Fire/FastWorkbench/issues/72 - Some modded recipes may update the output and not mark themselves as special, moderately
+                // annoying but... bleh
+                if (recipe.value().isSpecial() || !recipe.getClass().getName().startsWith("net.minecraft") && !ItemStack.matches(itemstack, resultSlots.getItem(0))) {
+                    PacketDistributor.sendToPlayer((ServerPlayer) player, new ClientboundUpdateRecipePacket(recipe, itemstack));
+                    resultSlots.setItem(0, itemstack);
+                    resultSlots.setRecipeUsed(recipe);
+                }
+            }
+        }
+    }
+
+   /* public void slotChangedCraftingGrid(Level level, Player player)
     {
         if(!level.isClientSide && craftSlots.checkChanges)
         {
+            CraftingInput input = craftSlots.asCraftInput();
+
             ItemStack itemstack = ItemStack.EMPTY;
 
             RecipeHolder<CraftingRecipe> oldRecipe = (RecipeHolder<CraftingRecipe>)resultSlots.getRecipeUsed();
             RecipeHolder<CraftingRecipe> recipe = oldRecipe;
 
-            if(recipe == null || !recipe.value().matches(craftSlots, level))
+            if(recipe == null || !recipe.value().matches(input, level))
             {
-                recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots, level).orElse(null);
+                recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level).orElse(null);
             }
 
             if(recipe != null)
             {
-                itemstack = recipe.value().assemble(craftSlots, level.registryAccess());
+                itemstack = recipe.value().assemble(input, level.registryAccess());
             }
 
             if(oldRecipe != recipe)
             {
-                PacketDistributor.PLAYER.with((ServerPlayer)player).send(new ClientboundUpdateRecipePacket(recipe, itemstack));
+                PacketDistributor.sendToPlayer((ServerPlayer)player, new ClientboundUpdateRecipePacket(recipe == null ? ResourceLocation.fromNamespaceAndPath("null", "null") : recipe.id(), itemstack));
                 //TravelersBackpack.NETWORK.send(new ClientboundUpdateRecipePacket(recipe, itemstack), PacketDistributor.PLAYER.with((ServerPlayer)player));
                 resultSlots.setItem(0, itemstack);
                 resultSlots.setRecipeUsed(recipe);
@@ -373,14 +426,14 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
             {
                 if(recipe.value().isSpecial() || !recipe.getClass().getName().startsWith("net.minecraft") && !ItemStack.matches(itemstack, resultSlots.getItem(0)))
                 {
-                    PacketDistributor.PLAYER.with((ServerPlayer)player).send(new ClientboundUpdateRecipePacket(recipe, itemstack));
+                    PacketDistributor.sendToPlayer((ServerPlayer)player, new ClientboundUpdateRecipePacket(recipe.id(), itemstack));
                     //TravelersBackpack.NETWORK.send(new ClientboundUpdateRecipePacket(recipe, itemstack), PacketDistributor.PLAYER.with((ServerPlayer)player));
                     resultSlots.setItem(0, itemstack);
                     resultSlots.setRecipeUsed(recipe);
                 }
             }
         }
-    }
+    } */
 
     @Override
     public void clicked(int slotId, int dragType, ClickType clickType, Player player)
@@ -395,10 +448,10 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
     @Override
     public void removed(Player player)
     {
-        if(container.getScreenID() != Reference.BLOCK_ENTITY_SCREEN_ID)
-        {
-            this.container.setDataChanged(ITravelersBackpackContainer.ALL_DATA);
-        }
+        //if(container.getScreenID() == Reference.ITEM_SCREEN_ID)
+        //{
+         //   this.container.setDataChanged(ITravelersBackpackContainer.ALL_DATA);
+        //}
 
         if(container.getScreenID() == Reference.BLOCK_ENTITY_SCREEN_ID)
         {

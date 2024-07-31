@@ -10,11 +10,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,26 +30,26 @@ public class UpgradeItem extends Item
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag)
     {
         if(TravelersBackpackConfig.SERVER.backpackSettings.enableTierUpgrades.get())
         {
             switch(type)
             {
                 case BLANK_UPGRADE:
-                    tooltip.add(Component.translatable("item.travelersbackpack.blank_upgrade_tooltip").withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.translatable("item.travelersbackpack.blank_upgrade_tooltip").withStyle(ChatFormatting.BLUE));
                     break;
                 case IRON_TIER_UPGRADE:
-                    tooltip.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.LEATHER.getName()).withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.LEATHER.getName()).withStyle(ChatFormatting.BLUE));
                     break;
                 case GOLD_TIER_UPGRADE:
-                    tooltip.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.IRON.getName()).withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.IRON.getName()).withStyle(ChatFormatting.BLUE));
                     break;
                 case DIAMOND_TIER_UPGRADE:
-                    tooltip.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.GOLD.getName()).withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.GOLD.getName()).withStyle(ChatFormatting.BLUE));
                     break;
                 case NETHERITE_TIER_UPGRADE:
-                    tooltip.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.DIAMOND.getName()).withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.translatable("item.travelersbackpack.tier_upgrade_tooltip", Tiers.DIAMOND.getName()).withStyle(ChatFormatting.BLUE));
                     break;
             }
         }
@@ -59,7 +57,7 @@ public class UpgradeItem extends Item
         {
             if(type != Upgrade.CRAFTING_UPGRADE)
             {
-                tooltip.add(Component.translatable("item.travelersbackpack.upgrade_disabled"));
+                tooltipComponents.add(Component.translatable("item.travelersbackpack.upgrade_disabled"));
             }
         }
 
@@ -67,11 +65,11 @@ public class UpgradeItem extends Item
         {
             if(TravelersBackpackConfig.SERVER.backpackSettings.craftingUpgrade.enableUpgrade.get())
             {
-                tooltip.add(Component.translatable("item.travelersbackpack.crafting_upgrade_tooltip").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("item.travelersbackpack.crafting_upgrade_tooltip").withStyle(ChatFormatting.BLUE));
             }
             else
             {
-                tooltip.add(Component.translatable("item.travelersbackpack.upgrade_disabled").withStyle(ChatFormatting.RED));
+                tooltipComponents.add(Component.translatable("item.travelersbackpack.upgrade_disabled").withStyle(ChatFormatting.RED));
             }
         }
     }

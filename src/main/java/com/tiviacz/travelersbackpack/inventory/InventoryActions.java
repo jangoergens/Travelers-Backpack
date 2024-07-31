@@ -10,8 +10,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PotionItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -42,9 +40,9 @@ public class InventoryActions
             {
                 int amount = Reference.POTION;
                 FluidStack fluidStack = new FluidStack(ModFluids.POTION_FLUID.get(), amount);
-                FluidUtils.setFluidStackNBT(stackIn, fluidStack);
+                FluidUtils.setFluidStackData(stackIn, fluidStack);
 
-                if(tank.isEmpty() || FluidStack.areFluidStackTagsEqual(tank.getFluid(), fluidStack))
+                if(tank.isEmpty() || FluidStack.isSameFluidSameComponents(tank.getFluid(), fluidStack))
                 {
                     if(tank.getFluidAmount() + amount <= tank.getCapacity())
                     {
@@ -63,7 +61,6 @@ public class InventoryActions
                             tank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
                             ContainerUtils.removeItem(container, slotIn, 1);
                             itemStackHandler.setStackInSlot(slotOut, bottle);
-                            container.setDataChanged(ITravelersBackpackContainer.TANKS_DATA);
 
                             if(player != null)
                             {
@@ -89,7 +86,6 @@ public class InventoryActions
                     tank.drain(Reference.POTION, IFluidHandler.FluidAction.EXECUTE);
                     ContainerUtils.removeItem(container, slotIn, 1);
                     itemStackHandler.setStackInSlot(slotOut, stackOut);
-                    container.setDataChanged(ITravelersBackpackContainer.TANKS_DATA);
 
                     if(player != null)
                     {
@@ -114,7 +110,7 @@ public class InventoryActions
             {
                 int amount = fluidstack.map(FluidStack::getAmount).orElse(0);
 
-                if(tank.getFluidAmount() > 0 && !tank.getFluid().isFluidEqual(fluidstack.orElse(FluidStack.EMPTY))) return false;
+                if(tank.getFluidAmount() > 0 && !FluidStack.isSameFluidSameComponents(tank.getFluid(), fluidstack.orElse(FluidStack.EMPTY))) return false;
 
                 //Copies
                 ItemStack stackInCopy = stackIn.copy();
@@ -136,16 +132,15 @@ public class InventoryActions
                             if(stackOut.getCount() > slotOutStack.getMaxStackSize()) return false;
                         }
 
-                        if(stackInCopy.getItem() == Items.WATER_BUCKET && EnchantmentHelper.getEnchantments(stackInCopy).containsKey(Enchantments.INFINITY_ARROWS))
+                       /* if(stackInCopy.getItem() == Items.WATER_BUCKET && EnchantmentHelper.getEnchantments(stackInCopy).containsKey(Enchantments.INFINITY_ARROWS))
                         {
                             stackOut = stackInCopy;
-                        }
+                        } */
 
                         FluidUtil.tryEmptyContainer(stackIn, tank, amount, player, true);
 
                         itemStackHandler.setStackInSlot(slotOut, stackOut);
                         ContainerUtils.removeItem(container, slotIn, 1);
-                        container.setDataChanged(ITravelersBackpackContainer.TANKS_DATA);
 
                         return true;
                     }
@@ -183,7 +178,6 @@ public class InventoryActions
 
                     itemStackHandler.setStackInSlot(slotOut, stackOut);
                     ContainerUtils.removeItem(container, slotIn, 1);
-                    container.setDataChanged(ITravelersBackpackContainer.TANKS_DATA);
 
                     return true;
                 }
@@ -196,7 +190,7 @@ public class InventoryActions
     {
         if(FluidUtil.getFluidContained(stackIn).isPresent() && FluidUtil.getFluidContained(stackIn).map(FluidStack::getAmount).orElse(0) > 0)
         {
-            return FluidUtil.getFluidContained(stackIn).map(fluidstack -> fluidstack.isFluidEqual(tank.getFluid())).orElse(false);
+            return FluidUtil.getFluidContained(stackIn).map(fluidstack -> FluidStack.isSameFluidSameComponents(fluidstack, tank.getFluid())).orElse(false);
         }
         else return !FluidUtil.getFluidContained(stackIn).isPresent();
     }

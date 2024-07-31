@@ -3,6 +3,7 @@ package com.tiviacz.travelersbackpack.capability;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.network.ClientboundSyncAttachmentPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -13,10 +14,10 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.UnknownNullability;
 
-public class TravelersBackpackSerializable implements INBTSerializable<CompoundTag>, ITravelersBackpack
+public class TravelersBackpackSerializable implements ITravelersBackpack, INBTSerializable<CompoundTag>
 {
     public final Player player;
-    public final TravelersBackpackContainer container;
+    public TravelersBackpackContainer container;
     public ItemStack wearable = new ItemStack(Items.AIR, 0);
 
     public TravelersBackpackSerializable(IAttachmentHolder holder)
@@ -63,7 +64,7 @@ public class TravelersBackpackSerializable implements INBTSerializable<CompoundT
 
         if(!stack.isEmpty())
         {
-            this.container.loadAllData(stack.getOrCreateTag());
+            this.container.loadAllData();
         }
     }
 
@@ -73,7 +74,7 @@ public class TravelersBackpackSerializable implements INBTSerializable<CompoundT
         if(player != null && !player.level().isClientSide)
         {
             ServerPlayer serverPlayer = (ServerPlayer)player;
-            AttachmentUtils.getAttachment(serverPlayer).ifPresent(cap -> PacketDistributor.PLAYER.with(serverPlayer).send(new ClientboundSyncAttachmentPacket(serverPlayer.getId(), true, this.wearable.save(new CompoundTag()))));
+            AttachmentUtils.getAttachment(serverPlayer).ifPresent(cap -> PacketDistributor.sendToPlayer(serverPlayer, new ClientboundSyncAttachmentPacket(serverPlayer.getId(), true, this.wearable)));
         }
     }
 
@@ -83,32 +84,27 @@ public class TravelersBackpackSerializable implements INBTSerializable<CompoundT
         if(player != null && !player.level().isClientSide)
         {
             ServerPlayer serverPlayer = (ServerPlayer)player;
-            AttachmentUtils.getAttachment(serverPlayer).ifPresent(cap -> PacketDistributor.TRACKING_ENTITY.with(serverPlayer).send(new ClientboundSyncAttachmentPacket(serverPlayer.getId(), true, this.wearable.save(new CompoundTag()))));
+            AttachmentUtils.getAttachment(serverPlayer).ifPresent(cap -> PacketDistributor.sendToPlayersTrackingEntity(serverPlayer, new ClientboundSyncAttachmentPacket(serverPlayer.getId(), true, this.wearable)));
         }
     }
 
     @Override
-    public @UnknownNullability CompoundTag serializeNBT()
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider)
     {
         CompoundTag compound = new CompoundTag();
 
         if(hasWearable())
         {
             ItemStack wearable = getWearable();
-            wearable.save(compound);
-        }
-        if(!hasWearable())
-        {
-            ItemStack wearable = new ItemStack(Items.AIR, 0);
-            wearable.save(compound);
+            compound = (CompoundTag)wearable.saveOptional(provider);
         }
         return compound;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt)
     {
-        ItemStack wearable = ItemStack.of(nbt);
+        ItemStack wearable = ItemStack.parseOptional(provider, nbt);
         setWearable(wearable);
         setContents(wearable);
     }

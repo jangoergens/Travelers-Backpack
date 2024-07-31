@@ -34,7 +34,7 @@ public abstract class EffectFluid
 
     public EffectFluid(String uniqueId, String modid, String fluidName, int amountRequired)
     {
-        Fluid fluid = BuiltInRegistries.FLUID.get(new ResourceLocation(modid, fluidName));
+        Fluid fluid = BuiltInRegistries.FLUID.get(ResourceLocation.fromNamespaceAndPath(modid, fluidName));
         this.uniqueId = uniqueId;
         this.fluid = fluid;
         this.effectID = 0;

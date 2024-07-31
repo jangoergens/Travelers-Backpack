@@ -159,8 +159,8 @@ public class CraftingWidget extends WidgetBase
     {
         boolean showCraftingWidget = screen.container.getSettingsManager().showCraftingGrid();
         screen.container.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1));
-        //TravelersBackpack.NETWORK.send(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1)), PacketDistributor.SERVER.noArg());
-        PacketDistributor.SERVER.noArg().send(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1)));
+
+        PacketDistributor.sendToServer(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)(showCraftingWidget ? 0 : 1)));
         super.setWidgetStatus(status);
     }
 
@@ -205,8 +205,8 @@ public class CraftingWidget extends WidgetBase
                 {
                     boolean shiftClickToBackpack = screen.container.getSettingsManager().shiftClickToBackpack();
                     screen.container.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1));
-                    //TravelersBackpack.NETWORK.send(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1)), PacketDistributor.SERVER.noArg());
-                    PacketDistributor.SERVER.noArg().send(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1)));
+
+                    PacketDistributor.sendToServer(new ServerboundSettingsPacket(screen.container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHIFT_CLICK_TO_BACKPACK, (byte)(shiftClickToBackpack ? 0 : 1)));
                     this.screen.playUIClickSound();
                 }
             }

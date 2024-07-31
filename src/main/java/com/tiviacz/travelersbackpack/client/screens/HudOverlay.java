@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.capability.AttachmentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.handlers.ModClientEventsHandler;
+import com.tiviacz.travelersbackpack.handlers.ModClientEventHandler;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.items.HoseItem;
 import com.tiviacz.travelersbackpack.util.RenderUtils;
@@ -24,7 +24,7 @@ import java.util.List;
 
 public class HudOverlay
 {
-    public static final ResourceLocation OVERLAY = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
+    public static final ResourceLocation OVERLAY = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
     private static float animationProgress = 0.0F;
 
     public static void renderOverlay(Minecraft mc, GuiGraphics guiGraphics)
@@ -40,7 +40,7 @@ public class HudOverlay
 
         ITravelersBackpackContainer inv = AttachmentUtils.getBackpackInv(player);
 
-        KeyMapping key = ModClientEventsHandler.SWAP_TOOL;
+        KeyMapping key = ModClientEventHandler.SWAP_TOOL;
         List<ItemStack> tools = getTools(inv.getToolSlotsHandler());
 
         if(key.isDown() && tools.size() > 2)

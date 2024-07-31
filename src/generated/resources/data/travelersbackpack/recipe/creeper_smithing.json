@@ -1,0 +1,16 @@
+{
+  "type": "travelersbackpack:backpack_upgrade",
+  "addition": {
+    "tag": "travelersbackpack:backpack_upgrades"
+  },
+  "base": {
+    "item": "travelersbackpack:creeper"
+  },
+  "result": {
+    "count": 1,
+    "id": "travelersbackpack:creeper"
+  },
+  "template": {
+    "item": "minecraft:leather"
+  }
+}

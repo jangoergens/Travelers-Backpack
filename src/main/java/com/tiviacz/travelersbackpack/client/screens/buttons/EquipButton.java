@@ -31,7 +31,7 @@ public class EquipButton extends Button
     @Override
     public void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        if(TravelersBackpack.enableCurios() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
+        if(TravelersBackpack.enableAccessories() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
         {
             if(!AttachmentUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.ITEM_SCREEN_ID)
             {
@@ -48,14 +48,13 @@ public class EquipButton extends Button
     {
         if(!screen.container.hasBlockEntity())
         {
-            if(!TravelersBackpack.enableCurios())
+            if(!TravelersBackpack.enableAccessories())
             {
                 if(!AttachmentUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.ITEM_SCREEN_ID && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
                 {
                     if(this.inButton((int) mouseX, (int) mouseY))
                     {
-                        PacketDistributor.SERVER.noArg().send(new ServerboundEquipBackpackPacket(true));
-                        //TravelersBackpack.NETWORK.send(new ServerboundEquipBackpackPacket(true), PacketDistributor.SERVER.noArg());
+                        PacketDistributor.sendToServer(new ServerboundEquipBackpackPacket(true));
                         return true;
                     }
                 }

@@ -110,7 +110,7 @@ public class ReiCompat implements REIServerPlugin
             {
                 //Open Tab
                 context.getMenu().container.getSettingsManager().set(SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1);
-                PacketDistributor.SERVER.noArg().send(new ServerboundSettingsPacket(context.getMenu().container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
+                PacketDistributor.sendToServer(new ServerboundSettingsPacket(context.getMenu().container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1));
                 //TravelersBackpack.NETWORK.send(new ServerboundSettingsPacket(context.getMenu().container.getScreenID(), SettingsManager.CRAFTING, SettingsManager.SHOW_CRAFTING_GRID, (byte)1), PacketDistributor.SERVER.noArg());
             }
             SimpleGridMenuInfo.super.validate(context);

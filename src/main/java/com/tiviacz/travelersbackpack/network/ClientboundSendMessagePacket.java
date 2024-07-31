@@ -4,45 +4,45 @@ import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ClientboundSendMessagePacket(boolean drop, BlockPos pos) implements CustomPacketPayload
 {
-    public static final ResourceLocation ID = new ResourceLocation(TravelersBackpack.MODID, "send_message");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "send_message");
+    public static final Type<ClientboundSendMessagePacket> TYPE = new Type<>(ID);
 
-    public ClientboundSendMessagePacket(FriendlyByteBuf friendlyByteBuf)
-    {
-        this(friendlyByteBuf.readBoolean(), friendlyByteBuf.readBlockPos());
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSendMessagePacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, ClientboundSendMessagePacket::drop,
+            BlockPos.STREAM_CODEC, ClientboundSendMessagePacket::pos,
+            ClientboundSendMessagePacket::new
+    );
 
-    @Override
-    public void write(FriendlyByteBuf friendlyByteBuf)
+    public static void handle(final ClientboundSendMessagePacket message, IPayloadContext ctx)
     {
-        friendlyByteBuf.writeBoolean(drop);
-        friendlyByteBuf.writeBlockPos(pos);
-    }
-
-    @Override
-    public ResourceLocation id()
-    {
-        return ID;
-    }
-
-    public static void handle(final ClientboundSendMessagePacket message, PlayPayloadContext ctx)
-    {
-        ctx.workHandler().submitAsync(() ->
+        if(ctx.flow().isClientbound())
         {
-            if(TravelersBackpackConfig.CLIENT.sendBackpackCoordinatesMessage.get())
+            ctx.enqueueWork(() ->
             {
-                if(Minecraft.getInstance().player != null)
+                if(TravelersBackpackConfig.CLIENT.sendBackpackCoordinatesMessage.get())
                 {
-                    Minecraft.getInstance().player.sendSystemMessage(Component.translatable(message.drop ? "information.travelersbackpack.backpack_drop" : "information.travelersbackpack.backpack_coords", message.pos().getX(), message.pos().getY(), message.pos().getZ()));
+                    if(Minecraft.getInstance().player != null)
+                    {
+                        Minecraft.getInstance().player.sendSystemMessage(Component.translatable(message.drop ? "information.travelersbackpack.backpack_drop" : "information.travelersbackpack.backpack_coords", message.pos().getX(), message.pos().getY(), message.pos().getZ()));
+                    }
                 }
-            }
-        });
+            });
+        }
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
     }
 }

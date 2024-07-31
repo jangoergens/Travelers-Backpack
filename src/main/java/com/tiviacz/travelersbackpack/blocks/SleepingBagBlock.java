@@ -1,22 +1,15 @@
 package com.tiviacz.travelersbackpack.blocks;
 
-import com.mojang.datafixers.util.Either;
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Unit;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -25,7 +18,10 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -41,7 +37,6 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.event.EventHooks;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -95,146 +90,57 @@ public class SleepingBagBlock extends BedBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit)
+    protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHitResult)
     {
-        if(level.isClientSide)
-        {
+        if (pLevel.isClientSide) {
             return InteractionResult.CONSUME;
-        }
-        else
-        {
-            if(state.getValue(PART) != BedPart.HEAD)
-            {
-                pos = pos.relative(state.getValue(FACING));
-                state = level.getBlockState(pos);
-
-                if(!state.is(this))
-                {
+        } else {
+            if (pState.getValue(PART) != BedPart.HEAD) {
+                pPos = pPos.relative(pState.getValue(FACING));
+                pState = pLevel.getBlockState(pPos);
+                if (!pState.is(this)) {
                     return InteractionResult.CONSUME;
                 }
             }
 
-            if(!canSetSpawn(level))
-            {
-                level.removeBlock(pos, false);
-                BlockPos var7 = pos.relative((state.getValue(FACING)).getOpposite());
-
-                if(level.getBlockState(var7).is(this))
-                {
-                    level.removeBlock(var7, false);
+            if (!canSetSpawn(pLevel)) {
+                pLevel.removeBlock(pPos, false);
+                BlockPos blockpos = pPos.relative(pState.getValue(FACING).getOpposite());
+                if (pLevel.getBlockState(blockpos).is(this)) {
+                    pLevel.removeBlock(blockpos, false);
                 }
 
-                //level.explode(null, DamageSource.badRespawnPointExplosion(), null, (double)pos.getX() + 0.5D, (double)pos.getY() + 0.5D, (double)pos.getZ() + 0.5D, 5.0F, true, Explosion.BlockInteraction.DESTROY);
-                return InteractionResult.SUCCESS;
-            }
-            else if(state.getValue(OCCUPIED))
-            {
-                if(!this.kickVillagerOutOfBed(level, pos))
+                if(pLevel.getBlockEntity(pPos.relative(pState.getValue(FACING).getOpposite(), pState.getValue(PART) == BedPart.FOOT ? 1 : 2)) instanceof TravelersBackpackBlockEntity blockEntity)
                 {
-                    player.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
+                    blockEntity.setSleepingBagDeployed(false);
+                    blockEntity.setDataChanged();
+                }
+
+                //Vec3 vec3 = pPos.getCenter();
+                //pLevel.explode(null, pLevel.damageSources().badRespawnPointExplosion(vec3), null, vec3, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+                return InteractionResult.SUCCESS;
+            } else if (pState.getValue(OCCUPIED)) {
+                if (!this.kickVillagerOutOfBed(pLevel, pPos)) {
+                    pPlayer.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
                 }
 
                 return InteractionResult.SUCCESS;
-            }
-            else
-            {
-                if(player instanceof ServerPlayer serverPlayer)
-                {
-                    startSleepInBed(serverPlayer, pos).ifLeft((p_49477_) ->
-                    {
-                        if(p_49477_.getMessage() != null)
-                        {
-                            player.displayClientMessage(p_49477_.getMessage(), true);
-                        }
-
-                    });
-                }
-                return InteractionResult.SUCCESS;
-            }
-        }
-    }
-
-    public Either<Player.BedSleepingProblem, Unit> startSleepInBed(ServerPlayer player, BlockPos pos) {
-        java.util.Optional<BlockPos> optAt = java.util.Optional.of(pos);
-        Player.BedSleepingProblem ret = EventHooks.onPlayerSleepInBed(player, optAt);
-        if (ret != null)
-        {
-            if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-            return Either.left(ret);
-        }
-        Direction direction = player.level().getBlockState(pos).getValue(HorizontalDirectionalBlock.FACING);
-        if (!player.isSleeping() && player.isAlive()) {
-            if (!player.level().dimensionType().natural()) {
-                if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_HERE);
-            } else if (!bedInRange(player, pos, direction)) {
-                if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                return Either.left(Player.BedSleepingProblem.TOO_FAR_AWAY);
-            } else if (bedBlocked(player, pos, direction)) {
-                if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
             } else {
-                if (!EventHooks.fireSleepingTimeCheck(player, optAt)) {
-                    if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                    return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
-                } else {
-                    if (!player.isCreative()) {
-                        double d0 = 8.0D;
-                        double d1 = 5.0D;
-                        Vec3 vector3d = Vec3.atBottomCenterOf(pos);
-                        List<Monster> list = player.level().getEntitiesOfClass(Monster.class, new AABB(vector3d.x() - 8.0D, vector3d.y() - 5.0D, vector3d.z() - 8.0D, vector3d.x() + 8.0D, vector3d.y() + 5.0D, vector3d.z() + 8.0D), (p_241146_1_) -> {
-                            return p_241146_1_.isPreventingPlayerRest(player);
-                        });
-                        if (!list.isEmpty()) {
-                            if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                            return Either.left(Player.BedSleepingProblem.NOT_SAFE);
-                        }
-                    }
-                    if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get())
-                    {
-                        Either<Player.BedSleepingProblem, Unit> either = player.startSleepInBed(pos).ifRight((p_241144_1_) -> {
-                            player.awardStat(Stats.SLEEP_IN_BED);
-                            CriteriaTriggers.SLEPT_IN_BED.trigger(player);
-                        });
-                        ((ServerLevel)player.level()).updateSleepingPlayerList();
-                        if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                        return either;
-                    }
-                    else
-                    {
-                        player.startSleeping(pos);
-                        player.sleepCounter = 0;
-                        player.awardStat(Stats.SLEEP_IN_BED);
-                        CriteriaTriggers.SLEPT_IN_BED.trigger(player);
-                        ((ServerLevel) player.level()).updateSleepingPlayerList();
-                        if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-                        return Either.right(Unit.INSTANCE);
-                    }
+                if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get())
+                {
+                   if(pPlayer instanceof ServerPlayer serverPlayer)
+                   {
+                       serverPlayer.setRespawnPosition(pLevel.dimension(), pPos, serverPlayer.getYRot(), true, true);
+                   }
                 }
+                pPlayer.startSleepInBed(pPos).ifLeft(p_49477_ -> {
+                    if (p_49477_.getMessage() != null) {
+                        pPlayer.displayClientMessage(p_49477_.getMessage(), true);
+                    }
+                });
+                return InteractionResult.SUCCESS;
             }
-        } else {
-            if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get()) player.setRespawnPosition(player.level().dimension(), pos, player.getYRot(), true, true);
-            return Either.left(Player.BedSleepingProblem.OTHER_PROBLEM);
         }
-    }
-
-    private boolean bedInRange(Player player, BlockPos pos, Direction direction) {
-        if (direction == null) return false;
-        return isReachableBedBlock(player, pos) || isReachableBedBlock(player, pos.relative(direction.getOpposite()));
-    }
-
-    private boolean isReachableBedBlock(Player player, BlockPos p_241158_1_) {
-        Vec3 vector3d = Vec3.atBottomCenterOf(p_241158_1_);
-        return Math.abs(player.getX() - vector3d.x()) <= 3.0D && Math.abs(player.getY() - vector3d.y()) <= 2.0D && Math.abs(player.getZ() - vector3d.z()) <= 3.0D;
-    }
-
-    private boolean bedBlocked(Player player, BlockPos pos, Direction direction) {
-        BlockPos blockpos = pos.above();
-        return !freeAt(player, blockpos) || !freeAt(player, blockpos.relative(direction.getOpposite()));
-    }
-
-    protected boolean freeAt(Player player, BlockPos pos) {
-        return !player.level().getBlockState(pos).isSuffocating(player.level(), pos);
     }
 
     private boolean kickVillagerOutOfBed(Level level, BlockPos pos)

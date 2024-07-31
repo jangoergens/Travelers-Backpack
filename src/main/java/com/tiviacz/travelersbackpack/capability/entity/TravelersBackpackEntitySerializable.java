@@ -2,6 +2,7 @@ package com.tiviacz.travelersbackpack.capability.entity;
 
 import com.tiviacz.travelersbackpack.capability.AttachmentUtils;
 import com.tiviacz.travelersbackpack.network.ClientboundSyncAttachmentPacket;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -50,32 +51,27 @@ public class TravelersBackpackEntitySerializable implements INBTSerializable<Com
     {
         if(livingEntity != null && !livingEntity.level().isClientSide)
         {
-            AttachmentUtils.getEntityAttachment(livingEntity).ifPresent(data -> PacketDistributor.TRACKING_ENTITY.with(livingEntity).send(new ClientboundSyncAttachmentPacket(livingEntity.getId(), false, this.wearable.save(new CompoundTag()))));
+            AttachmentUtils.getEntityAttachment(livingEntity).ifPresent(data -> PacketDistributor.sendToPlayersTrackingEntity(livingEntity, new ClientboundSyncAttachmentPacket(livingEntity.getId(), false, this.wearable)));
         }
     }
 
     @Override
-    public @UnknownNullability CompoundTag serializeNBT()
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider)
     {
         CompoundTag compound = new CompoundTag();
 
         if(hasWearable())
         {
             ItemStack wearable = getWearable();
-            wearable.save(compound);
-        }
-        if(!hasWearable())
-        {
-            ItemStack wearable = new ItemStack(Items.AIR, 0);
-            wearable.save(compound);
+            wearable.save(provider, compound);
         }
         return compound;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt)
     {
-        ItemStack wearable = ItemStack.of(nbt);
+        ItemStack wearable = ItemStack.parseOptional(provider, nbt);
         setWearable(wearable);
     }
 }

@@ -10,14 +10,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
-@Mod.EventBusSubscriber(modid = TravelersBackpack.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = TravelersBackpack.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModEventHandler
 {
     @SubscribeEvent
@@ -27,12 +27,12 @@ public class ModEventHandler
         PackOutput output = generator.getPackOutput();
         boolean includeServer = event.includeServer();
 
-        generator.addProvider(includeServer, new ModRecipeProvider(output));
-        generator.addProvider(includeServer, ModLootTableProvider.create(output));
+        generator.addProvider(includeServer, new ModRecipeProvider(output, event.getLookupProvider()));
+        generator.addProvider(includeServer, ModLootTableProvider.create(output, event.getLookupProvider()));
     }
 
     @SubscribeEvent
-    public static void registerPayloadHandler(RegisterPayloadHandlerEvent event)
+    public static void registerPayloadHandler(RegisterPayloadHandlersEvent event)
     {
         ModNetwork.register(event.registrar(TravelersBackpack.MODID));
     }

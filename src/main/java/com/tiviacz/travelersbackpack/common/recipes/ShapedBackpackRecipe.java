@@ -1,45 +1,54 @@
 package com.tiviacz.travelersbackpack.common.recipes;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.blocks.SleepingBagBlock;
 import com.tiviacz.travelersbackpack.compat.comforts.ComfortsCompat;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.init.ModTags;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 
-public class ShapedBackpackRecipe extends ShapedRecipe {
+public class ShapedBackpackRecipe extends ShapedRecipe
+{
     public ShapedBackpackRecipe(String groupIn, CraftingBookCategory category, ShapedRecipePattern shapedRecipePattern, ItemStack recipeOutputIn, boolean pShowNotification) {
         super(groupIn, category, shapedRecipePattern, recipeOutputIn, pShowNotification);
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer inv, RegistryAccess access) {
-        final ItemStack output = super.assemble(inv, access);
+    public ItemStack assemble(CraftingInput pInput, HolderLookup.Provider pRegistries)
+    {
+        final ItemStack output = this.getResultItem(pRegistries).copy();
 
-        if (!output.isEmpty()) {
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                final ItemStack ingredient = inv.getItem(i);
+        if(!output.isEmpty())
+        {
+            for(int i = 0; i < pInput.size(); i++)
+            {
+                final ItemStack ingredient = pInput.getItem(i);
 
-                if (!ingredient.isEmpty() && ingredient.getItem() instanceof TravelersBackpackItem) {
-                    final CompoundTag compound = ingredient.getTag();
-                    output.setTag(compound);
+                if(!ingredient.isEmpty() && ingredient.getItem() instanceof TravelersBackpackItem)
+                {
+                    output.applyComponents(ingredient.getComponentsPatch());
                     break;
                 }
 
-                if (!ingredient.isEmpty() && ingredient.is(ModTags.SLEEPING_BAGS)) {
-                    output.getOrCreateTag().putInt(ITravelersBackpackContainer.SLEEPING_BAG_COLOR, getProperColor(ingredient.getItem()));
+                if(!ingredient.isEmpty() && ingredient.is(ModTags.SLEEPING_BAGS))
+                {
+                    int color = getProperColor(ingredient.getItem());
+
+                    if(color != DyeColor.RED.getId())
+                    {
+                        output.set(ModDataComponents.SLEEPING_BAG_COLOR, color);
+                    }
                 }
             }
         }
@@ -74,45 +83,45 @@ public class ShapedBackpackRecipe extends ShapedRecipe {
     {
         public static final Serializer INSTANCE = new Serializer();
 
-        public static final Codec<ShapedBackpackRecipe> CODEC = RecordCodecBuilder.create((p_309256_) -> {
-            return p_309256_.group(ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter((p_309251_) -> {
-                return p_309251_.getGroup();
-            }), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((p_309253_) -> {
-                return p_309253_.category();
-            }), ShapedRecipePattern.MAP_CODEC.forGetter((p_309254_) -> {
-                return p_309254_.pattern;
-            }), ItemStack.ITEM_WITH_COUNT_CODEC.fieldOf("result").forGetter((p_309252_) -> {
-                return p_309252_.result;
-            }), ExtraCodecs.strictOptionalField(Codec.BOOL, "show_notification", true).forGetter((p_309255_) -> {
-                return p_309255_.showNotification();
-            })).apply(p_309256_, ShapedBackpackRecipe::new);
-        });
+        public static final MapCodec<ShapedBackpackRecipe> CODEC = RecordCodecBuilder.mapCodec(
+                p_340778_ -> p_340778_.group(
+                                Codec.STRING.optionalFieldOf("group", "").forGetter(p_311729_ -> p_311729_.getGroup()),
+                                CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(p_311732_ -> p_311732_.category()),
+                                ShapedRecipePattern.MAP_CODEC.forGetter(p_311733_ -> p_311733_.pattern),
+                                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(p_311730_ -> p_311730_.result),
+                                Codec.BOOL.optionalFieldOf("show_notification", Boolean.valueOf(true)).forGetter(p_311731_ -> p_311731_.showNotification())
+                        )
+                        .apply(p_340778_, ShapedBackpackRecipe::new)
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, ShapedBackpackRecipe> STREAM_CODEC = StreamCodec.of(
+                ShapedBackpackRecipe.Serializer::toNetwork, ShapedBackpackRecipe.Serializer::fromNetwork
+        );
 
         @Override
-        public Codec<ShapedBackpackRecipe> codec() {
+        public MapCodec<ShapedBackpackRecipe> codec() {
             return CODEC;
         }
 
         @Override
-        public @org.jetbrains.annotations.Nullable ShapedBackpackRecipe fromNetwork(FriendlyByteBuf buffer)
-        {
-            String s = buffer.readUtf();
-            CraftingBookCategory craftingbookcategory = buffer.readEnum(CraftingBookCategory.class);
-            ShapedRecipePattern shapedrecipepattern = ShapedRecipePattern.fromNetwork(buffer);
-            ItemStack itemstack = buffer.readItem();
-            boolean flag = buffer.readBoolean();
+        public StreamCodec<RegistryFriendlyByteBuf, ShapedBackpackRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
 
+        private static ShapedBackpackRecipe fromNetwork(RegistryFriendlyByteBuf p_319998_) {
+            String s = p_319998_.readUtf();
+            CraftingBookCategory craftingbookcategory = p_319998_.readEnum(CraftingBookCategory.class);
+            ShapedRecipePattern shapedrecipepattern = ShapedRecipePattern.STREAM_CODEC.decode(p_319998_);
+            ItemStack itemstack = ItemStack.STREAM_CODEC.decode(p_319998_);
+            boolean flag = p_319998_.readBoolean();
             return new ShapedBackpackRecipe(s, craftingbookcategory, shapedrecipepattern, itemstack, flag);
         }
 
-        @Override
-        public void toNetwork(FriendlyByteBuf buffer, ShapedBackpackRecipe recipe)
-        {
-            buffer.writeUtf(recipe.getGroup());
-            buffer.writeEnum(recipe.category());
-            recipe.pattern.toNetwork(buffer);
-            buffer.writeItem(recipe.result);
-            buffer.writeBoolean(recipe.showNotification());
+        private static void toNetwork(RegistryFriendlyByteBuf p_320738_, ShapedBackpackRecipe p_320586_) {
+            p_320738_.writeUtf(p_320586_.getGroup());
+            p_320738_.writeEnum(p_320586_.category());
+            ShapedRecipePattern.STREAM_CODEC.encode(p_320738_, p_320586_.pattern);
+            ItemStack.STREAM_CODEC.encode(p_320738_, p_320586_.result);
+            p_320738_.writeBoolean(p_320586_.showNotification());
         }
     }
 }

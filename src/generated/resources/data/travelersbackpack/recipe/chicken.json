@@ -1,0 +1,24 @@
+{
+  "type": "travelersbackpack:backpack_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "tag": "c:feathers"
+    },
+    "B": {
+      "item": "travelersbackpack:standard"
+    },
+    "C": {
+      "tag": "c:eggs"
+    }
+  },
+  "pattern": [
+    " A ",
+    "ABA",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "travelersbackpack:chicken"
+  }
+}

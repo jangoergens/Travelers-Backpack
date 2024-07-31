@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.client.renderer.RenderData;
-import com.tiviacz.travelersbackpack.common.recipes.BackpackDyeRecipe;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.util.RenderUtils;
@@ -12,8 +11,9 @@ import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
-import org.apache.commons.lang3.tuple.Triple;
+import net.minecraft.util.FastColor;
 
 public class TravelersBackpackBlockModel
 {
@@ -107,23 +107,23 @@ public class TravelersBackpackBlockModel
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(loc));
 
-        if(container.hasBlockEntity() ? container.hasColor() : container.getItemStack().getTag() != null)
+        if(container.hasBlockEntity() ? container.hasColor() : container.getItemStack().has(DataComponents.DYED_COLOR))
         {
-            if((container.hasBlockEntity() || BackpackDyeRecipe.hasColor(container.getItemStack())) && container.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK.get())
+            if((container.hasBlockEntity() || container.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK.get()))
             {
                 isColorable = true;
-                loc = new ResourceLocation(TravelersBackpack.MODID, "textures/model/dyed.png");
+                loc = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/dyed.png");
             }
         }
 
         if(isColorable)
         {
             this.villagerNose.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn);
-            Triple<Float, Float, Float> rgb = RenderUtils.intToRGB(container.hasBlockEntity() ? container.getColor() : BackpackDyeRecipe.getColor(container.getItemStack()));
+            //Triple<Float, Float, Float> rgb = RenderUtils.intToRGB(container.hasBlockEntity() ? container.getColor() : container.getItemStack().get(DataComponents.DYED_COLOR).rgb());
             vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(loc));
-            this.mainBody.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn, rgb.getLeft(), rgb.getMiddle(), rgb.getRight(), 1.0F);
+            this.mainBody.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn, container.hasBlockEntity() ? FastColor.ARGB32.opaque(container.getColor()) : FastColor.ARGB32.opaque(container.getItemStack().get(DataComponents.DYED_COLOR).rgb()));
 
-            loc = new ResourceLocation(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
+            loc = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
             vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(loc));
             this.mainBody.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn);
             this.tankLeftTop.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn);
@@ -201,22 +201,19 @@ public class TravelersBackpackBlockModel
 
         VertexConsumer ivertexbuilder = buffer.getBuffer(RenderType.entityTranslucent(loc));
 
-        if(renderData.getItemStack().getTag() != null)
+        if(renderData.getItemStack().has(DataComponents.DYED_COLOR) && renderData.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK.get())
         {
-            if(BackpackDyeRecipe.hasColor(renderData.getItemStack()) && renderData.getItemStack().getItem() == ModItems.STANDARD_TRAVELERS_BACKPACK.get())
-            {
-                isColorable = true;
-                loc = new ResourceLocation(TravelersBackpack.MODID, "textures/model/dyed.png");
-            }
+            isColorable = true;
+            loc = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/dyed.png");
         }
 
         if(isColorable)
         {
-            Triple<Float, Float, Float> rgb = RenderUtils.intToRGB(BackpackDyeRecipe.getColor(renderData.getItemStack()));
+            //Triple<Float, Float, Float> rgb = RenderUtils.intToRGB(renderData.getItemStack().get(DataComponents.DYED_COLOR).rgb());
             ivertexbuilder = buffer.getBuffer(RenderType.entityTranslucent(loc));
-            this.mainBody.render(poseStack, ivertexbuilder, combinedLightIn, combinedOverlayIn, rgb.getLeft(), rgb.getMiddle(), rgb.getRight(), 1.0F);
+            this.mainBody.render(poseStack, ivertexbuilder, combinedLightIn, combinedOverlayIn, FastColor.ARGB32.opaque(renderData.getItemStack().get(DataComponents.DYED_COLOR).rgb()));
 
-            loc = new ResourceLocation(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
+            loc = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/model/dyed_extras.png");
             ivertexbuilder = buffer.getBuffer(RenderType.entityTranslucent(loc));
             this.mainBody.render(poseStack, ivertexbuilder, combinedLightIn, combinedOverlayIn);
             this.tankLeftTop.render(poseStack, ivertexbuilder, combinedLightIn, combinedOverlayIn);
@@ -275,6 +272,7 @@ public class TravelersBackpackBlockModel
             //For pig and horse add pig nose
             //For ocelot add ocelot nose
         }
+
         RenderUtils.renderFluidInTank(null, renderData.getLeftTank(), poseStack, buffer, combinedLightIn, -0.65F, -0.565F, -0.24F);
         RenderUtils.renderFluidInTank(null, renderData.getRightTank(), poseStack, buffer, combinedLightIn, 0.23F, -0.565F, -0.24F);
     }

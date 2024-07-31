@@ -89,7 +89,7 @@ public class ClientBackpackTooltipComponent implements ClientTooltipComponent
 
     public void renderFluidTankTooltip(FluidStack fluidStack, Font font, int mouseX, int mouseY, Matrix4f matrix, MultiBufferSource bufferSource)
     {
-        Component c = Component.translatable(fluidStack.getTranslationKey());
+        Component c = fluidStack.getHoverName();
         Component c1 = Component.literal(": ");
         Component c2 = Component.literal(fluidStack.getAmount() + "mB");
 

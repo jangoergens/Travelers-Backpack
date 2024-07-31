@@ -7,7 +7,7 @@ import com.tiviacz.travelersbackpack.client.screens.buttons.*;
 import com.tiviacz.travelersbackpack.client.screens.widgets.*;
 import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.handlers.ModClientEventsHandler;
+import com.tiviacz.travelersbackpack.handlers.ModClientEventHandler;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackBaseMenu;
 import com.tiviacz.travelersbackpack.inventory.sorter.ContainerSorter;
@@ -41,10 +41,10 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBackpackBaseMenu> implements MenuAccess<TravelersBackpackBaseMenu>
 {
-    public static final ResourceLocation BACKGROUND_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
-    public static final ResourceLocation SLOTS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
-    public static final ResourceLocation SETTINGS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
-    public static final ResourceLocation EXTRAS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
+    public static final ResourceLocation BACKGROUND_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
+    public static final ResourceLocation SLOTS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
+    public static final ResourceLocation SETTINGS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
+    public static final ResourceLocation EXTRAS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
     public List<IButton> buttons = new ArrayList<>();
     public ControlTab controlTab;
     public ToolSlotsWidget toolSlotsWidget;
@@ -54,6 +54,7 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
     public TankSlotWidget leftTankSlotWidget;
     public TankSlotWidget rightTankSlotWidget;
     public CraftingWidget craftingWidget;
+    //public VisibilityWidget visibilityWidget;
 
     public final ITravelersBackpackContainer container;
     private final TankScreen tankLeft;
@@ -479,8 +480,8 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
             if(this.tankLeft.inTank(this, (int)mouseX, (int)mouseY) && BackpackUtils.isShiftPressed())
             {
                 //TravelersBackpack.NETWORK.send(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 1), PacketDistributor.SERVER.noArg());
-                PacketDistributor.SERVER.noArg().send(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 1));
                 if(container.getScreenID() == Reference.ITEM_SCREEN_ID) ServerActions.emptyTank(1, menu.inventory.player, container.getLevel(), container.getScreenID());
+                PacketDistributor.sendToServer(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 1));
             }
         }
 
@@ -490,8 +491,8 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
             if(this.tankRight.inTank(this, (int)mouseX, (int)mouseY) && BackpackUtils.isShiftPressed())
             {
                 //TravelersBackpack.NETWORK.send(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 2), PacketDistributor.SERVER.noArg());
-                PacketDistributor.SERVER.noArg().send(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 2));
                 if(container.getScreenID() == Reference.ITEM_SCREEN_ID) ServerActions.emptyTank(2, menu.inventory.player, container.getLevel(), container.getScreenID());
+                PacketDistributor.sendToServer(new ServerboundSpecialActionPacket(container.getScreenID(), Reference.EMPTY_TANK, 2));
             }
         }
 
@@ -508,15 +509,15 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
     @Override
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers)
     {
-        if(ModClientEventsHandler.SORT_BACKPACK.isActiveAndMatches(InputConstants.getKey(pKeyCode, pScanCode)))
+        if(ModClientEventHandler.SORT_BACKPACK.isActiveAndMatches(InputConstants.getKey(pKeyCode, pScanCode)))
         {
-            PacketDistributor.SERVER.noArg().send(new ServerboundSorterPacket(container.getScreenID(), ContainerSorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
+            PacketDistributor.sendToServer(new ServerboundSorterPacket(container.getScreenID(), ContainerSorter.SORT_BACKPACK, BackpackUtils.isShiftPressed()));
 
             playUIClickSound();
             return true;
         }
 
-        if(ModClientEventsHandler.OPEN_BACKPACK.isActiveAndMatches(InputConstants.getKey(pKeyCode, pScanCode)))
+        if(ModClientEventHandler.OPEN_BACKPACK.isActiveAndMatches(InputConstants.getKey(pKeyCode, pScanCode)))
         {
             LocalPlayer playerEntity = this.getMinecraft().player;
 

@@ -1,16 +1,12 @@
 package com.tiviacz.travelersbackpack.init;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
-import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
+import com.tiviacz.travelersbackpack.components.FluidTanks;
 import com.tiviacz.travelersbackpack.inventory.Tiers;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -25,8 +21,7 @@ public class ModCreativeTabs
     public static ItemStack createTabStack()
     {
         ItemStack stack = new ItemStack(ModItems.STANDARD_TRAVELERS_BACKPACK.get());
-        stack.getOrCreateTag().put(ITravelersBackpackContainer.LEFT_TANK, new FluidStack(Fluids.WATER, TravelersBackpackConfig.SERVER.backpackSettings.leather == null ? 3000 : Tiers.LEATHER.getTankCapacity()).writeToNBT(new CompoundTag()));
-        stack.getOrCreateTag().put(ITravelersBackpackContainer.RIGHT_TANK, new FluidStack(Fluids.LAVA, TravelersBackpackConfig.SERVER.backpackSettings.leather == null ? 3000 : Tiers.LEATHER.getTankCapacity()).writeToNBT(new CompoundTag()));
+        stack.set(ModDataComponents.FLUID_TANKS.get(), FluidTanks.createTanksForCreativeTab());
         return stack;
     }
 
@@ -122,8 +117,7 @@ public class ModCreativeTabs
     public static ItemStack createTieredBackpack(Tiers.Tier tier)
     {
         ItemStack stack = new ItemStack(ModItems.STANDARD_TRAVELERS_BACKPACK.get());
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putInt(ITravelersBackpackContainer.TIER, tier.getOrdinal());
+        stack.set(ModDataComponents.TIER, tier.getOrdinal());
         return stack;
     }
 }

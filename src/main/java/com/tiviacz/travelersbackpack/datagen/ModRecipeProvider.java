@@ -6,6 +6,7 @@ import com.tiviacz.travelersbackpack.common.recipes.ShapedBackpackRecipeBuilder;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.init.ModTags;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
@@ -19,12 +20,13 @@ import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.Tags;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class ModRecipeProvider extends RecipeProvider
 {
-    public ModRecipeProvider(PackOutput output)
+    public ModRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> holderProvider)
     {
-        super(output);
+        super(output, holderProvider);
     }
 
     @Override
@@ -38,7 +40,7 @@ public class ModRecipeProvider extends RecipeProvider
 
         //Upgrades
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.BLANK_UPGRADE.get(), 4)
-                .define('A', ModItems.BACKPACK_TANK.get()).define('B', Tags.Items.LEATHER).define('C', Tags.Items.CHESTS_WOODEN)
+                .define('A', ModItems.BACKPACK_TANK.get()).define('B', Tags.Items.LEATHERS).define('C', Tags.Items.CHESTS_WOODEN)
                 .pattern("BBB").pattern("ACA").pattern("BBB")
                 .unlockedBy("has_chest", has(Tags.Items.CHESTS_WOODEN)).save(writer);
 
@@ -60,7 +62,7 @@ public class ModRecipeProvider extends RecipeProvider
 
         //All Recipes
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.BACKPACK_TANK.get())
-                .define('B', Tags.Items.GLASS_COLORLESS).define('A', Tags.Items.INGOTS_IRON)
+                .define('B', Tags.Items.GLASS_BLOCKS_COLORLESS).define('A', Tags.Items.INGOTS_IRON)
                 .pattern("BAB").pattern("B B").pattern("BAB")
                 .unlockedBy("has_iron", has(Tags.Items.INGOTS_IRON)).save(writer, id("backpack_tank"));
 
@@ -75,7 +77,7 @@ public class ModRecipeProvider extends RecipeProvider
                 .unlockedBy(getHasName(ModItems.HOSE_NOZZLE.get()), has(ModItems.HOSE_NOZZLE.get())).save(writer, id("hose"));
 
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.STANDARD_TRAVELERS_BACKPACK.get()).group("standard_travelers_backpack")
-                .define('X', Tags.Items.LEATHER).define('B', Tags.Items.INGOTS_GOLD).define('C', ModItems.BACKPACK_TANK.get())
+                .define('X', Tags.Items.LEATHERS).define('B', Tags.Items.INGOTS_GOLD).define('C', ModItems.BACKPACK_TANK.get())
                 .define('D', Tags.Items.CHESTS_WOODEN).define('S', ModTags.SLEEPING_BAGS)
                 .pattern("XBX").pattern("CDC").pattern("XSX")
                 .unlockedBy("has_chest", has(Tags.Items.CHESTS_WOODEN)).save(writer, id("standard"));
@@ -124,7 +126,7 @@ public class ModRecipeProvider extends RecipeProvider
         //Cactus
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CACTUS_TRAVELERS_BACKPACK.get())
                 .define('A', Items.CACTUS).define('B', Tags.Items.DYES_GREEN)
-                .define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).define('D', Tags.Items.SAND)
+                .define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).define('D', Tags.Items.SANDS)
                 .pattern("ABA").pattern("ACA").pattern("DDD")
                 .unlockedBy(getHasName(Items.CACTUS), has(Items.CACTUS)).save(writer);
 
@@ -143,7 +145,7 @@ public class ModRecipeProvider extends RecipeProvider
 
         //Cow
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.COW_TRAVELERS_BACKPACK.get())
-                .define('A', Items.BEEF).define('B', Tags.Items.LEATHER).define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).define('D', Items.MILK_BUCKET)
+                .define('A', Items.BEEF).define('B', Tags.Items.LEATHERS).define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).define('D', Items.MILK_BUCKET)
                 .pattern("ABA").pattern("ACA").pattern("BDB")
                 .unlockedBy(getHasName(Items.MILK_BUCKET), has(Items.MILK_BUCKET)).save(writer);
 
@@ -168,13 +170,13 @@ public class ModRecipeProvider extends RecipeProvider
 
         //Ghast
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GHAST_TRAVELERS_BACKPACK.get())
-                .define('A', Items.GHAST_TEAR).define('B', Items.FIRE_CHARGE).define('C', Tags.Items.GUNPOWDER)
+                .define('A', Items.GHAST_TEAR).define('B', Items.FIRE_CHARGE).define('C', Tags.Items.GUNPOWDERS)
                 .define('D', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).pattern("ABA").pattern("CDC").pattern("ACA")
                 .unlockedBy(getHasName(Items.GHAST_TEAR), has(Items.GHAST_TEAR)).save(writer);
 
         //Horse
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.HORSE_TRAVELERS_BACKPACK.get())
-                .define('A', Tags.Items.LEATHER).define('B', Items.APPLE).define('C', Tags.Items.CROPS_WHEAT).define('D', ModItems.STANDARD_TRAVELERS_BACKPACK.get())
+                .define('A', Tags.Items.LEATHERS).define('B', Items.APPLE).define('C', Tags.Items.CROPS_WHEAT).define('D', ModItems.STANDARD_TRAVELERS_BACKPACK.get())
                 .pattern("ABA").pattern("CDC").pattern("ACA")
                 .unlockedBy(getHasName(Items.LEATHER), has(Items.LEATHER)).save(writer);
 
@@ -198,7 +200,7 @@ public class ModRecipeProvider extends RecipeProvider
 
         //Nether
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.NETHER_TRAVELERS_BACKPACK.get())
-                .define('A', Tags.Items.GEMS_QUARTZ).define('B', Tags.Items.CROPS_NETHER_WART).define('C', Tags.Items.NETHERRACK)
+                .define('A', Tags.Items.GEMS_QUARTZ).define('B', Tags.Items.CROPS_NETHER_WART).define('C', Tags.Items.NETHERRACKS)
                 .define('D', ModItems.STANDARD_TRAVELERS_BACKPACK.get()).define('E', Items.BLACKSTONE).define('F', Items.LAVA_BUCKET)
                 .pattern("ABA").pattern("CDC").pattern("EFE")
                 .unlockedBy(getHasName(Items.NETHER_WART), has(Tags.Items.CROPS_NETHER_WART)).save(writer);
@@ -217,7 +219,7 @@ public class ModRecipeProvider extends RecipeProvider
 
         //Quartz
         ShapedBackpackRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.QUARTZ_TRAVELERS_BACKPACK.get())
-                .define('A', Tags.Items.STORAGE_BLOCKS_QUARTZ).define('B', Tags.Items.GEMS_QUARTZ).define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get())
+                .define('A', Items.QUARTZ_BLOCK).define('B', Tags.Items.GEMS_QUARTZ).define('C', ModItems.STANDARD_TRAVELERS_BACKPACK.get())
                 .pattern("ABA").pattern("BCB").pattern("ABA")
                 .unlockedBy(getHasName(Items.QUARTZ), has(Tags.Items.GEMS_QUARTZ)).save(writer);
 
@@ -282,7 +284,7 @@ public class ModRecipeProvider extends RecipeProvider
 
     public static ResourceLocation id(String name)
     {
-        return new ResourceLocation(TravelersBackpack.MODID, name);
+        return ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, name);
     }
 
     protected static void sleepingBagFromWool(RecipeOutput recipeOutput, ItemLike sleepingBag, ItemLike pWool)

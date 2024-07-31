@@ -1,12 +1,11 @@
 package com.tiviacz.travelersbackpack.fluids.effects;
 
 import com.tiviacz.travelersbackpack.api.fluids.EffectFluid;
-import com.tiviacz.travelersbackpack.util.FluidUtils;
 import com.tiviacz.travelersbackpack.util.Reference;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -28,7 +27,18 @@ public class PotionEffect extends EffectFluid
     {
         if(!level.isClientSide && entity instanceof Player player)
         {
-            for(MobEffectInstance mobEffectInstance : PotionUtils.getMobEffects(FluidUtils.getItemStackFromFluidStack(stack)))
+            for(MobEffectInstance mobEffectInstance : stack.get(DataComponents.POTION_CONTENTS).getAllEffects())
+            {
+                if(mobEffectInstance.getEffect().value().isInstantenous())
+                {
+                    mobEffectInstance.getEffect().value().applyInstantenousEffect(player, player, player, mobEffectInstance.getAmplifier(), 1.0D);
+                }
+                else
+                {
+                    player.addEffect(new MobEffectInstance(mobEffectInstance));
+                }
+            }
+            /*for(MobEffectInstance mobEffectInstance : PotionUtils.getMobEffects(FluidUtils.getItemStackFromFluidStack(stack)))
             {
                 if(mobEffectInstance.getEffect().isInstantenous())
                 {
@@ -38,7 +48,7 @@ public class PotionEffect extends EffectFluid
                 {
                     player.addEffect(new MobEffectInstance(mobEffectInstance));
                 }
-            }
+            } */
         }
     }
 

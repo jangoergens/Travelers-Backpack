@@ -1,10 +1,10 @@
 package com.tiviacz.travelersbackpack.inventory;
 
+import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackBaseMenu;
 import com.tiviacz.travelersbackpack.util.ContainerUtils;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -14,10 +14,10 @@ import java.util.List;
 public class CraftingContainerImproved implements CraftingContainer
 {
     private final ItemStackHandler handler;
-    private final AbstractContainerMenu menu;
+    private final TravelersBackpackBaseMenu menu;
     public boolean checkChanges = true;
 
-    public CraftingContainerImproved(ITravelersBackpackContainer container, AbstractContainerMenu menu)
+    public CraftingContainerImproved(ITravelersBackpackContainer container, TravelersBackpackBaseMenu menu)
     {
         super();
         this.handler = container.getCraftingGridHandler();
@@ -71,6 +71,9 @@ public class CraftingContainerImproved implements CraftingContainer
         ItemStack stack = ContainerUtils.removeItem(this.handler, slot, amount);
         if(!stack.isEmpty())
         {
+            //#TODO
+            //this.menu.container.setDataChanged(ITravelersBackpackContainer.CRAFTING_INVENTORY_DATA);
+
             if(checkChanges)
             {
                 this.menu.slotsChanged(this);

@@ -13,6 +13,7 @@ public class ModAttachmentTypes
 {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, TravelersBackpack.MODID);
 
-    public static final Supplier<AttachmentType<TravelersBackpackSerializable>> TRAVELERS_BACKPACK = ATTACHMENT_TYPES.register("travelers_backpack", () -> AttachmentType.serializable(TravelersBackpackSerializable::new).build());
+    public static final Supplier<AttachmentType<TravelersBackpackSerializable>> TRAVELERS_BACKPACK = ATTACHMENT_TYPES.register("travelers_backpack",
+            () -> AttachmentType.serializable(TravelersBackpackSerializable::new).build());
     public static final Supplier<AttachmentType<TravelersBackpackEntitySerializable>> TRAVELERS_BACKPACK_ENTITY = ATTACHMENT_TYPES.register("travelers_backpack_entity", () -> AttachmentType.serializable(TravelersBackpackEntitySerializable::new).build());
 }

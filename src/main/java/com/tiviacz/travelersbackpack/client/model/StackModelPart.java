@@ -28,7 +28,7 @@ public class StackModelPart extends ModelPart
         super(parent.cubes, parent.children);
     }
 
-    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, Player player, MultiBufferSource buffer, int combinedLight, int combinedOverlay, float r, float g, float b, float a)
+    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, Player player, MultiBufferSource buffer, int combinedLight, int combinedOverlay, int pColor)
     {
         ITravelersBackpackContainer container = AttachmentUtils.getBackpackInv(player);
 

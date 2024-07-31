@@ -43,7 +43,7 @@ public class TravelersBackpackItemMenu extends TravelersBackpackBaseMenu
         }
         else
         {
-            if(data.writerIndex() == 5)
+            if(data.readBoolean())
             {
                 final int entityId = data.readInt();
                 stack = AttachmentUtils.getWearingBackpack((Player)inventory.player.level().getEntity(entityId));
@@ -67,7 +67,9 @@ public class TravelersBackpackItemMenu extends TravelersBackpackBaseMenu
             }
             else if(screenID == Reference.ITEM_SCREEN_ID)
             {
+                //return AttachmentUtils.getItemContainer(stack, inventory.player);
                 return new TravelersBackpackContainer(stack, inventory.player, screenID);
+                //return TravelersBackpackContainer.getItemContainer(inventory.player, stack, screenID);
             }
         }
         throw new IllegalStateException("ItemStack is not correct! " + stack);

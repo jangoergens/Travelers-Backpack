@@ -107,8 +107,7 @@ public class AbilitySliderButton extends Button
             {
                 if(BackpackAbilities.isOnList(BackpackAbilities.BLOCK_ABILITIES_LIST, screen.container.getItemStack()) && this.inButton((int)mouseX, (int)mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.isWidgetVisible(4, screen.leftTankSlotWidget))
                 {
-                    PacketDistributor.SERVER.noArg().send(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()));
-                    //TravelersBackpack.NETWORK.send(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()), PacketDistributor.SERVER.noArg());
+                    PacketDistributor.sendToServer(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()));
                     screen.playUIClickSound();
                     return true;
                 }
@@ -120,8 +119,7 @@ public class AbilitySliderButton extends Button
             {
                 if(BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_LIST, screen.container.getItemStack()) && this.inButton((int)mouseX, (int)mouseY) && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.isWidgetVisible(4, screen.leftTankSlotWidget))
                 {
-                    PacketDistributor.SERVER.noArg().send(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()));
-                    //TravelersBackpack.NETWORK.send(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()), PacketDistributor.SERVER.noArg());
+                    PacketDistributor.sendToServer(new ServerboundAbilitySliderPacket(screen.container.getScreenID(), !screen.container.getAbilityValue()));
                     screen.playUIClickSound();
                     return true;
                 }

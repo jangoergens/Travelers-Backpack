@@ -8,8 +8,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -60,8 +58,8 @@ public class TravelersBackpackConfig
             public final BackpackSettings.CraftingUpgradeConfig craftingUpgrade;
             public final ModConfigSpec.BooleanValue rightClickEquip;
             public final ModConfigSpec.BooleanValue rightClickUnequip;
+            public final ModConfigSpec.BooleanValue allowOnlyEquippedBackpack;
             public final ModConfigSpec.BooleanValue invulnerableBackpack;
-            public final ModConfigSpec.BooleanValue toolSlotsAcceptSwords;
             public final ModConfigSpec.BooleanValue toolSlotsAcceptEverything;
             public final ModConfigSpec.ConfigValue<List<? extends String>> toolSlotsAcceptableItems;
             public final ModConfigSpec.ConfigValue<List<? extends String>> blacklistedItems;
@@ -70,7 +68,7 @@ public class TravelersBackpackConfig
             public final ModConfigSpec.BooleanValue backpackDeathPlace;
             public final ModConfigSpec.BooleanValue backpackForceDeathPlace;
             public final ModConfigSpec.BooleanValue enableSleepingBagSpawnPoint;
-            public final ModConfigSpec.BooleanValue curiosIntegration;
+            public final ModConfigSpec.BooleanValue accessoriesIntegration;
 
             BackpackSettings(final ModConfigSpec.Builder builder, final String path)
             {
@@ -97,12 +95,13 @@ public class TravelersBackpackConfig
                         .comment("Enables unequipping the backpack on right-click on the ground with empty hand")
                         .define("rightClickUnequip", false);
 
+                allowOnlyEquippedBackpack = builder
+                        .comment("Allows to use only equipped backpack")
+                        .define("allowOnlyEquippedBackpack", false);
+
                 invulnerableBackpack = builder
                         .comment("Backpack immune to any damage source (lava, fire), can't be destroyed, never disappears as floating item")
                         .define("invulnerableBackpack", true);
-
-                toolSlotsAcceptSwords = builder
-                        .define("toolSlotsAcceptSwords", true);
 
                 toolSlotsAcceptEverything = builder
                         .comment("Tool slots accept any item")
@@ -110,11 +109,11 @@ public class TravelersBackpackConfig
 
                 toolSlotsAcceptableItems = builder
                         .comment("List of items that can be put in tool slots (Use registry names, for example: \"minecraft:apple\", \"minecraft:flint\")")
-                        .defineList("toolSlotsAcceptableItems", Collections.emptyList(), mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("toolSlotsAcceptableItems", Collections.emptyList(), () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 blacklistedItems = builder
                         .comment("List of items that can't be put in backpack inventory (Use registry names, for example: \"minecraft:apple\", \"minecraft:flint\")")
-                        .defineList("blacklistedItems", Collections.emptyList(), mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("blacklistedItems", Collections.emptyList(), () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 allowShulkerBoxes = builder
                         .comment("Allows putting shulker boxes and other items with inventory in backpack")
@@ -135,9 +134,9 @@ public class TravelersBackpackConfig
                 enableSleepingBagSpawnPoint = builder
                         .define("enableSleepingBagSpawnPoint", false);
 
-                curiosIntegration = builder
-                        .comment("If true, backpack can only be worn by placing it in curios 'Back' slot", "WARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
-                        .define("curiosIntegration", false);
+                accessoriesIntegration = builder
+                        .comment("If true, backpack can only be worn by placing it in accessories 'Back' slot", "WARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
+                        .define("accessoriesIntegration", false);
 
                 builder.pop();
             }
@@ -187,7 +186,7 @@ public class TravelersBackpackConfig
 
                     includeByDefault = builder
                             .comment("Newly crafted backpacks will have crafting upgrade included by default")
-                            .define("defaultUpgrade", false);
+                            .define("includeByDefault", false);
 
                     savesItems = builder
                             .comment("Whether crafting grid should save items")
@@ -203,10 +202,9 @@ public class TravelersBackpackConfig
             public final ModConfigSpec.BooleanValue spawnEntitiesWithBackpack;
             public final ModConfigSpec.ConfigValue<List<? extends String>> possibleOverworldEntityTypes;
             public final ModConfigSpec.ConfigValue<List<? extends String>> possibleNetherEntityTypes;
-            public final ModConfigSpec.IntValue spawnChance;
+            public final ModConfigSpec.DoubleValue chance;
             public final ModConfigSpec.ConfigValue<List<? extends String>> overworldBackpacks;
             public final ModConfigSpec.ConfigValue<List<? extends String>> netherBackpacks;
-            public final ModConfigSpec.BooleanValue enableVillagerTrade;
 
             World(final ModConfigSpec.Builder builder, final String path)
             {
@@ -218,28 +216,23 @@ public class TravelersBackpackConfig
 
                 possibleOverworldEntityTypes = builder
                         .comment("List of overworld entity types that can spawn with equipped backpack. DO NOT ADD anything to this list, because the game will crash, remove entries if mob should not spawn with backpack")
-                        .defineList("possibleOverworldEntityTypes", this::getPossibleOverworldEntityTypes, mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("possibleOverworldEntityTypes", this::getPossibleOverworldEntityTypes, () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 possibleNetherEntityTypes = builder
                         .comment("List of nether entity types that can spawn with equipped backpack. DO NOT ADD anything to this list, because the game will crash, remove entries if mob should not spawn with backpack")
-                        .defineList("possibleNetherEntityTypes", this::getPossibleNetherEntityTypes, mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("possibleNetherEntityTypes", this::getPossibleNetherEntityTypes, () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
-
-                spawnChance = builder
-                        .comment("Defines spawn chance of entity with backpack (1 in [selected value])")
-                        .defineInRange("spawnChance", 500, 0, Integer.MAX_VALUE);
+                chance = builder
+                        .comment("Defines spawn chance of entity with a backpack)")
+                        .defineInRange("spawnChance", 0.005, 0, 1);
 
                 overworldBackpacks = builder
                         .comment("List of backpacks that can spawn on overworld mobs")
-                        .defineList("overworldBackpacks", this::getOverworldBackpacksList, mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("overworldBackpacks", this::getOverworldBackpacksList, () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 netherBackpacks = builder
                         .comment("List of backpacks that can spawn on nether mobs")
-                        .defineList("netherBackpacks", this::getNetherBackpacksList, mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
-
-                enableVillagerTrade = builder
-                        .comment("Enables trade for Villager Backpack in Librarian villager trades")
-                        .define("enableVillagerTrade", true);
+                        .defineList("netherBackpacks", this::getNetherBackpacksList, () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 builder.pop();
             }
@@ -327,11 +320,11 @@ public class TravelersBackpackConfig
 
                 forceAbilityEnabled = builder
                         .comment("Newly crafted backpacks will have ability enabled by default")
-                        .define("forceAbilityEnabled", false);
+                        .define("forceAbilityEnabled", true);
 
                 allowedAbilities = builder
                         .comment("List of backpacks that are allowed to have an ability. DO NOT ADD anything to this list, because the game will crash, remove entries if backpack should not have ability")
-                        .defineList("allowedAbilities", this::getAllowedAbilities, mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
+                        .defineList("allowedAbilities", this::getAllowedAbilities, () -> "", mapping -> ((String)mapping).matches(REGISTRY_NAME_MATCHER));
 
                 builder.pop();
             }
@@ -455,6 +448,7 @@ public class TravelersBackpackConfig
     public static class Common
     {
         public final ModConfigSpec.BooleanValue enableLoot;
+        public final ModConfigSpec.BooleanValue enableVillagerTrade;
 
         Common(final ModConfigSpec.Builder builder)
         {
@@ -465,12 +459,17 @@ public class TravelersBackpackConfig
                     .comment("Enables backpacks spawning in loot chests")
                     .define("enableLoot", true);
 
+            enableVillagerTrade = builder
+                    .comment("Enables trade for Villager Backpack in Librarian villager trades")
+                    .define("enableVillagerTrade", true);
+
             builder.pop();
         }
     }
 
     public static class Client
     {
+        public final ModConfigSpec.BooleanValue showBackpackIconInInventory;
         public final ModConfigSpec.BooleanValue sendBackpackCoordinatesMessage;
         public final ModConfigSpec.BooleanValue enableToolCycling;
         public final ModConfigSpec.BooleanValue disableScrollWheel;
@@ -485,6 +484,10 @@ public class TravelersBackpackConfig
         {
             builder.comment("Client-only settings")
                     .push("client");
+
+            showBackpackIconInInventory = builder
+                                        .comment("Whether the backpack icon should be visible in player's inventory")
+                                        .define("showBackpackIconInInventory", true);
 
             sendBackpackCoordinatesMessage = builder
                                         .comment("Sends a message to the player on death with backpack coordinates")
@@ -584,13 +587,5 @@ public class TravelersBackpackConfig
         final Pair<Client, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Client::new);
         clientSpec = specPair.getRight();
         CLIENT = specPair.getLeft();
-    }
-
-    //Register Config
-    public static void register(final ModLoadingContext context)
-    {
-        context.registerConfig(ModConfig.Type.SERVER, serverSpec);
-        context.registerConfig(ModConfig.Type.COMMON, commonSpec);
-        context.registerConfig(ModConfig.Type.CLIENT, clientSpec);
     }
 }

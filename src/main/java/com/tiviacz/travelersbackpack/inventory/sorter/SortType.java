@@ -1,9 +1,9 @@
 package com.tiviacz.travelersbackpack.inventory.sorter;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +13,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class SortType
 {
@@ -51,7 +52,7 @@ public class SortType
     private static String specialCases(ItemStack stack)
     {
         Item item = stack.getItem();
-        CompoundTag tag = stack.getTag();
+        //CompoundTag tag = stack.getTag();
 
         //if(tag != null && tag.contains("SkullOwner"))
        // {
@@ -95,25 +96,15 @@ public class SortType
 
     private static String enchantedBookNameCase(ItemStack stack)
     {
-        ListTag enchants = EnchantedBookItem.getEnchantments(stack);
+        Set<Object2IntMap.Entry<Holder<Enchantment>>> enchants = stack.get(DataComponents.STORED_ENCHANTMENTS).entrySet();
         List<String> names = new ArrayList<>();
         StringBuilder enchantNames = new StringBuilder();
 
-        for(int i = 0; i < enchants.size(); i++)
+        for(Object2IntMap.Entry<Holder<Enchantment>> e : enchants)
         {
-            CompoundTag enchantTag = enchants.getCompound(i);
-            ResourceLocation enchantID = ResourceLocation.tryParse(enchantTag.getString("id"));
-            if(enchantID == null)
-            {
-                continue;
-            }
-            Enchantment enchant = BuiltInRegistries.ENCHANTMENT.get(enchantID);
-            if(enchant == null)
-            {
-                continue;
-            }
-            names.add(enchant.getFullname(enchantTag.getInt("lvl")).getString());
+            names.add(Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
         }
+
         Collections.sort(names);
         for(String enchant : names)
         {

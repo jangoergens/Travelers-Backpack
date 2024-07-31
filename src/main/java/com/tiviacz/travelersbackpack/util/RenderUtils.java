@@ -77,13 +77,13 @@ public class RenderUtils
                 float maxV = icon.getV1();
 
                 Matrix4f matrix4f = guiGraphics.pose().last().pose();
-                BufferBuilder builder = Tesselator.getInstance().getBuilder();
-                builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                builder.vertex(matrix4f, drawX, drawY + drawHeight, (float)z).uv(minU, minV + (maxV - minV) * (float)drawHeight / 16F).endVertex();
-                builder.vertex(matrix4f, drawX + drawWidth, drawY + drawHeight, (float)z).uv(minU + (maxU - minU) * (float)drawWidth / 16F, minV + (maxV - minV) * drawHeight / 16F).endVertex();
-                builder.vertex(matrix4f, drawX + drawWidth, drawY, (float)z).uv(minU + (maxU - minU) * drawWidth / 16F, minV).endVertex();
-                builder.vertex(matrix4f, drawX, drawY, (float)z).uv(minU, minV).endVertex();
-                BufferUploader.drawWithShader(builder.end());
+                BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                //builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                builder.addVertex(matrix4f, drawX, drawY + drawHeight, (float)z).setUv(minU, minV + (maxV - minV) * (float)drawHeight / 16F);
+                builder.addVertex(matrix4f, drawX + drawWidth, drawY + drawHeight, (float)z).setUv(minU + (maxU - minU) * (float)drawWidth / 16F, minV + (maxV - minV) * drawHeight / 16F);
+                builder.addVertex(matrix4f, drawX + drawWidth, drawY, (float)z).setUv(minU + (maxU - minU) * drawWidth / 16F, minV);
+                builder.addVertex(matrix4f, drawX, drawY, (float)z).setUv(minU, minV);
+                BufferUploader.drawWithShader(builder.buildOrThrow());
             }
         }
         //RenderSystem.enableBlend();
@@ -155,10 +155,10 @@ public class RenderUtils
             float replacedU1 = (direction == Direction.UP || direction == Direction.DOWN) ? icon.getU(4F/ 16) : icon.getU(7F/ 16);
             float replacedU2 = (direction == Direction.UP || direction == Direction.DOWN) ? icon.getU(8F/ 16) : icon.getU(8F/ 16);
 
-            renderer.vertex(matrix4f, c[0][0], getHeight(c[0][1], height), c[0][2]).color(r, g, b, a).uv(replacedU1, replacedMaxV).uv2(brightness).endVertex();
-            renderer.vertex(matrix4f, c[1][0], getHeight(c[1][1], height), c[1][2]).color(r, g, b, a).uv(replacedU1, icon.getV0()).uv2(brightness).endVertex();
-            renderer.vertex(matrix4f, c[2][0], getHeight(c[2][1], height), c[2][2]).color(r, g, b, a).uv(replacedU2, icon.getV0()).uv2(brightness).endVertex();
-            renderer.vertex(matrix4f, c[3][0], getHeight(c[3][1], height), c[3][2]).color(r, g, b, a).uv(replacedU2, replacedMaxV).uv2(brightness).endVertex();
+            renderer.addVertex(matrix4f, c[0][0], getHeight(c[0][1], height), c[0][2]).setColor(r, g, b, a).setUv(replacedU1, replacedMaxV).setLight(brightness);
+            renderer.addVertex(matrix4f, c[1][0], getHeight(c[1][1], height), c[1][2]).setColor(r, g, b, a).setUv(replacedU1, icon.getV0()).setLight(brightness);
+            renderer.addVertex(matrix4f, c[2][0], getHeight(c[2][1], height), c[2][2]).setColor(r, g, b, a).setUv(replacedU2, icon.getV0()).setLight(brightness);
+            renderer.addVertex(matrix4f, c[3][0], getHeight(c[3][1], height), c[3][2]).setColor(r, g, b, a).setUv(replacedU2, replacedMaxV).setLight(brightness);
         }
     }
 

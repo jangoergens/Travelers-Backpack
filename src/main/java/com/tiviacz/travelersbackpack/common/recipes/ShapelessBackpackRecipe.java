@@ -2,17 +2,15 @@ package com.tiviacz.travelersbackpack.common.recipes;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.crafting.*;
@@ -27,20 +25,19 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
     }
 
     @Override
-    public ItemStack assemble(final CraftingContainer inv, RegistryAccess registryAccess)
+    public ItemStack assemble(CraftingInput pInput, HolderLookup.Provider pRegistries)
     {
-        final ItemStack output = super.assemble(inv, registryAccess);
+        final ItemStack output = this.result.copy();
 
         if(!output.isEmpty())
         {
-            for(int i = 0; i < inv.getContainerSize(); i++)
+            for(int i = 0; i < pInput.size(); i++)
             {
-                final ItemStack ingredient = inv.getItem(i);
+                final ItemStack ingredient = pInput.getItem(i);
 
                 if(!ingredient.isEmpty() && ingredient.getItem() instanceof TravelersBackpackItem)
                 {
-                    final CompoundTag compound = ingredient.getTag();
-                    output.setTag(compound);
+                    output.applyComponents(ingredient.getComponentsPatch());
                     break;
                 }
             }
@@ -52,18 +49,33 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
     {
         final Player craftingPlayer = CommonHooks.getCraftingPlayer();
 
-        if(stack.hurt(1, craftingPlayer == null ? RandomSource.create() : craftingPlayer.level().random, craftingPlayer instanceof ServerPlayer ? (ServerPlayer) craftingPlayer : null))
+        if(craftingPlayer != null && craftingPlayer.level() != null && craftingPlayer instanceof ServerPlayer serverPlayer)
         {
-            EventHooks.onPlayerDestroyItem(craftingPlayer, stack, null);
-            return ItemStack.EMPTY;
+            stack.hurtAndBreak(1, serverPlayer.serverLevel(), serverPlayer, item ->
+            {
+                EventHooks.onPlayerDestroyItem(craftingPlayer, stack, null);
+                stack.setCount(0);
+            });
+        }
+        else
+        {
+            if(stack.getDamageValue() + 1 <= stack.getMaxDamage())
+            {
+                stack.setDamageValue(stack.getDamageValue() + 1);
+                return stack;
+            }
+            else
+            {
+                return ItemStack.EMPTY;
+            }
         }
         return stack;
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(final CraftingContainer inventoryCrafting)
+    public NonNullList<ItemStack> getRemainingItems(final CraftingInput inventoryCrafting)
     {
-        final NonNullList<ItemStack> remainingItems = NonNullList.withSize(inventoryCrafting.getContainerSize(), ItemStack.EMPTY);
+        final NonNullList<ItemStack> remainingItems = NonNullList.withSize(inventoryCrafting.size(), ItemStack.EMPTY);
 
         for(int i = 0; i < remainingItems.size(); ++i)
         {
@@ -92,71 +104,68 @@ public class ShapelessBackpackRecipe extends ShapelessRecipe
         return RecipeType.CRAFTING;
     }
 
-    public static class Serializer implements RecipeSerializer<ShapelessBackpackRecipe>
-    {
+    public static class Serializer implements RecipeSerializer<ShapelessBackpackRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
-        private static final Codec<ShapelessBackpackRecipe> CODEC = RecordCodecBuilder.create(
-                p_311734_ -> p_311734_.group(
-                                ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(ShapelessRecipe::getGroup),
-                                CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(ShapelessRecipe::category),
-                                ItemStack.ITEM_WITH_COUNT_CODEC.fieldOf("result").forGetter(p_301142_ -> p_301142_.result),
+        @Override
+        public MapCodec<ShapelessBackpackRecipe> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, ShapelessBackpackRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
+
+        private static final MapCodec<ShapelessBackpackRecipe> CODEC = RecordCodecBuilder.mapCodec(
+                p_340779_ -> p_340779_.group(
+                                Codec.STRING.optionalFieldOf("group", "").forGetter(p_301127_ -> p_301127_.getGroup()),
+                                CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(p_301133_ -> p_301133_.category()),
+                                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(p_301142_ -> p_301142_.result),
                                 Ingredient.CODEC_NONEMPTY
                                         .listOf()
                                         .fieldOf("ingredients")
                                         .flatXmap(
                                                 p_301021_ -> {
-                                                    Ingredient[] aingredient = p_301021_
-                                                            .toArray(Ingredient[]::new); //Forge skip the empty check and immediatly create the array.
+                                                    Ingredient[] aingredient = p_301021_.toArray(Ingredient[]::new); // Neo skip the empty check and immediately create the array.
                                                     if (aingredient.length == 0) {
                                                         return DataResult.error(() -> "No ingredients for shapeless recipe");
                                                     } else {
-                                                        return aingredient.length > 3 * 3
-                                                                ? DataResult.error(() -> "Too many ingredients for shapeless recipe. The maximum is: %s".formatted(3 * 3))
+                                                        return aingredient.length > ShapedRecipePattern.getMaxHeight() * ShapedRecipePattern.getMaxWidth()
+                                                                ? DataResult.error(() -> "Too many ingredients for shapeless recipe. The maximum is: %s".formatted(ShapedRecipePattern.getMaxHeight() * ShapedRecipePattern.getMaxWidth()))
                                                                 : DataResult.success(NonNullList.of(Ingredient.EMPTY, aingredient));
                                                     }
                                                 },
                                                 DataResult::success
                                         )
-                                        .forGetter(ShapelessRecipe::getIngredients)
+                                        .forGetter(p_300975_ -> p_300975_.getIngredients())
                         )
-                        .apply(p_311734_, ShapelessBackpackRecipe::new)
+                        .apply(p_340779_, ShapelessBackpackRecipe::new)
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessBackpackRecipe> STREAM_CODEC = StreamCodec.of(
+                ShapelessBackpackRecipe.Serializer::toNetwork, ShapelessBackpackRecipe.Serializer::fromNetwork
         );
 
-        @Override
-        public Codec<ShapelessBackpackRecipe> codec()
-        {
-            return CODEC;
-        }
-
-        @Override
-        public ShapelessBackpackRecipe fromNetwork(FriendlyByteBuf pBuffer)
-        {
-            String s = pBuffer.readUtf();
-            CraftingBookCategory craftingbookcategory = pBuffer.readEnum(CraftingBookCategory.class);
-            int i = pBuffer.readVarInt();
+        private static ShapelessBackpackRecipe fromNetwork(RegistryFriendlyByteBuf p_319905_) {
+            String s = p_319905_.readUtf();
+            CraftingBookCategory craftingbookcategory = p_319905_.readEnum(CraftingBookCategory.class);
+            int i = p_319905_.readVarInt();
             NonNullList<Ingredient> nonnulllist = NonNullList.withSize(i, Ingredient.EMPTY);
-
-            for(int j = 0; j < nonnulllist.size(); ++j) {
-                nonnulllist.set(j, Ingredient.fromNetwork(pBuffer));
-            }
-
-            ItemStack itemstack = pBuffer.readItem();
+            nonnulllist.replaceAll(p_319735_ -> Ingredient.CONTENTS_STREAM_CODEC.decode(p_319905_));
+            ItemStack itemstack = ItemStack.STREAM_CODEC.decode(p_319905_);
             return new ShapelessBackpackRecipe(s, craftingbookcategory, itemstack, nonnulllist);
         }
 
-        @Override
-        public void toNetwork(FriendlyByteBuf buffer, ShapelessBackpackRecipe recipe)
-        {
-            buffer.writeUtf(recipe.getGroup());
-            buffer.writeEnum(recipe.category());
-            buffer.writeVarInt(recipe.getIngredients().size());
+        private static void toNetwork(RegistryFriendlyByteBuf p_320371_, ShapelessBackpackRecipe p_320323_) {
+            p_320371_.writeUtf(p_320323_.getGroup());
+            p_320371_.writeEnum(p_320323_.category());
+            p_320371_.writeVarInt(p_320323_.getIngredients().size());
 
-            for(Ingredient ingredient : recipe.getIngredients()) {
-                ingredient.toNetwork(buffer);
+            for (Ingredient ingredient : p_320323_.getIngredients()) {
+                Ingredient.CONTENTS_STREAM_CODEC.encode(p_320371_, ingredient);
             }
 
-            buffer.writeItem(recipe.result);
+            ItemStack.STREAM_CODEC.encode(p_320371_, p_320323_.result);
         }
     }
 }

@@ -42,7 +42,7 @@ public class BackpackUpgradeRecipeBuilder
     }
 
     public void save(RecipeOutput pRecipeOutput, String pLocation) {
-        this.save(pRecipeOutput, new ResourceLocation(pLocation));
+        this.save(pRecipeOutput, ResourceLocation.parse(pLocation));
     }
 
     public void save(RecipeOutput pRecipeOutput, ResourceLocation pRecipeId)

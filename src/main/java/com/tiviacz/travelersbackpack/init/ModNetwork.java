@@ -1,25 +1,29 @@
 package com.tiviacz.travelersbackpack.init;
 
 import com.tiviacz.travelersbackpack.network.*;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class ModNetwork
 {
-    public static void register(final IPayloadRegistrar registrar)
+    public static void register(final PayloadRegistrar registrar)
     {
         //Client
-        registrar.play(ClientboundSyncAttachmentPacket.ID, ClientboundSyncAttachmentPacket::new, handler -> handler.client(ClientboundSyncAttachmentPacket::handle));
-        registrar.play(ClientboundUpdateRecipePacket.ID, ClientboundUpdateRecipePacket::read, handler -> handler.client(ClientboundUpdateRecipePacket::handle));
-        registrar.play(ClientboundSendMessagePacket.ID, ClientboundSendMessagePacket::new, handler -> handler.client(ClientboundSendMessagePacket::handle));
+        registrar.playToClient(ClientboundSyncAttachmentPacket.TYPE, ClientboundSyncAttachmentPacket.STREAM_CODEC, ClientboundSyncAttachmentPacket::handle);
+        registrar.playToClient(ClientboundUpdateRecipePacket.TYPE, ClientboundUpdateRecipePacket.STREAM_CODEC, ClientboundUpdateRecipePacket::handle);
+        registrar.playToClient(ClientboundSendMessagePacket.TYPE, ClientboundSendMessagePacket.STREAM_CODEC, ClientboundSendMessagePacket::handle);
+        registrar.playToClient(ClientboundSyncItemStackPacket.TYPE, ClientboundSyncItemStackPacket.STREAM_CODEC, ClientboundSyncItemStackPacket::handle);
 
         //Server
-        registrar.play(ServerboundAbilitySliderPacket.ID, ServerboundAbilitySliderPacket::new, handler -> handler.server(ServerboundAbilitySliderPacket::handle));
-        registrar.play(ServerboundEquipBackpackPacket.ID, ServerboundEquipBackpackPacket::new, handler -> handler.server(ServerboundEquipBackpackPacket::handle));
-        registrar.play(ServerboundMemoryPacket.ID, ServerboundMemoryPacket::read, handler -> handler.server(ServerboundMemoryPacket::handle));
-        registrar.play(ServerboundSettingsPacket.ID, ServerboundSettingsPacket::new, handler -> handler.server(ServerboundSettingsPacket::handle));
-        registrar.play(ServerboundSleepingBagPacket.ID, ServerboundSleepingBagPacket::new, handler -> handler.server(ServerboundSleepingBagPacket::handle));
-        registrar.play(ServerboundSlotPacket.ID, ServerboundSlotPacket::new, handler -> handler.server(ServerboundSlotPacket::handle));
-        registrar.play(ServerboundSorterPacket.ID, ServerboundSorterPacket::new, handler -> handler.server(ServerboundSorterPacket::handle));
-        registrar.play(ServerboundSpecialActionPacket.ID, ServerboundSpecialActionPacket::new, handler -> handler.server(ServerboundSpecialActionPacket::handle));
+        registrar.playToServer(ServerboundAbilitySliderPacket.TYPE, ServerboundAbilitySliderPacket.STREAM_CODEC, ServerboundAbilitySliderPacket::handle);
+        registrar.playToServer(ServerboundEquipBackpackPacket.TYPE, ServerboundEquipBackpackPacket.STREAM_CODEC, ServerboundEquipBackpackPacket::handle);
+        registrar.playToServer(ServerboundMemoryPacket.TYPE, ServerboundMemoryPacket.STREAM_CODEC, ServerboundMemoryPacket::handle);
+        registrar.playToServer(ServerboundSettingsPacket.TYPE, ServerboundSettingsPacket.STREAM_CODEC, ServerboundSettingsPacket::handle);
+        registrar.playToServer(ServerboundSleepingBagPacket.TYPE, ServerboundSleepingBagPacket.STREAM_CODEC, ServerboundSleepingBagPacket::handle);
+        registrar.playToServer(ServerboundSlotPacket.TYPE, ServerboundSlotPacket.STREAM_CODEC, ServerboundSlotPacket::handle);
+        registrar.playToServer(ServerboundSorterPacket.TYPE, ServerboundSorterPacket.STREAM_CODEC, ServerboundSorterPacket::handle);
+        registrar.playToServer(ServerboundSpecialActionPacket.TYPE, ServerboundSpecialActionPacket.STREAM_CODEC, ServerboundSpecialActionPacket::handle);
+
+        //#TODO
+        //registrar.playToServer(ServerboundOpenBackpackPacket.TYPE, ServerboundOpenBackpackPacket.STREAM_CODEC, ServerboundOpenBackpackPacket::handle);
     }
 }

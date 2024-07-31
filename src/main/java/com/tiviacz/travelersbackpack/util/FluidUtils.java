@@ -1,12 +1,14 @@
 package com.tiviacz.travelersbackpack.util;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.SoundActions;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -37,26 +39,18 @@ public class FluidUtils
         return soundevent;
     }
 
-    public static void setFluidStackNBT(ItemStack stack, FluidStack fluidStack)
+    public static void setFluidStackData(ItemStack stack, FluidStack fluidStack)
     {
-        if(stack.getTag() != null)
-        {
-            fluidStack.setTag(stack.getTag());
-        }
+        fluidStack.set(DataComponents.POTION_CONTENTS, stack.get(DataComponents.POTION_CONTENTS));
     }
 
-    public static Potion getPotionTypeFromFluidStack(FluidStack fluidStack)
+    public static Holder<Potion> getPotionTypeFromFluidStack(FluidStack fluidStack)
     {
-        return PotionUtils.getPotion(fluidStack.getTag());
+        return fluidStack.get(DataComponents.POTION_CONTENTS).potion().get();
     }
 
     public static ItemStack getItemStackFromFluidStack(FluidStack fluidStack)
     {
-        return PotionUtils.setPotion(new ItemStack(Items.POTION), getPotionTypeFromFluidStack(fluidStack));
-    }
-
-    public static ItemStack getItemStackFromPotionType(Potion potion)
-    {
-        return PotionUtils.setPotion(new ItemStack(Items.POTION), potion);
+        return PotionContents.createItemStack(Items.POTION, getPotionTypeFromFluidStack(fluidStack));
     }
 }
