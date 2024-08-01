@@ -13,12 +13,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -27,6 +31,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity
 {
+    @Shadow public abstract LivingEntity getLastAttacker();
+
     public LivingEntityMixin(EntityType<?> type, World world)
     {
         super(type, world);
@@ -98,6 +104,8 @@ public abstract class LivingEntityMixin extends Entity
             {
                 if(ComponentUtils.isWearingBackpack(livingEntity))
                 {
+                    if(!(getLastAttacker() instanceof PlayerEntity)) return;
+
                     livingEntity.dropStack(ComponentUtils.getWearingBackpack(livingEntity));
                 }
             }
