@@ -2,7 +2,7 @@ package com.tiviacz.travelersbackpack.network;
 
 import com.tiviacz.travelersbackpack.client.screens.TravelersBackpackScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -12,7 +12,7 @@ import net.minecraftforge.fml.DistExecutor;
 
 public class ClientboundUpdateRecipePacket
 {
-    public static final ResourceLocation NULL = new ResourceLocation("null", "null");
+    public static final ResourceLocation NULL = ResourceLocation.fromNamespaceAndPath("null", "null");
 
     private final ResourceLocation recipeId;
     private final ItemStack output;
@@ -29,19 +29,20 @@ public class ClientboundUpdateRecipePacket
         this.output = output;
     }
 
-    public static ClientboundUpdateRecipePacket decode(final FriendlyByteBuf buffer)
+    public static ClientboundUpdateRecipePacket decode(final RegistryFriendlyByteBuf buffer)
     {
-        ResourceLocation recipeId = new ResourceLocation(buffer.readUtf());
+        ResourceLocation recipeId = ResourceLocation.parse(buffer.readUtf());
 
-        return new ClientboundUpdateRecipePacket(recipeId, recipeId.equals(NULL) ? ItemStack.EMPTY : buffer.readItem());
+        return new ClientboundUpdateRecipePacket(recipeId, recipeId.equals(NULL) ? ItemStack.EMPTY : ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer));
     }
 
-    public static void encode(final ClientboundUpdateRecipePacket message, final FriendlyByteBuf buffer)
+    public static void encode(final ClientboundUpdateRecipePacket message, final RegistryFriendlyByteBuf buffer)
     {
         buffer.writeUtf(message.recipeId.toString());
         if(!message.recipeId.equals(NULL))
         {
-            buffer.writeItem(message.output);
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, message.output);
+           // buffer.writeItem(message.output);
         }
     }
 

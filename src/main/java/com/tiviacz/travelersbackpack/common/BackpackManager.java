@@ -30,21 +30,21 @@ public class BackpackManager
             String datedBackpackName = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().replace(":", ".") + "_" + formattedDeathTime + ".dat";
             File backpackFile = getBackpackFile(player, datedBackpackName);
             backpackFile.getParentFile().mkdirs();
-            NbtIo.write(stack.save(new CompoundTag()), backpackFile.toPath());
+            NbtIo.write((CompoundTag)stack.save(player.registryAccess()), backpackFile.toPath());
             LogHelper.info("Created new backpack backup file for " + player.getDisplayName().getString() + " with unique ID " + datedBackpackName);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     public static ItemStack getBackpack(ServerLevel serverLevel, UUID playerUUID, String backpackId) {
         try {
             CompoundTag data = NbtIo.read(getBackpackFile(serverLevel, playerUUID, backpackId).toPath());
             if (data == null) {
                 return null;
             }
-            return ItemStack.of(data);
+            return ItemStack.parseOptional(serverLevel.registryAccess(), data);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

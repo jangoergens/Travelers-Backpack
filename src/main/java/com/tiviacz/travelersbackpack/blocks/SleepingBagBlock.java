@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -91,62 +90,45 @@ public class SleepingBagBlock extends BedBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit)
-    {
-        if(level.isClientSide)
-        {
+    protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHitResult) {
+        if (pLevel.isClientSide) {
             return InteractionResult.CONSUME;
-        }
-        else
-        {
-            if(state.getValue(PART) != BedPart.HEAD)
-            {
-                pos = pos.relative(state.getValue(FACING));
-                state = level.getBlockState(pos);
-
-                if(!state.is(this))
-                {
+        } else {
+            if (pState.getValue(PART) != BedPart.HEAD) {
+                pPos = pPos.relative(pState.getValue(FACING));
+                pState = pLevel.getBlockState(pPos);
+                if (!pState.is(this)) {
                     return InteractionResult.CONSUME;
                 }
             }
 
-            if(!canSetSpawn(level))
-            {
-                level.removeBlock(pos, false);
-                BlockPos var7 = pos.relative((state.getValue(FACING)).getOpposite());
-
-                if(level.getBlockState(var7).is(this))
-                {
-                    level.removeBlock(var7, false);
+            if (!canSetSpawn(pLevel)) {
+                pLevel.removeBlock(pPos, false);
+                BlockPos blockpos = pPos.relative(pState.getValue(FACING).getOpposite());
+                if (pLevel.getBlockState(blockpos).is(this)) {
+                    pLevel.removeBlock(blockpos, false);
                 }
 
-                //level.explode(null, DamageSource.badRespawnPointExplosion(), null, (double)pos.getX() + 0.5D, (double)pos.getY() + 0.5D, (double)pos.getZ() + 0.5D, 5.0F, true, Explosion.BlockInteraction.DESTROY);
+                //Vec3 vec3 = pPos.getCenter();
+                //pLevel.explode(null, pLevel.damageSources().badRespawnPointExplosion(vec3), null, vec3, 5.0F, true, Level.ExplosionInteraction.BLOCK);
                 return InteractionResult.SUCCESS;
-            }
-            else if(state.getValue(OCCUPIED))
-            {
-                if(!this.kickVillagerOutOfBed(level, pos))
-                {
-                    player.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
+            } else if (pState.getValue(OCCUPIED)) {
+                if (!this.kickVillagerOutOfBed(pLevel, pPos)) {
+                    pPlayer.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
                 }
 
                 return InteractionResult.SUCCESS;
-            }
-            else
-            {
-                if(TravelersBackpackConfig.enableSleepingBagSpawnPoint)
+            } else {
+                if(TravelersBackpackConfig.SERVER.backpackSettings.enableSleepingBagSpawnPoint.get())
                 {
-                    if(player instanceof ServerPlayer serverPlayer)
+                    if(pPlayer instanceof ServerPlayer serverPlayer)
                     {
-                        serverPlayer.setRespawnPosition(level.dimension(), pos, serverPlayer.getYRot(), true, true);
+                        serverPlayer.setRespawnPosition(pLevel.dimension(), pPos, serverPlayer.getYRot(), true, true);
                     }
                 }
-
-                player.startSleepInBed(pos).ifLeft((p_49477_) ->
-                {
-                    if(p_49477_.getMessage() != null)
-                    {
-                        player.displayClientMessage(p_49477_.getMessage(), true);
+                pPlayer.startSleepInBed(pPos).ifLeft(p_49477_ -> {
+                    if (p_49477_.getMessage() != null) {
+                        pPlayer.displayClientMessage(p_49477_.getMessage(), true);
                     }
                 });
                 return InteractionResult.SUCCESS;

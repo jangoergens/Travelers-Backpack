@@ -2,7 +2,6 @@ package com.tiviacz.travelersbackpack.inventory;
 
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -17,30 +16,6 @@ import javax.annotation.Nonnull;
 
 public interface ITravelersBackpackContainer extends ITanks
 {
-    void saveItems(CompoundTag compound);
-
-    void loadItems(CompoundTag compound);
-
-    void saveColor(CompoundTag compound);
-
-    void loadColor(CompoundTag compound);
-
-    void saveSleepingBagColor(CompoundTag compound);
-
-    void loadSleepingBagColor(CompoundTag compound);
-
-    void saveAbility(CompoundTag compound);
-
-    void loadAbility(CompoundTag compound);
-
-    void saveTime(CompoundTag compound);
-
-    void loadTime(CompoundTag compound);
-
-    void saveAllData(CompoundTag compound);
-
-    void loadAllData(CompoundTag compound);
-
     boolean hasColor();
 
     int getColor();

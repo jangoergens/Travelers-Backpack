@@ -4,7 +4,9 @@ import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 
+@AutoRegisterCapability
 public interface ITravelersBackpack
 {
     boolean hasWearable();

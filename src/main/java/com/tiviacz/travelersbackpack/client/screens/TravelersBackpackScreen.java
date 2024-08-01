@@ -41,10 +41,10 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBackpackBaseMenu> implements MenuAccess<TravelersBackpackBaseMenu>
 {
-    public static final ResourceLocation BACKGROUND_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
-    public static final ResourceLocation SLOTS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
-    public static final ResourceLocation SETTINGS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
-    public static final ResourceLocation EXTRAS_TRAVELERS_BACKPACK = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
+    public static final ResourceLocation BACKGROUND_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_background.png");
+    public static final ResourceLocation SLOTS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_slots.png");
+    public static final ResourceLocation SETTINGS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_settings.png");
+    public static final ResourceLocation EXTRAS_TRAVELERS_BACKPACK = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_extras.png");
     public List<IButton> buttons = new ArrayList<>();
     public ControlTab controlTab;
     public ToolSlotsWidget toolSlotsWidget;
@@ -189,7 +189,7 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
         guiGraphics.blit(BACKGROUND_TRAVELERS_BACKPACK, x, y + 5, 0, offset, this.imageWidth, this.imageHeight - 5);
 
         //Slots
-        if(TravelersBackpackConfig.enableLegacyGui)
+        if(TravelersBackpackConfig.CLIENT.enableLegacyGui.get())
         {
             drawSlotsLegacy(guiGraphics, x + 43, y + 6);
         }
@@ -353,7 +353,7 @@ public class TravelersBackpackScreen extends AbstractContainerScreen<TravelersBa
     {
         if(container.getSettingsManager().showToolSlots())
         {
-            boolean enableLegacy = TravelersBackpackConfig.enableLegacyGui;
+            boolean enableLegacy = TravelersBackpackConfig.CLIENT.enableLegacyGui.get();
 
             for(int i = 0; i < container.getToolSlotsHandler().getSlots(); i++)
             {

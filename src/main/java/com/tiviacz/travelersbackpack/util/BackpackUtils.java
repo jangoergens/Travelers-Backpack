@@ -5,12 +5,11 @@ import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.capability.ITravelersBackpack;
 import com.tiviacz.travelersbackpack.common.BackpackManager;
-import com.tiviacz.travelersbackpack.compat.curios.TravelersBackpackCurios;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.network.ClientboundSendMessagePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -35,9 +34,9 @@ public class BackpackUtils
 
         boolean drop = true;
 
-        if(TravelersBackpackConfig.backpackDeathPlace)
+        if(TravelersBackpackConfig.SERVER.backpackSettings.backpackDeathPlace.get())
         {
-            if(TravelersBackpackConfig.backpackForceDeathPlace) drop = !placeBackpack(level, player, player.blockPosition(), stack);
+            if(TravelersBackpackConfig.SERVER.backpackSettings.backpackForceDeathPlace.get()) drop = !placeBackpack(level, player, player.blockPosition(), stack);
             else drop = !tryPlace(level, player, stack);
         }
 
@@ -46,20 +45,15 @@ public class BackpackUtils
 
     private static boolean placeBackpack(Level level, Player player, BlockPos placePos, ItemStack stack)
     {
-        if(stack.getTag() == null)
-        {
-            stack.setTag(new CompoundTag());
-        }
-
         Block block = Block.byItem(stack.getItem());
         int y = placePos.getY();
 
-        if(TravelersBackpackConfig.backpackForceDeathPlace)
+        if(TravelersBackpackConfig.SERVER.backpackSettings.backpackForceDeathPlace.get())
         {
             BlockPos playerPos = player.blockPosition();
             y = playerPos.getY();
 
-            if(TravelersBackpackConfig.voidProtection)
+            if(TravelersBackpackConfig.SERVER.backpackSettings.voidProtection.get())
             {
                 if(y <= level.getMinBuildHeight())
                 {
@@ -126,9 +120,9 @@ public class BackpackUtils
         LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
 
         level.playSound(player, targetPos.getX(), targetPos.getY(), targetPos.getZ(), block.defaultBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1.0F);
-        ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).loadAllData(stack.getTag());
+        level.getBlockEntity(targetPos).applyComponentsFromItemStack(stack);
 
-        if(stack.hasCustomHoverName())
+        if(stack.has(DataComponents.CUSTOM_NAME))
         {
             ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).setCustomName(stack.getHoverName());
         }
@@ -139,195 +133,12 @@ public class BackpackUtils
         }
 
         //Get rid of duplicated backpack if placed with Curios integration enabled
-        if(TravelersBackpack.enableCurios())
-        {
-            TravelersBackpackCurios.rightClickUnequip(player, stack);
-        }
+        //if(TravelersBackpack.enableCurios())
+       // {
+            //TravelersBackpackCurios.rightClickUnequip(player, stack);
+       // }
 
     }
-
-   /* public static void onPlayerDeath(Level level, Player player, ItemStack stack)
-    {
-        LazyOptional<ITravelersBackpack> cap = CapabilityUtils.getCapability(player);
-
-        if(!level.isClientSide) BackpackManager.addBackpack((ServerPlayer) player, stack);
-
-        if(TravelersBackpackConfig.backpackDeathPlace)
-        {
-            if(TravelersBackpackConfig.backpackForceDeathPlace)
-            {
-                if(!forcePlace(level, player, stack))
-                {
-                    int y = dropAboveVoid(player, level, player.getX(), player.getY(), player.getZ(), stack);
-
-                    if(!level.isClientSide)
-                    {
-                        cap.ifPresent(ITravelersBackpack::removeWearable);
-                    }
-
-                    player.sendSystemMessage(Component.translatable("information.travelersbackpack.backpack_drop", player.blockPosition().getX(), y, player.blockPosition().getZ()));
-                    LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.blockPosition().getX() + " Y: " + y + " Z: " + player.blockPosition().getZ());
-                }
-            }
-
-            else if(!tryPlace(level, player, stack))
-            {
-                int y = dropAboveVoid(player, level, player.getX(), player.getY(), player.getZ(), stack);
-
-                if(!level.isClientSide)
-                {
-                    cap.ifPresent(ITravelersBackpack::removeWearable);
-                }
-
-                player.sendSystemMessage(Component.translatable("information.travelersbackpack.backpack_drop", player.blockPosition().getX(), y, player.blockPosition().getZ()));
-                LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.blockPosition().getX() + " Y: " + y + " Z: " + player.blockPosition().getZ());
-            }
-        }
-        else
-        {
-            int y = dropAboveVoid(player, level, player.getX(), player.getY(), player.getZ(), stack);
-
-            player.sendSystemMessage(Component.translatable("information.travelersbackpack.backpack_drop", player.blockPosition().getX(), y, player.blockPosition().getZ()));
-            LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.blockPosition().getX() + " Y: " + y + " Z: " + player.blockPosition().getZ());
-
-            if(!level.isClientSide)
-            {
-                cap.ifPresent(ITravelersBackpack::removeWearable);
-            }
-        }
-    } */
-
-  /*  public static int dropAboveVoid(Player player, Level level, double x, double y, double z, ItemStack stack)
-    {
-        int tempY = player.blockPosition().getY();
-
-        if(TravelersBackpackConfig.voidProtection)
-        {
-            if(y <= level.getMinBuildHeight())
-            {
-                tempY = level.getMinBuildHeight() + 5;
-            }
-        }
-
-        for(int i = tempY; i < level.getHeight(); i++)
-        {
-            if(level.getBlockState(new BlockPos((int)x, i, (int)z)).isAir())
-            {
-                tempY = i;
-                break;
-            }
-        }
-
-        if(player.getLastDamageSource() == player.damageSources().fellOutOfWorld())
-        {
-            if(!level.isClientSide)
-            {
-                ItemEntity itemEntity = new ItemEntity(level, x, tempY, z, stack);
-                itemEntity.setNoGravity(true);
-
-                itemEntity.setDeltaMovement(level.random.nextGaussian() * (double)0.05F, level.random.nextGaussian() * (double)0.05F + (double)0.2F, level.random.nextGaussian() * (double)0.05F);
-                level.addFreshEntity(itemEntity);
-            }
-        }
-        else
-        {
-            Containers.dropItemStack(level, x, tempY, z, stack);
-        }
-        return tempY;
-    } */
-
-  /*  private static boolean forcePlace(Level level, Player player, ItemStack stack)
-    {
-        if(stack.getTag() == null)
-        {
-            stack.setTag(new CompoundTag());
-        }
-
-        Block block = Block.byItem(stack.getItem());
-        BlockPos playerPos = player.blockPosition();
-        int y = playerPos.getY();
-
-        if(TravelersBackpackConfig.voidProtection)
-        {
-            if(y <= level.getMinBuildHeight())
-            {
-                y = level.getMinBuildHeight() + 5;
-            }
-        }
-
-        for(int i = y; i < level.getHeight(); i++)
-        {
-            if(level.getBlockState(new BlockPos(playerPos.getX(), i, playerPos.getZ())).isAir())
-            {
-                y = i;
-                break;
-            }
-        }
-
-        BlockPos targetPos = new BlockPos(playerPos.getX(), y, playerPos.getZ());
-
-        if(level.getBlockState(targetPos).getBlock().getExplosionResistance() > -1)
-        {
-            while(level.getBlockEntity(targetPos) != null)
-            {
-                targetPos = targetPos.above();
-            }
-
-            if(!level.setBlockAndUpdate(targetPos, block.defaultBlockState()))
-            {
-                return false;
-            }
-
-            player.sendSystemMessage(Component.translatable("information.travelersbackpack.backpack_coords", targetPos.getX(), targetPos.getY(), targetPos.getZ()));
-            LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
-
-            level.playSound(player, playerPos.getX(), y, playerPos.getZ(), block.defaultBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1.0F);
-            ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).loadAllData(stack.getTag());
-
-            if(CapabilityUtils.isWearingBackpack(player) && !level.isClientSide)
-            {
-                CapabilityUtils.getCapability(player).ifPresent(ITravelersBackpack::removeWearable);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean placeBackpack(ItemStack stack, Player player, Level level, int x, int y, int z)
-    {
-        if(stack.getTag() == null)
-        {
-            stack.setTag(new CompoundTag());
-        }
-
-        Block block = Block.byItem(stack.getItem());
-
-        if(y <= level.getMinBuildHeight() || y >= level.getHeight()) return false;
-
-        BlockPos targetPos = new BlockPos(x, y, z);
-
-        if(!level.setBlock(targetPos, block.defaultBlockState(), 3))
-        {
-            return false;
-        }
-
-        player.sendSystemMessage(Component.translatable("information.travelersbackpack.backpack_coords", targetPos.getX(), targetPos.getY(), targetPos.getZ()));
-        LogHelper.info("Your backpack has been placed at" + " X: " + targetPos.getX() + " Y: " + targetPos.getY() + " Z: " + targetPos.getZ());
-
-        level.playSound(player, x, y, z, block.defaultBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1.0F);
-        ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).loadAllData(stack.getTag());
-
-        if(stack.hasCustomHoverName())
-        {
-            ((TravelersBackpackBlockEntity)level.getBlockEntity(targetPos)).setCustomName(stack.getHoverName());
-        }
-
-        if(CapabilityUtils.isWearingBackpack(player) && !level.isClientSide)
-        {
-            CapabilityUtils.getCapability(player).ifPresent(ITravelersBackpack::removeWearable);
-        }
-        return true;
-    } */
 
     private static boolean tryPlace(Level level, Player player, ItemStack stack)
     {
@@ -339,7 +150,7 @@ public class BackpackUtils
         {
             int y = (int)player.getY();
 
-            if(TravelersBackpackConfig.voidProtection)
+            if(TravelersBackpackConfig.SERVER.backpackSettings.voidProtection.get())
             {
                 if(y <= level.getMinBuildHeight())
                 {

@@ -1,14 +1,12 @@
 package com.tiviacz.travelersbackpack.datagen;
 
 import com.tiviacz.travelersbackpack.blocks.SleepingBagBlock;
-import com.tiviacz.travelersbackpack.datagen.loot.LootItemHasColorCondition;
-import com.tiviacz.travelersbackpack.datagen.loot.LootItemHasSleepingBagColorCondition;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.init.ModItems;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
-import com.tiviacz.travelersbackpack.inventory.SettingsManager;
-import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
@@ -17,10 +15,9 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import java.util.Arrays;
@@ -30,9 +27,9 @@ import java.util.stream.Stream;
 
 public class ModBlockLootTables extends BlockLootSubProvider
 {
-    protected ModBlockLootTables()
+    protected ModBlockLootTables(HolderLookup.Provider pRegistries)
     {
-        super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), pRegistries);
     }
 
     @Override
@@ -67,25 +64,17 @@ public class ModBlockLootTables extends BlockLootSubProvider
                 .withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block)
                                 .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                        .copy(ITravelersBackpackContainer.TIER, ITravelersBackpackContainer.TIER)
-                                        .copy(ITravelersBackpackContainer.INVENTORY, ITravelersBackpackContainer.INVENTORY)
-                                        .copy(ITravelersBackpackContainer.TOOLS_INVENTORY, ITravelersBackpackContainer.TOOLS_INVENTORY)
-                                        .copy(ITravelersBackpackContainer.CRAFTING_INVENTORY, ITravelersBackpackContainer.CRAFTING_INVENTORY)
-                                        .copy(ITravelersBackpackContainer.LEFT_TANK, ITravelersBackpackContainer.LEFT_TANK)
-                                        .copy(ITravelersBackpackContainer.RIGHT_TANK, ITravelersBackpackContainer.RIGHT_TANK)
-                                        .copy(ITravelersBackpackContainer.ABILITY, ITravelersBackpackContainer.ABILITY)
-                                        .copy(ITravelersBackpackContainer.LAST_TIME, ITravelersBackpackContainer.LAST_TIME)
-                                        .copy(SlotManager.UNSORTABLE_SLOTS, SlotManager.UNSORTABLE_SLOTS)
-                                        .copy(SlotManager.MEMORY_SLOTS, SlotManager.MEMORY_SLOTS)
-                                        .copy(SettingsManager.CRAFTING_SETTINGS, SettingsManager.CRAFTING_SETTINGS))
-                                        .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                                .copy(ITravelersBackpackContainer.COLOR, ITravelersBackpackContainer.COLOR)
-                                                .when(LootItemHasColorCondition.hasColor()))
-                                        .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                                .copy(ITravelersBackpackContainer.SLEEPING_BAG_COLOR, ITravelersBackpackContainer.SLEEPING_BAG_COLOR)
-                                                .when(LootItemHasSleepingBagColorCondition.hasSleepingBagColor()))
-                                )));
+                                .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                        .include(ModDataComponents.TIER.get())
+                                        .include(ModDataComponents.BACKPACK_CONTAINER.get())
+                                        .include(ModDataComponents.TOOLS_CONTAINER.get())
+                                        .include(ModDataComponents.CRAFTING_CONTAINER.get())
+                                        .include(ModDataComponents.FLUID_TANKS.get())
+                                        .include(ModDataComponents.ABILITY.get())
+                                        .include(ModDataComponents.SETTINGS.get())
+                                        .include(ModDataComponents.SLOTS.get())
+                                        .include(ModDataComponents.SLEEPING_BAG_COLOR.get())
+                                        .include(DataComponents.DYED_COLOR)))));
     }
 
     protected LootTable.Builder createSleepingBagDrop(Block block)

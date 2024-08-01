@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.client.model.TravelersBackpackWearableModel;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.init.ModItems;
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,7 +33,7 @@ public class TravelersBackpackEntityLayer extends RenderLayer<LivingEntity, Huma
     @Override
     public void render(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, LivingEntity pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTick, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch)
     {
-        if(TravelersBackpackConfig.disableBackpackRender) return;
+        if(TravelersBackpackConfig.CLIENT.disableBackpackRender.get()) return;
 
         if(CapabilityUtils.isWearingBackpack(pLivingEntity))
         {
@@ -54,12 +54,9 @@ public class TravelersBackpackEntityLayer extends RenderLayer<LivingEntity, Huma
 
         ResourceLocation loc = ResourceUtils.getBackpackTexture(stack.getItem());
 
-        if(stack.getTag() != null)
+        if(stack.has(ModDataComponents.SLEEPING_BAG_COLOR.get()))
         {
-            if(stack.getTag().contains(ITravelersBackpackContainer.SLEEPING_BAG_COLOR))
-            {
-                isCustomSleepingBag = true;
-            }
+            isCustomSleepingBag = true;
         }
 
         VertexConsumer vertexConsumer = bufferIn.getBuffer(flag ? RenderType.entityTranslucentCull(loc) : RenderType.entitySolid(loc));
@@ -83,11 +80,11 @@ public class TravelersBackpackEntityLayer extends RenderLayer<LivingEntity, Huma
         poseStack.translate(0, 0.175, 0.325);
         poseStack.scale(0.85F, 0.85F, 0.85F);
 
-        model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, -1);
 
         if(isCustomSleepingBag)
         {
-            loc = ResourceUtils.getSleepingBagTexture(stack.getOrCreateTag().getInt( ITravelersBackpackContainer.SLEEPING_BAG_COLOR));
+            loc = ResourceUtils.getSleepingBagTexture(stack.get(ModDataComponents.SLEEPING_BAG_COLOR.get()));
         }
         else
         {
@@ -95,7 +92,7 @@ public class TravelersBackpackEntityLayer extends RenderLayer<LivingEntity, Huma
         }
 
         vertexConsumer = bufferIn.getBuffer(RenderType.entityCutout(loc));
-        model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 0.25F);
+        model.sleepingBag.render(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, -1);
 
         poseStack.popPose();
     }

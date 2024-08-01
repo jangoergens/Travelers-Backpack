@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -291,7 +292,7 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
         {
             craftSlots.checkChanges = false;
             RecipeHolder<CraftingRecipe> recipe = (RecipeHolder<CraftingRecipe>)resultSlots.getRecipeUsed();
-            while(recipe != null && recipe.value().matches(craftSlots, player.level()))
+            while(recipe != null && recipe.value().matches(craftSlots.asCraftInput(), player.level()))
             {
                 ItemStack recipeOutput = resultSlot.getItem().copy();
                 outputCopy = recipeOutput.copy();
@@ -348,19 +349,21 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
     {
         if(!level.isClientSide && craftSlots.checkChanges)
         {
+            CraftingInput input = craftSlots.asCraftInput();
+
             ItemStack itemstack = ItemStack.EMPTY;
 
             RecipeHolder<CraftingRecipe> oldRecipe = (RecipeHolder<CraftingRecipe>)resultSlots.getRecipeUsed();
             RecipeHolder<CraftingRecipe> recipe = oldRecipe;
 
-            if(recipe == null || !recipe.value().matches(craftSlots, level))
+            if(recipe == null || !recipe.value().matches(input, level))
             {
-                recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots, level).orElse(null);
+                recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level).orElse(null);
             }
 
             if(recipe != null)
             {
-                itemstack = recipe.value().assemble(craftSlots, level.registryAccess());
+                itemstack = recipe.value().assemble(input, level.registryAccess());
             }
 
             if(oldRecipe != recipe)
@@ -412,7 +415,7 @@ public class TravelersBackpackBaseMenu extends AbstractContainerMenu
         clearSlotsAndPlaySound(player, this.container.getFluidSlotsHandler(), 4);
         shiftTools(this.container);
 
-        if(!TravelersBackpackConfig.craftingSavesItems)
+        if(!TravelersBackpackConfig.SERVER.backpackSettings.craftingUpgrade.savesItems.get())
         {
             clearSlotsAndPlaySound(player, this.container.getCraftingGridHandler(), 9);
         }

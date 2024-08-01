@@ -16,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.ForgeHooksClient;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class StackModelPart extends ModelPart
         super(parent.cubes, parent.children);
     }
 
-    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, Player player, MultiBufferSource buffer, int combinedLight, int combinedOverlay, float r, float g, float b, float a)
+    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, Player player, MultiBufferSource buffer, int combinedLight, int combinedOverlay, int pColor)
     {
         ITravelersBackpackContainer container = CapabilityUtils.getBackpackInv(player);
 
@@ -50,7 +49,7 @@ public class StackModelPart extends ModelPart
         if(!toolUpper.isEmpty())
         {
             BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(toolUpper, player.level(), player, 0);
-            model = ForgeHooksClient.handleCameraTransforms(poseStack, model, ItemDisplayContext.NONE, false);
+            model = model.applyTransform(ItemDisplayContext.NONE, poseStack, false);// ForgeHooksClient.handleCameraTransforms(poseStack, model, ItemDisplayContext.NONE, false);
 
             poseStack.pushPose();
             RenderSystem.enableBlend();
@@ -72,7 +71,7 @@ public class StackModelPart extends ModelPart
         if(!toolLower.isEmpty())
         {
             BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(toolLower, player.level(), player, 0);
-            model = ForgeHooksClient.handleCameraTransforms(poseStack, model, ItemDisplayContext.NONE, false);
+            model = model.applyTransform(ItemDisplayContext.NONE, poseStack, false);
 
             poseStack.pushPose();
             RenderSystem.enableBlend();

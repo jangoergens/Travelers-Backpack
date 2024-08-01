@@ -1,11 +1,6 @@
 package com.tiviacz.travelersbackpack.compat.comforts;
 
-import com.illusivesoulworks.comforts.common.block.SleepingBagBlock;
-import com.illusivesoulworks.comforts.common.item.SleepingBagItem;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-
-public class ComfortsCompat
+/*public class ComfortsCompat
 {
     public static int getComfortsSleepingBagColor(Item item)
     {
@@ -15,4 +10,4 @@ public class ComfortsCompat
         }
         return DyeColor.RED.getId();
     }
-}
+} */

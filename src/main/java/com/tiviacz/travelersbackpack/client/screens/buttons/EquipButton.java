@@ -31,7 +31,7 @@ public class EquipButton extends Button
     @Override
     public void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        if(TravelersBackpack.enableCurios() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
+        /*if(/*TravelersBackpack.enableCurios() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
         {
             if(!CapabilityUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.ITEM_SCREEN_ID)
             {
@@ -40,7 +40,7 @@ public class EquipButton extends Button
                     guiGraphics.renderTooltip(screen.getFont(), Component.translatable("screen.travelersbackpack.equip_integration"), mouseX, mouseY);
                 }
             }
-        }
+        } */
     }
 
     @Override
@@ -48,8 +48,8 @@ public class EquipButton extends Button
     {
         if(!screen.container.hasBlockEntity())
         {
-            if(!TravelersBackpack.enableCurios())
-            {
+            //if(!TravelersBackpack.enableCurios())
+           // {
                 if(!CapabilityUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.ITEM_SCREEN_ID && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
                 {
                     if(this.inButton((int) mouseX, (int) mouseY))
@@ -58,7 +58,7 @@ public class EquipButton extends Button
                         return true;
                     }
                 }
-            }
+            //}
         }
         return false;
     }

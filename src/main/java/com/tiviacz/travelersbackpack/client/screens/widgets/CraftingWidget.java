@@ -79,7 +79,7 @@ public class CraftingWidget extends WidgetBase
 
             if(isWidgetActive())
             {
-                if(TravelersBackpackConfig.enableLegacyGui)
+                if(TravelersBackpackConfig.CLIENT.enableLegacyGui.get())
                 {
                     drawLegacyGridAndResult(guiGraphics, x + 3, y + 17);
                 }

@@ -1,15 +1,12 @@
 package com.tiviacz.travelersbackpack.client.screens.tooltip;
 
-import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
-import com.tiviacz.travelersbackpack.inventory.Tiers;
-import net.minecraft.nbt.CompoundTag;
+import com.tiviacz.travelersbackpack.components.FluidTanks;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class BackpackTooltipComponent implements TooltipComponent
@@ -20,59 +17,40 @@ public class BackpackTooltipComponent implements TooltipComponent
     protected FluidStack leftFluidStack = FluidStack.EMPTY;
     protected FluidStack rightFluidStack = FluidStack.EMPTY;
 
-    private final ItemStackHandler inventory = new ItemStackHandler(Tiers.NETHERITE.getStorageSlots());
-    private final ItemStackHandler toolSlotsInventory = new ItemStackHandler(Tiers.NETHERITE.getToolSlots());
-    private final ItemStackHandler craftingInventory = new ItemStackHandler(9);
-
     public BackpackTooltipComponent(ItemStack stack)
     {
-        this.loadComponentData(stack.getTag());
+        this.loadComponentData(stack);
     }
 
-    public void loadComponentData(CompoundTag compound)
+    public void loadComponentData(ItemStack stack)
     {
-        if(compound == null) return;
+        this.loadFluidStacks(stack);
 
-        this.loadFluidStacks(compound);
-
-        this.storage = this.loadInventory(compound);
-        this.crafting = this.loadCraftingInventory(compound);
+        this.storage = this.loadInventory(stack);
+        this.crafting = this.loadCraftingInventory(stack);
         this.storage.addAll(this.crafting);
         this.storage = this.mergeStacks(this.storage);
-        this.tools = this.loadTools(compound);
+        this.tools = this.loadTools(stack);
     }
 
-    public void loadFluidStacks(CompoundTag compound)
+    public void loadFluidStacks(ItemStack stack)
     {
-        if(compound.contains(ITravelersBackpackContainer.LEFT_TANK))
+        if(stack.has(ModDataComponents.FLUID_TANKS.get()))
         {
-            this.leftFluidStack = FluidStack.loadFluidStackFromNBT(compound.getCompound(ITravelersBackpackContainer.LEFT_TANK));
-        }
-        if(compound.contains(ITravelersBackpackContainer.RIGHT_TANK))
-        {
-            this.rightFluidStack = FluidStack.loadFluidStackFromNBT(compound.getCompound(ITravelersBackpackContainer.RIGHT_TANK));
+            FluidTanks tanks = stack.get(ModDataComponents.FLUID_TANKS.get());
+
+            this.leftFluidStack = tanks.leftFluidStack();
+            this.rightFluidStack = tanks.rightFluidStack();
         }
     }
 
-    public List<ItemStack> loadInventory(CompoundTag compound)
+    public List<ItemStack> loadInventory(ItemStack stack)
     {
-        ArrayList<ItemStack> list = new ArrayList<>();
-
-        if(!compound.contains(ITravelersBackpackContainer.INVENTORY))
+        if(stack.has(ModDataComponents.BACKPACK_CONTAINER.get()))
         {
-            return Collections.emptyList();
+            return new ArrayList<>(stack.get(ModDataComponents.BACKPACK_CONTAINER.get()).getItems().stream().filter(itemStack -> !itemStack.isEmpty()).toList());
         }
-
-        this.inventory.deserializeNBT(compound.getCompound(ITravelersBackpackContainer.INVENTORY));
-
-        for(int i = 0; i < this.inventory.getSlots(); i++)
-        {
-            if(!this.inventory.getStackInSlot(i).isEmpty())
-            {
-                list.add(this.inventory.getStackInSlot(i));
-            }
-        }
-        return list;
+        return new ArrayList<>();
     }
 
     public List<ItemStack> mergeStacks(List<ItemStack> stacks)
@@ -93,7 +71,7 @@ public class BackpackTooltipComponent implements TooltipComponent
 
                 for(int i = 0; i < uniqueList.size(); i++)
                 {
-                    if(ItemStack.isSameItemSameTags(stack, uniqueList.get(i)))
+                    if(ItemStack.isSameItemSameComponents(stack, uniqueList.get(i)))
                     {
                         int count = stack.getCount() + uniqueList.get(i).getCount();
                         uniqueList.set(i, stack.copyWithCount(count));
@@ -132,48 +110,24 @@ public class BackpackTooltipComponent implements TooltipComponent
             }
             return splittedList;
         }
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
-    public List<ItemStack> loadTools(CompoundTag compound)
+    public List<ItemStack> loadTools(ItemStack stack)
     {
-        ArrayList<ItemStack> list = new ArrayList<>();
-
-        if(!compound.contains(ITravelersBackpackContainer.TOOLS_INVENTORY))
+        if(stack.has(ModDataComponents.TOOLS_CONTAINER.get()))
         {
-            return Collections.emptyList();
+            return new ArrayList<>(stack.get(ModDataComponents.TOOLS_CONTAINER.get()).getItems().stream().filter(itemStack -> !itemStack.isEmpty()).toList());
         }
-
-        this.toolSlotsInventory.deserializeNBT(compound.getCompound(ITravelersBackpackContainer.TOOLS_INVENTORY));
-
-        for(int i = 0; i < this.toolSlotsInventory.getSlots(); i++)
-        {
-            if(!this.toolSlotsInventory.getStackInSlot(i).isEmpty())
-            {
-                list.add(this.toolSlotsInventory.getStackInSlot(i));
-            }
-        }
-        return list;
+        return new ArrayList<>();
     }
 
-    public List<ItemStack> loadCraftingInventory(CompoundTag compound)
+    public List<ItemStack> loadCraftingInventory(ItemStack stack)
     {
-        ArrayList<ItemStack> list = new ArrayList<>();
-
-        if(!compound.contains(ITravelersBackpackContainer.CRAFTING_INVENTORY))
+        if(stack.has(ModDataComponents.CRAFTING_CONTAINER.get()))
         {
-            return Collections.emptyList();
+            return new ArrayList<>(stack.get(ModDataComponents.CRAFTING_CONTAINER.get()).getItems().stream().filter(itemStack -> !itemStack.isEmpty()).toList());
         }
-
-        this.craftingInventory.deserializeNBT(compound.getCompound(ITravelersBackpackContainer.CRAFTING_INVENTORY));
-
-        for(int i = 0; i < this.craftingInventory.getSlots(); i++)
-        {
-            if(!this.craftingInventory.getStackInSlot(i).isEmpty())
-            {
-                list.add(this.craftingInventory.getStackInSlot(i));
-            }
-        }
-        return list;
+        return new ArrayList<>();
     }
 }

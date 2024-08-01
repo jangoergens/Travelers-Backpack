@@ -9,13 +9,15 @@ import com.tiviacz.travelersbackpack.handlers.ModClientEventHandler;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.items.HoseItem;
 import com.tiviacz.travelersbackpack.util.RenderUtils;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.ItemStackHandler;
 
@@ -23,15 +25,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class HudOverlay
+public class HudOverlay implements LayeredDraw.Layer
 {
-    public static final ResourceLocation OVERLAY = new ResourceLocation(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
+    public static final ResourceLocation OVERLAY = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "textures/gui/travelers_backpack_overlay.png");
     private static float animationProgress = 0.0F;
 
-    public static void renderOverlay(ForgeGui gui, Minecraft mc, GuiGraphics guiGraphics)
+    @Override
+    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker)
     {
-        Player player = mc.player;
-        Window mainWindow = mc.getWindow();
+        if(!TravelersBackpackConfig.CLIENT.overlay.enableOverlay.get() || Minecraft.getInstance().options.hideGui || !CapabilityUtils.isWearingBackpack(Minecraft.getInstance().player) || Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR)
+        {
+            return;
+        }
+
+        Player player = Minecraft.getInstance().player;
+        Window mainWindow = Minecraft.getInstance().getWindow();
 
         int scaledWidth = mainWindow.getGuiScaledWidth() - TravelersBackpackConfig.CLIENT.overlay.offsetX.get();
         int scaledHeight = mainWindow.getGuiScaledHeight() - TravelersBackpackConfig.CLIENT.overlay.offsetY.get();

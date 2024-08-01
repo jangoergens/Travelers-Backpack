@@ -48,7 +48,7 @@ public class TravelersBackpackEntityWearable implements IEntityTravelersBackpack
     {
         if(livingEntity != null && !livingEntity.level().isClientSide)
         {
-            CapabilityUtils.getEntityCapability(livingEntity).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(livingEntity.getId(), false, this.wearable.save(new CompoundTag())), PacketDistributor.TRACKING_ENTITY.with(livingEntity)));
+            CapabilityUtils.getEntityCapability(livingEntity).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(livingEntity.getId(), false, this.wearable), PacketDistributor.TRACKING_ENTITY.with(livingEntity)));
         }
     }
 
@@ -60,12 +60,7 @@ public class TravelersBackpackEntityWearable implements IEntityTravelersBackpack
         if(hasWearable())
         {
             ItemStack wearable = getWearable();
-            wearable.save(compound);
-        }
-        if(!hasWearable())
-        {
-            ItemStack wearable = new ItemStack(Items.AIR, 0);
-            wearable.save(compound);
+            wearable.save(livingEntity.registryAccess(), compound);
         }
         return compound;
     }
@@ -73,7 +68,7 @@ public class TravelersBackpackEntityWearable implements IEntityTravelersBackpack
     @Override
     public void loadTag(CompoundTag compoundTag)
     {
-        ItemStack wearable = ItemStack.of(compoundTag);
+        ItemStack wearable = ItemStack.parseOptional(livingEntity.registryAccess(), compoundTag);
         setWearable(wearable);
     }
 }

@@ -4,11 +4,13 @@ import com.tiviacz.travelersbackpack.inventory.CraftingContainerImproved;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.ForgeEventFactory;
 
@@ -72,45 +74,52 @@ public class ResultSlotExt extends ResultSlot
     public void onTake(Player player, ItemStack stack)
     {
         this.checkTakeAchievements(stack);
+        CraftingInput.Positioned craftinginput$positioned = this.craftSlots.asPositionedCraftInput();
+        CraftingInput craftinginput = craftinginput$positioned.input();
+        int i = craftinginput$positioned.left();
+        int j = craftinginput$positioned.top();
         ForgeHooks.setCraftingPlayer(player);
         NonNullList<ItemStack> list;
-        Recipe<CraftingContainer> recipe = (Recipe<CraftingContainer>) this.inv.getRecipeUsed().value();
-        if(recipe != null && recipe.matches(this.craftSlots, player.level())) list = recipe.getRemainingItems(this.craftSlots);
+        Recipe<CraftingInput> recipe = (Recipe<CraftingInput>) this.inv.getRecipeUsed().value();
+        if(recipe != null && recipe.matches(craftinginput, player.level())) list = recipe.getRemainingItems(craftinginput); //#TODO check
         else list = ((CraftingContainerImproved)this.craftSlots).getStackList();
         ForgeHooks.setCraftingPlayer(null);
 
-        for(int i = 0; i < list.size(); ++i)
-        {
-            ItemStack itemstack = this.craftSlots.getItem(i);
-            ItemStack itemstack1 = list.get(i);
-
-            if(!itemstack.isEmpty())
-            {
-                this.craftSlots.removeItem(i, 1);
-                itemstack = this.craftSlots.getItem(i);
-            }
-
-            if(!itemstack1.isEmpty())
-            {
-                if(itemstack.isEmpty())
-                {
-                    this.craftSlots.setItem(i, itemstack1);
+        for (int k = 0; k < craftinginput.height(); k++) {
+            for (int l = 0; l < craftinginput.width(); l++) {
+                int i1 = l + i + (k + j) * this.craftSlots.getWidth();
+                ItemStack itemstack = this.craftSlots.getItem(i1);
+                ItemStack itemstack1 = list.get(l + k * craftinginput.width());
+                if (!itemstack.isEmpty()) {
+                    this.craftSlots.removeItem(i1, 1);
+                    itemstack = this.craftSlots.getItem(i1);
                 }
-                else if (ItemStack.isSameItemSameTags(itemstack, itemstack1))
-                {
-                    itemstack1.grow(itemstack.getCount());
-                    this.craftSlots.setItem(i, itemstack1);
-                }
-                else if (!this.player.getInventory().add(itemstack1))
-                {
-                    this.player.drop(itemstack1, false);
+
+                if (!itemstack1.isEmpty()) {
+                    if (itemstack.isEmpty()) {
+                        this.craftSlots.setItem(i1, itemstack1);
+                    } else if (ItemStack.isSameItemSameComponents(itemstack, itemstack1)) {
+                        itemstack1.grow(itemstack.getCount());
+                        this.craftSlots.setItem(i1, itemstack1);
+                    } else if (!this.player.getInventory().add(itemstack1)) {
+                        this.player.drop(itemstack1, false);
+                    }
                 }
             }
         }
     }
 
- /*   @Override
+    @Override
     public ItemStack getItem()
+    {
+        // Crafting Tweaks fakes 64x right click operations to right-click craft a stack to the "held" item, so we need to verify the recipe here.
+        RecipeHolder<CraftingRecipe> recipe = (RecipeHolder<CraftingRecipe>)this.inv.getRecipeUsed();
+        if (recipe != null && recipe.value().matches(this.craftSlots.asCraftInput(), player.level())) return super.getItem();
+        return ItemStack.EMPTY;
+    }
+
+ /*   @Override
+    public ItemStack getItem() //#TODO?
     {
         // Crafting Tweaks fakes 64x right click operations to right-click craft a stack to the "held" item, so we need to verify the recipe here.
         Recipe<CraftingContainer> recipe = (Recipe<CraftingContainer>)this.inv.m_40158_().f_291008_();

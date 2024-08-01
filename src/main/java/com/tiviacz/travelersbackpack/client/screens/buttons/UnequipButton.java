@@ -6,7 +6,6 @@ import com.tiviacz.travelersbackpack.client.screens.TravelersBackpackScreen;
 import com.tiviacz.travelersbackpack.network.ServerboundEquipBackpackPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.network.PacketDistributor;
 
 public class UnequipButton extends Button
@@ -31,7 +30,7 @@ public class UnequipButton extends Button
     @Override
     public void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        if(TravelersBackpack.enableCurios() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
+       /*if(/*TravelersBackpack.enableCurios() && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
         {
             if(CapabilityUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.WEARABLE_SCREEN_ID)
             {
@@ -40,7 +39,7 @@ public class UnequipButton extends Button
                     guiGraphics.renderTooltip(screen.getFont(), Component.translatable("screen.travelersbackpack.unequip_integration"), mouseX, mouseY);
                 }
             }
-        }
+        } */
     }
 
     @Override
@@ -48,8 +47,8 @@ public class UnequipButton extends Button
     {
         if(!screen.container.hasBlockEntity())
         {
-            if(!TravelersBackpack.enableCurios())
-            {
+           // if(!TravelersBackpack.enableCurios())
+            //{
                 if(CapabilityUtils.isWearingBackpack(screen.getMenu().inventory.player) && screen.container.getScreenID() == Reference.WEARABLE_SCREEN_ID && !screen.isWidgetVisible(3, screen.leftTankSlotWidget) && !screen.toolSlotsWidget.isCoveringButton())
                 {
                     if(this.inButton((int)mouseX, (int)mouseY))
@@ -58,7 +57,7 @@ public class UnequipButton extends Button
                         return true;
                     }
                 }
-            }
+            //}
         }
         return false;
     }

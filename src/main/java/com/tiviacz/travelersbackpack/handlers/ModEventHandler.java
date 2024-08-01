@@ -15,15 +15,20 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 public class ModEventHandler
 {
     @SubscribeEvent
-    public static void onModConfigEvent(final ModConfigEvent.Loading configEvent)
+    public static void onModConfigLoad(final ModConfigEvent.Loading configEvent)
     {
-        if(configEvent.getConfig().getSpec() == TravelersBackpackConfig.commonSpec)
+        if(configEvent.getConfig().getSpec() == TravelersBackpackConfig.serverSpec)
         {
-            TravelersBackpackConfig.bakeCommonConfig();
+            TravelersBackpackConfig.SERVER.initializeLists();
         }
-        if(configEvent.getConfig().getSpec() == TravelersBackpackConfig.clientSpec)
+    }
+
+    @SubscribeEvent
+    public static void onModConfigReload(final ModConfigEvent.Reloading configEvent)
+    {
+        if(configEvent.getConfig().getSpec() == TravelersBackpackConfig.serverSpec)
         {
-            TravelersBackpackConfig.bakeClientConfig();
+            TravelersBackpackConfig.SERVER.initializeLists();
         }
     }
 
@@ -35,7 +40,7 @@ public class ModEventHandler
         PackOutput output = generator.getPackOutput();
         boolean includeServer = event.includeServer();
 
-        generator.addProvider(includeServer, new ModRecipeProvider(output));
-        generator.addProvider(includeServer, ModLootTableProvider.create(output));
+        generator.addProvider(includeServer, new ModRecipeProvider(output, event.getLookupProvider()));
+        generator.addProvider(includeServer, ModLootTableProvider.create(output, event.getLookupProvider()));
     }
 }

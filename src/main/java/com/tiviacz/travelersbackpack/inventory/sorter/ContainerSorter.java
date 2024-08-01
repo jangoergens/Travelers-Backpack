@@ -268,7 +268,7 @@ public class ContainerSorter
         {
             return false;
         }
-        return ItemStack.isSameItemSameTags(stack1, stack2);
+        return ItemStack.isSameItemSameComponents(stack1, stack2);
     }
 
     public static class CustomWrapper implements IItemHandlerModifiable

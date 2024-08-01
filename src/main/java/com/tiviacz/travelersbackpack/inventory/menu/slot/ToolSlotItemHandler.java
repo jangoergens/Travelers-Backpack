@@ -44,7 +44,7 @@ public class ToolSlotItemHandler extends SlotItemHandler
     {
         if(stack.getItem() instanceof HoseItem) return false;
 
-        if(TravelersBackpackConfig.toolSlotsAcceptEverything)
+        if(TravelersBackpackConfig.SERVER.backpackSettings.toolSlotsAcceptEverything.get())
         {
             return BackpackSlotItemHandler.isItemValid(stack);
         }
@@ -56,7 +56,7 @@ public class ToolSlotItemHandler extends SlotItemHandler
 
         if(stack.getMaxStackSize() == 1)
         {
-            if(TravelersBackpackConfig.toolSlotsAcceptSwords)
+            if(TravelersBackpackConfig.SERVER.backpackSettings.toolSlotsAcceptSwords.get())
             {
                 if(stack.getItem() instanceof SwordItem)
                 {
@@ -72,7 +72,8 @@ public class ToolSlotItemHandler extends SlotItemHandler
                     stack.getItem() instanceof FlintAndSteelItem ||
                     stack.getItem() instanceof ProjectileWeaponItem ||
                     stack.getItem() instanceof BrushItem ||
-                    stack.getItem() instanceof TridentItem;
+                    stack.getItem() instanceof TridentItem ||
+                    stack.getItem() instanceof MaceItem;
         }
         return false;
     }

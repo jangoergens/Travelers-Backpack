@@ -6,6 +6,7 @@ import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.capability.ITravelersBackpack;
 import com.tiviacz.travelersbackpack.fluids.EffectFluidRegistry;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
@@ -26,9 +27,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.ItemStackHandler;
+
+import java.util.List;
 
 public class ServerActions
 {
@@ -146,7 +148,7 @@ public class ServerActions
                 cap.ifPresent(inv -> inv.setWearable(stack));
                 cap.ifPresent(inv -> inv.setContents(stack));
                 player.getMainHandItem().shrink(1);
-                level.playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, (1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F) * 0.7F);
+                level.playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS, 1.0F, (1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F) * 0.7F);
 
                 //Sync
                 CapabilityUtils.synchronise(player);
@@ -178,7 +180,7 @@ public class ServerActions
             if(cap.map(ITravelersBackpack::hasWearable).orElse(false))
             {
                 cap.ifPresent(ITravelersBackpack::removeWearable);
-                level.playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.05F, (1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F) * 0.7F);
+                level.playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS, 1.05F, (1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F) * 0.7F);
 
                 //Sync
                 CapabilityUtils.synchronise(player);
@@ -285,7 +287,8 @@ public class ServerActions
         {
             level.playSound(null, player.blockPosition(), FluidUtils.getFluidEmptySound(tank.getFluid().getFluid()), SoundSource.BLOCKS, 1.0F, 1.0F);
         }
-        tank.drain(container.getTier().getTankCapacity(), IFluidHandler.FluidAction.EXECUTE);
+        tank.setFluid(FluidStack.EMPTY);
+        //tank.drain(container.getTier().getTankCapacity(), IFluidHandler.FluidAction.EXECUTE);
         container.setDataChanged(ITravelersBackpackContainer.TANKS_DATA);
     }
 
@@ -307,30 +310,18 @@ public class ServerActions
 
         if(hose.getItem() instanceof HoseItem)
         {
-            if(hose.getTag() != null)
+            List<Integer> settings = hose.getOrDefault(ModDataComponents.HOSE_MODES.get(), List.of(1, 1));
+
+            if(scrollDelta > 0)
             {
-                int mode = HoseItem.getHoseMode(hose);
+                int nextMode = settings.get(0) + 1;
+                hose.set(ModDataComponents.HOSE_MODES.get(), List.of(nextMode == 4 ? 1 : nextMode, settings.get(1)));
+            }
 
-                if(scrollDelta > 0)
-                {
-                    mode = mode + 1;
-
-                    if(mode == 4)
-                    {
-                        mode = 1;
-                    }
-                }
-
-                else if(scrollDelta < 0)
-                {
-                    mode = mode - 1;
-
-                    if(mode == 0)
-                    {
-                        mode = 3;
-                    }
-                }
-                hose.getTag().putInt("Mode", mode);
+            else if(scrollDelta < 0)
+            {
+                int nextMode = settings.get(0) - 1;
+                hose.set(ModDataComponents.HOSE_MODES.get(), List.of(nextMode == 0 ? 3 : nextMode, settings.get(1)));
             }
         }
     }
@@ -341,20 +332,15 @@ public class ServerActions
 
         if(hose.getItem() instanceof HoseItem)
         {
-            if(hose.getTag() != null)
+            List<Integer> settings = hose.getOrDefault(ModDataComponents.HOSE_MODES.get(), List.of(1, 1));
+
+            if(settings.get(1) == 1)
             {
-                int tank = HoseItem.getHoseTank(hose);
-
-                if(tank == 1)
-                {
-                    tank = 2;
-                }
-                else
-                {
-                    tank = 1;
-                }
-
-                hose.getTag().putInt("Tank", tank);
+                hose.set(ModDataComponents.HOSE_MODES.get(), List.of(settings.get(0), 2));
+            }
+            else
+            {
+                hose.set(ModDataComponents.HOSE_MODES.get(), List.of(settings.get(0), 1));
             }
         }
     }

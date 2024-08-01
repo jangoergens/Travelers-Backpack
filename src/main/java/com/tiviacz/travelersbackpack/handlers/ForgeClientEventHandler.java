@@ -4,6 +4,7 @@ import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.common.BackpackAbilities;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.inventory.menu.slot.ToolSlotItemHandler;
 import com.tiviacz.travelersbackpack.items.HoseItem;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
@@ -25,10 +26,8 @@ import net.minecraftforge.network.PacketDistributor;
 public class ForgeClientEventHandler
 {
     @SubscribeEvent
-    public static void clientTickEvent(final TickEvent.ClientTickEvent event)
+    public static void clientTickEvent(final TickEvent.ClientTickEvent.Post event)
     {
-        if(event.phase != TickEvent.Phase.END) return;
-
         LocalPlayer player = Minecraft.getInstance().player;
 
         if(player != null && CapabilityUtils.isWearingBackpack(player))
@@ -49,7 +48,7 @@ public class ForgeClientEventHandler
                 }
             }
 
-            if(player.getMainHandItem().getItem() instanceof HoseItem && player.getMainHandItem().getTag() != null)
+            if(player.getMainHandItem().getItem() instanceof HoseItem && player.getMainHandItem().has(ModDataComponents.HOSE_MODES.get()))
             {
                 while(ModClientEventHandler.TOGGLE_TANK.consumeClick())
                 {
@@ -75,7 +74,7 @@ public class ForgeClientEventHandler
 
                         if(heldItem.getItem() instanceof HoseItem)
                         {
-                            if(heldItem.getTag() != null)
+                            if(heldItem.has(ModDataComponents.HOSE_MODES.get()))
                             {
                                 TravelersBackpack.NETWORK.send(new ServerboundSpecialActionPacket(Reference.WEARABLE_SCREEN_ID, Reference.SWITCH_HOSE_MODE, 1.0D), PacketDistributor.SERVER.noArg());
                             }
@@ -92,7 +91,7 @@ public class ForgeClientEventHandler
         Minecraft mc = Minecraft.getInstance();
         double scrollDelta = event.getDeltaY();
 
-        if(!TravelersBackpackConfig.disableScrollWheel && scrollDelta != 0.0)
+        if(!TravelersBackpackConfig.CLIENT.disableScrollWheel.get() && scrollDelta != 0.0)
         {
             LocalPlayer player = mc.player;
 
@@ -106,7 +105,7 @@ public class ForgeClientEventHandler
                     {
                         ItemStack heldItem = player.getMainHandItem();
 
-                        if(TravelersBackpackConfig.enableToolCycling)
+                        if(TravelersBackpackConfig.CLIENT.enableToolCycling.get())
                         {
                             if(ToolSlotItemHandler.isValid(heldItem))
                             {
@@ -117,7 +116,7 @@ public class ForgeClientEventHandler
 
                         if(heldItem.getItem() instanceof HoseItem)
                         {
-                            if(heldItem.getTag() != null)
+                            if(heldItem.has(ModDataComponents.HOSE_MODES.get()))
                             {
                                 TravelersBackpack.NETWORK.send(new ServerboundSpecialActionPacket(Reference.WEARABLE_SCREEN_ID, Reference.SWITCH_HOSE_MODE, scrollDelta), PacketDistributor.SERVER.noArg());
                                 event.setCanceled(true);

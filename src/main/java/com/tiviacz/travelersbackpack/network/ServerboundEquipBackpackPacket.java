@@ -1,6 +1,5 @@
 package com.tiviacz.travelersbackpack.network;
 
-import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.common.ServerActions;
 import com.tiviacz.travelersbackpack.util.Reference;
@@ -40,8 +39,8 @@ public class ServerboundEquipBackpackPacket
             {
                 if(message.equip)
                 {
-                    if(!TravelersBackpack.enableCurios())
-                    {
+                    //if(!TravelersBackpack.enableCurios())
+                    //{
                         if(!CapabilityUtils.isWearingBackpack(serverPlayer))
                         {
                             ServerActions.equipBackpack(serverPlayer);
@@ -51,12 +50,12 @@ public class ServerboundEquipBackpackPacket
                             serverPlayer.closeContainer();
                             serverPlayer.sendSystemMessage(Component.translatable(Reference.OTHER_BACKPACK));
                         }
-                    }
+                    //}
                 }
                 else
                 {
-                    if(!TravelersBackpack.enableCurios())
-                    {
+                    //if(!TravelersBackpack.enableCurios())
+                    //{
                         if(CapabilityUtils.isWearingBackpack(serverPlayer))
                         {
                             ServerActions.unequipBackpack(serverPlayer);
@@ -66,7 +65,7 @@ public class ServerboundEquipBackpackPacket
                             serverPlayer.closeContainer();
                             serverPlayer.sendSystemMessage(Component.translatable(Reference.NO_BACKPACK));
                         }
-                    }
+                    //}a
                 }
             }
         });

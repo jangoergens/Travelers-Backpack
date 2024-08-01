@@ -2,6 +2,7 @@ package com.tiviacz.travelersbackpack.capability;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.*;
@@ -16,7 +17,7 @@ public class TravelersBackpackCapability
 
     public static final Direction DEFAULT_FACING = null;
 
-    public static final ResourceLocation ID = new ResourceLocation(TravelersBackpack.MODID, "travelers_backpack");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "travelers_backpack");
 
     public static ICapabilityProvider createProvider(final ITravelersBackpack backpack)
     {
@@ -42,15 +43,15 @@ public class TravelersBackpackCapability
         }
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             return backpack.saveTag();
         }
 
         @Override
-        public void deserializeNBT(CompoundTag nbt)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag)
         {
-            backpack.loadTag(nbt);
+            backpack.loadTag(compoundTag);
         }
     }
 }

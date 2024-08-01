@@ -1,5 +1,6 @@
 package com.tiviacz.travelersbackpack.common;
 
+import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.init.ModBlocks;
@@ -9,14 +10,17 @@ import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
 import com.tiviacz.travelersbackpack.util.BackpackUtils;
 import com.tiviacz.travelersbackpack.util.TimeUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -34,6 +38,7 @@ import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -41,7 +46,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.EnderManAngerEvent;
@@ -56,7 +60,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class BackpackAbilities
 {
@@ -135,7 +138,7 @@ public class BackpackAbilities
 
             if(stack.getItem() == ModItems.ENDERMAN_TRAVELERS_BACKPACK.get())
             {
-                attributeAbility(player, false, ForgeMod.BLOCK_REACH.get(), ENDERMAN_REACH_DISTANCE_MODIFIER);
+                attributeAbility(player, false, Attributes.BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
             }
 
             if(stack.getItem() == ModItems.BLAZE_TRAVELERS_BACKPACK.get())
@@ -218,7 +221,7 @@ public class BackpackAbilities
 
         if(stack.getItem() == ModItems.ENDERMAN_TRAVELERS_BACKPACK.get())
         {
-            attributeAbility(player, true, ForgeMod.BLOCK_REACH.get(), ENDERMAN_REACH_DISTANCE_MODIFIER);
+            attributeAbility(player, true, Attributes.BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
         }
     }
 
@@ -266,23 +269,22 @@ public class BackpackAbilities
         }
     }
 
-    public final AttributeModifier NETHERITE_ARMOR_MODIFIER = new AttributeModifier(UUID.fromString("49d951a4-ca9c-48b5-b549-61ef67ee53aa"), "NetheriteBackpackBonusArmor", 4.0D, AttributeModifier.Operation.ADDITION);
-    public final AttributeModifier DIAMOND_ARMOR_MODIFIER = new AttributeModifier(UUID.fromString("294425c4-8dc6-4640-a336-d9fd72950e20"), "DiamondBackpackBonusArmor", 3.0D, AttributeModifier.Operation.ADDITION);
-    public final AttributeModifier IRON_ARMOR_MODIFIER = new AttributeModifier(UUID.fromString("fcf6706b-dfd9-40d6-aa25-62c4fb7a83fa"), "IronBackpackBonusArmor", 2.0D, AttributeModifier.Operation.ADDITION);
-    public final AttributeModifier GOLD_ARMOR_MODIFIER = new AttributeModifier(UUID.fromString("21060f97-da7a-4460-a4e4-c94fae72ab00"), "GoldBackpackBonusArmor", 2.0D, AttributeModifier.Operation.ADDITION);
-    public final AttributeModifier ENDERMAN_REACH_DISTANCE_MODIFIER = new AttributeModifier(UUID.fromString("a3d7a647-1ed9-4317-94c2-ca889cd33657"), "EndermanReachDistanceBonus", 1.0D, AttributeModifier.Operation.ADDITION);
+    public final AttributeModifier NETHERITE_ARMOR_MODIFIER = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "netherite_backpack_armor"), 4.0D, AttributeModifier.Operation.ADD_VALUE);
+    public final AttributeModifier DIAMOND_ARMOR_MODIFIER = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "diamond_backpack_armor"), 3.0D, AttributeModifier.Operation.ADD_VALUE);
+    public final AttributeModifier IRON_ARMOR_MODIFIER = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "iron_backpack_armor"), 2.0D, AttributeModifier.Operation.ADD_VALUE);
+    public final AttributeModifier GOLD_ARMOR_MODIFIER = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "gold_backpack_armor"), 2.0D, AttributeModifier.Operation.ADD_VALUE);
+    public final AttributeModifier ENDERMAN_REACH_DISTANCE_MODIFIER = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "enderman_backpack_reach"), 1.0D, AttributeModifier.Operation.ADD_VALUE);
 
-
-    public void attributeAbility(Player player, boolean isRemoval, Attribute attribute, AttributeModifier modifier)
+    public void attributeAbility(Player player, boolean isRemoval, Holder<Attribute> attribute, AttributeModifier modifier)
     {
         AttributeInstance armor = player.getAttribute(attribute);
 
-        if(isRemoval && armor != null && armor.hasModifier(modifier))
+        if(isRemoval && armor != null && armor.hasModifier(modifier.id()))
         {
-            armor.removePermanentModifier(modifier.getId());
+            armor.removeModifier(modifier.id());
         }
 
-        if(!isRemoval && armor != null && !armor.hasModifier(modifier))
+        if(!isRemoval && armor != null && !armor.hasModifier(modifier.id()))
         {
             armor.addPermanentModifier(modifier);
         }
@@ -295,7 +297,7 @@ public class BackpackAbilities
         attributeAbility(player, true, Attributes.ARMOR, IRON_ARMOR_MODIFIER);
         attributeAbility(player, true, Attributes.ARMOR, GOLD_ARMOR_MODIFIER);
 
-        attributeAbility(player, true, ForgeMod.BLOCK_REACH.get(), ENDERMAN_REACH_DISTANCE_MODIFIER);
+        attributeAbility(player, true, Attributes.BLOCK_INTERACTION_RANGE, ENDERMAN_REACH_DISTANCE_MODIFIER);
     }
 
     public void lapisAbility(Player player)
@@ -616,9 +618,9 @@ public class BackpackAbilities
                 Level level = player.level();
                 BlockState state = level.getBlockState(player.blockPosition().relative(player.getDirection()));
                 player.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state).setPos(player.blockPosition()),
-                        player.getX() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(Pose.STANDING).width,
+                        player.getX() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(Pose.STANDING).width(),
                         player.getY() + 0.1D,
-                        player.getZ() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(Pose.STANDING).width,
+                        player.getZ() + (level.random.nextDouble() - 0.5D) * (double)player.getDimensions(Pose.STANDING).width(),
                         0.0D, 1.5D, 0.0D);
             }
         }
@@ -641,11 +643,18 @@ public class BackpackAbilities
     {
         if(ABILITIES.checkBackpack(event.getEntity(), ModItems.BEE_TRAVELERS_BACKPACK.get()))
         {
-            boolean flag = event.getTarget().hurt(event.getEntity().damageSources().sting(event.getEntity()), 1.0F);
+            DamageSource damageSource = event.getEntity().damageSources().sting(event.getEntity());
+            boolean flag = event.getTarget().hurt(damageSource, 1.0F);
+            //boolean flag = event.getTarget().hurt(event.getEntity().damageSources().sting(event.getEntity()), 1.0F);
 
             if(flag)
             {
-                event.getEntity().doEnchantDamageEffects(event.getEntity(), event.getTarget());
+                if(event.getEntity().level() instanceof ServerLevel serverLevel)
+                {
+                    EnchantmentHelper.doPostAttackEffects(serverLevel, event.getTarget(), damageSource);
+                }
+
+               // event.getEntity().doEnchantDamageEffects(event.getEntity(), event.getTarget());
 
                 if(event.getTarget() instanceof LivingEntity living)
                 {
@@ -670,7 +679,7 @@ public class BackpackAbilities
     {
         if(!player.getActiveEffects().isEmpty() && CapabilityUtils.getBackpackInv(player).getLastTime() <= 0)
         {
-            player.curePotionEffects(new ItemStack(Items.MILK_BUCKET));
+            player.removeAllEffects();
 
             if(!player.level().isClientSide)
             {
@@ -704,7 +713,7 @@ public class BackpackAbilities
         return CapabilityUtils.isWearingBackpack(player) && CapabilityUtils.getBackpackInv(player).getItemStack().getItem() == item && CapabilityUtils.getBackpackInv(player).getAbilityValue();
     }
 
-    public void addTimedMobEffect(Player player, MobEffect effect, int minDuration, int maxDuration, int amplifier, boolean ambient, boolean showParticle, boolean showIcon)
+    public void addTimedMobEffect(Player player, Holder<MobEffect> effect, int minDuration, int maxDuration, int amplifier, boolean ambient, boolean showParticle, boolean showIcon)
     {
         if(!player.hasEffect(effect))
         {

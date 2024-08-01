@@ -1,8 +1,8 @@
 package com.tiviacz.travelersbackpack.inventory.sorter;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class SortType
 {
@@ -51,7 +52,7 @@ public class SortType
     private static String specialCases(ItemStack stack)
     {
         Item item = stack.getItem();
-        CompoundTag tag = stack.getTag();
+        //CompoundTag tag = stack.getTag();
 
         //if(tag != null && tag.contains("SkullOwner"))
        // {
@@ -95,7 +96,15 @@ public class SortType
 
     private static String enchantedBookNameCase(ItemStack stack)
     {
-        ListTag enchants = EnchantedBookItem.getEnchantments(stack);
+        Set<Object2IntMap.Entry<Holder<Enchantment>>> enchants = stack.get(DataComponents.STORED_ENCHANTMENTS).entrySet();
+        List<String> names = new ArrayList<>();
+        StringBuilder enchantNames = new StringBuilder();
+
+        for(Object2IntMap.Entry<Holder<Enchantment>> e : enchants)
+        {
+            names.add(Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
+        }
+     /*   ListTag enchants = EnchantedBookItem.getEnchantments(stack);
         List<String> names = new ArrayList<>();
         StringBuilder enchantNames = new StringBuilder();
 
@@ -113,7 +122,7 @@ public class SortType
                 continue;
             }
             names.add(enchant.getFullname(enchantTag.getInt("lvl")).getString());
-        }
+        } */
         Collections.sort(names);
         for(String enchant : names)
         {

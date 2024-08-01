@@ -47,6 +47,6 @@ public class TravelersBackpackPlugin implements IModPlugin
     @Override
     public ResourceLocation getPluginUid()
     {
-        return new ResourceLocation(TravelersBackpack.MODID, "travelersbackpack");
+        return ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "travelersbackpack");
     }
 }

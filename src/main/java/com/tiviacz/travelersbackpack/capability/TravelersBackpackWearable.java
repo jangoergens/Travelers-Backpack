@@ -61,7 +61,7 @@ public class TravelersBackpackWearable implements ITravelersBackpack
 
         if(!stack.isEmpty())
         {
-            this.container.loadAllData(stack.getOrCreateTag());
+            this.container.loadAllData();
         }
     }
 
@@ -71,7 +71,7 @@ public class TravelersBackpackWearable implements ITravelersBackpack
         if(playerEntity != null && !playerEntity.level().isClientSide)
         {
             ServerPlayer serverPlayer = (ServerPlayer)playerEntity;
-            CapabilityUtils.getCapability(serverPlayer).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(serverPlayer.getId(), true, this.wearable.save(new CompoundTag())), PacketDistributor.PLAYER.with(serverPlayer)));
+            CapabilityUtils.getCapability(serverPlayer).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(serverPlayer.getId(), true, this.wearable), PacketDistributor.PLAYER.with(serverPlayer)));
         }
     }
 
@@ -81,7 +81,7 @@ public class TravelersBackpackWearable implements ITravelersBackpack
         if(player != null && !player.level().isClientSide)
         {
             ServerPlayer serverPlayer = (ServerPlayer)player;
-            CapabilityUtils.getCapability(serverPlayer).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(serverPlayer.getId(), true, this.wearable.save(new CompoundTag())), PacketDistributor.TRACKING_ENTITY.with(serverPlayer)));
+            CapabilityUtils.getCapability(serverPlayer).ifPresent(cap -> TravelersBackpack.NETWORK.send(new ClientboundSyncCapabilityPacket(serverPlayer.getId(), true, this.wearable), PacketDistributor.TRACKING_ENTITY.with(serverPlayer)));
         }
     }
 
@@ -93,12 +93,7 @@ public class TravelersBackpackWearable implements ITravelersBackpack
         if(hasWearable())
         {
             ItemStack wearable = getWearable();
-            wearable.save(compound);
-        }
-        if(!hasWearable())
-        {
-            ItemStack wearable = new ItemStack(Items.AIR, 0);
-            wearable.save(compound);
+            compound = (CompoundTag)wearable.saveOptional(playerEntity.registryAccess());
         }
         return compound;
     }
@@ -106,7 +101,7 @@ public class TravelersBackpackWearable implements ITravelersBackpack
     @Override
     public void loadTag(CompoundTag compoundTag)
     {
-        ItemStack wearable = ItemStack.of(compoundTag);
+        ItemStack wearable = ItemStack.parseOptional(playerEntity.registryAccess(), compoundTag);
         setWearable(wearable);
         setContents(wearable);
     }

@@ -7,7 +7,6 @@ import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +60,7 @@ public class ClearBackpackCommand
             CapabilityUtils.getCapability(player).ifPresent(cap ->
             {
                 ItemStack stack = cap.getWearable();
-                stack.setTag(new CompoundTag());
+                //stack.setTag(new CompoundTag());
 
                 cap.setWearable(stack);
                 cap.setContents(stack);

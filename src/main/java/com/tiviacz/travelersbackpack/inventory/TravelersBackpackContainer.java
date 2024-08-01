@@ -1,17 +1,21 @@
 package com.tiviacz.travelersbackpack.inventory;
 
+import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.common.BackpackAbilities;
+import com.tiviacz.travelersbackpack.components.BackpackContainerContents;
+import com.tiviacz.travelersbackpack.components.FluidTanks;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
+import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackItemMenu;
 import com.tiviacz.travelersbackpack.inventory.menu.slot.BackpackSlotItemHandler;
 import com.tiviacz.travelersbackpack.inventory.menu.slot.ToolSlotItemHandler;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
+import com.tiviacz.travelersbackpack.network.ClientboundSyncItemStackPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -22,26 +26,28 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TravelersBackpackContainer implements ITravelersBackpackContainer, MenuProvider, Nameable
 {
-    private final ItemStackHandler inventory = createHandler(Tiers.LEATHER.getStorageSlots(), true);
-    private final ItemStackHandler craftingInventory = createHandler(9, false);
-    private final ItemStackHandler toolSlots = createToolsHandler(Tiers.LEATHER.getToolSlots());
+    private ItemStackHandler inventory = createHandler(NonNullList.withSize(Tiers.LEATHER.getStorageSlots(), ItemStack.EMPTY), true);
+    private ItemStackHandler craftingInventory = createHandler(NonNullList.withSize(9, ItemStack.EMPTY), false);
+    private ItemStackHandler toolSlots = createToolsHandler(NonNullList.withSize(Tiers.LEATHER.getToolSlots(), ItemStack.EMPTY));
     private final ItemStackHandler fluidSlots = createTemporaryHandler();
     private final FluidTank leftTank = createFluidHandler(Tiers.LEATHER.getTankCapacity());
     private final FluidTank rightTank = createFluidHandler(Tiers.LEATHER.getTankCapacity());
     private final SlotManager slotManager = new SlotManager(this);
     private final SettingsManager settingsManager = new SettingsManager(this);
-    private final Player player;
+    private Player player;
     private ItemStack stack;
     private Tiers.Tier tier;
     private boolean ability;
@@ -54,7 +60,10 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         this.stack = stack;
         this.screenID = screenID;
 
-        this.loadAllData(stack.getOrCreateTag());
+        if(!this.stack.isEmpty())
+        {
+            this.loadAllData();
+        }
     }
 
     public void setStack(ItemStack stack)
@@ -62,19 +71,9 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         this.stack = stack;
     }
 
-    public void loadTier(CompoundTag compound)
+    public void loadTier()
     {
-        if(!compound.contains(TIER))
-        {
-            compound.putInt(TIER, TravelersBackpackConfig.enableTierUpgrades ? Tiers.LEATHER.getOrdinal() : Tiers.DIAMOND.getOrdinal());
-        }
-        if(compound.contains(TIER, Tag.TAG_STRING))
-        {
-            Tiers.Tier tier = Tiers.of(compound.getString(TIER));
-            compound.remove(TIER);
-            compound.putInt(TIER, tier.getOrdinal());
-        }
-        this.tier = Tiers.of(compound.getInt(TIER));
+        this.tier = Tiers.of(this.stack.getOrDefault(ModDataComponents.TIER.get(), 0));
     }
 
     @Override
@@ -119,95 +118,83 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         return this.rightTank;
     }
 
-    @Override
-    public void saveAllData(CompoundTag compound)
+    public void saveAllData()
     {
-        this.saveTanks(compound);
-        this.saveItems(compound);
-        this.saveTime(compound);
-        this.saveAbility(compound);
-        this.slotManager.saveUnsortableSlots(compound);
-        this.slotManager.saveMemorySlots(compound);
-        this.settingsManager.saveSettings(compound);
+        this.saveTanks();
+        this.saveItems();
+        this.saveTime();
+        this.saveAbility();
+        this.slotManager.saveUnsortableSlots(this.stack);
+        this.slotManager.saveMemorySlots(this.stack);
+        this.settingsManager.saveSettings(this.stack);
     }
 
-    @Override
-    public void loadAllData(CompoundTag compound)
+    public void loadAllData()
     {
-        this.loadTier(compound);
-        this.loadTanks(compound);
-        this.loadItems(compound);
-        this.loadTime(compound);
-        this.loadAbility(compound);
-        this.slotManager.loadUnsortableSlots(compound);
-        this.slotManager.loadMemorySlots(compound);
-        this.settingsManager.loadSettings(compound);
+        this.loadTier();
+        this.loadTanks();
+        this.loadItems();
+        this.loadTime();
+        this.loadAbility();
+        this.slotManager.loadUnsortableSlots(this.stack);
+        this.slotManager.loadMemorySlots(this.stack);
+        this.settingsManager.loadSettings(this.stack);
     }
 
-    @Override
-    public void saveItems(CompoundTag compound)
+    public void saveItems()
     {
-        compound.put(INVENTORY, this.inventory.serializeNBT());
-        compound.put(TOOLS_INVENTORY, this.toolSlots.serializeNBT());
-        compound.put(CRAFTING_INVENTORY, this.craftingInventory.serializeNBT());
+        this.stack.set(ModDataComponents.BACKPACK_CONTAINER.get(), itemsToList(this.stack.has(ModDataComponents.BACKPACK_CONTAINER.get()) ? this.inventory.getSlots() : this.tier.getStorageSlots(), this.inventory));
+        this.stack.set(ModDataComponents.CRAFTING_CONTAINER.get(), itemsToList(9, this.craftingInventory));
+        this.stack.set(ModDataComponents.TOOLS_CONTAINER.get(), itemsToList(this.stack.has(ModDataComponents.TOOLS_CONTAINER.get()) ? this.toolSlots.getSlots() : this.tier.getToolSlots(), this.toolSlots));
     }
 
-    @Override
-    public void loadItems(CompoundTag compound)
+    public void loadItems()
     {
-        this.inventory.deserializeNBT(compound.getCompound(INVENTORY));
-        this.toolSlots.deserializeNBT(compound.getCompound(TOOLS_INVENTORY));
-        this.craftingInventory.deserializeNBT(compound.getCompound(CRAFTING_INVENTORY));
+        this.inventory = createHandler(this.stack.getOrDefault(ModDataComponents.BACKPACK_CONTAINER.get(), BackpackContainerContents.fromItems(this.tier.getStorageSlots(), NonNullList.withSize(this.tier.getStorageSlots(), ItemStack.EMPTY))).getItems(), true);
+        this.toolSlots = createToolsHandler(this.stack.getOrDefault(ModDataComponents.TOOLS_CONTAINER.get(), BackpackContainerContents.fromItems(this.tier.getToolSlots(), NonNullList.withSize(this.tier.getToolSlots(), ItemStack.EMPTY))).getItems());
+
+        if(this.stack.has(ModDataComponents.CRAFTING_CONTAINER.get()))
+        {
+            this.craftingInventory = createHandler(this.stack.get(ModDataComponents.CRAFTING_CONTAINER.get()).getItems(), false);
+        }
     }
 
-    @Override
-    public void saveTanks(CompoundTag compound)
+    public void saveTanks()
     {
-        compound.put(LEFT_TANK, this.leftTank.writeToNBT(new CompoundTag()));
-        compound.put(RIGHT_TANK, this.rightTank.writeToNBT(new CompoundTag()));
+        this.stack.set(ModDataComponents.FLUID_TANKS.get(), new FluidTanks(this.leftTank.getCapacity(), this.leftTank.getFluid(), this.rightTank.getFluid()));
     }
 
-    @Override
-    public void loadTanks(CompoundTag compound)
+    public void loadTanks()
     {
-        this.leftTank.readFromNBT(compound.getCompound(LEFT_TANK));
-        this.rightTank.readFromNBT(compound.getCompound(RIGHT_TANK));
+        FluidTanks tanks = this.stack.getOrDefault(ModDataComponents.FLUID_TANKS.get(), FluidTanks.createTanks(this.tier.getTankCapacity()));
+
+        //Left Tank
+        this.leftTank.setCapacity(tanks.capacity());
+        this.leftTank.setFluid(tanks.leftFluidStack());
+
+        //Right Tank
+        this.rightTank.setCapacity(tanks.capacity());
+        this.rightTank.setFluid(tanks.rightFluidStack());
     }
 
-    @Override
-    public void saveColor(CompoundTag compound) {}
-
-    @Override
-    public void loadColor(CompoundTag compound) {}
-
-    @Override
-    public void saveSleepingBagColor(CompoundTag compound) {}
-
-    @Override
-    public void loadSleepingBagColor(CompoundTag compound) {}
-
-    @Override
-    public void saveAbility(CompoundTag compound)
+    public void saveAbility()
     {
-        compound.putBoolean(ABILITY, this.ability);
+        this.stack.set(ModDataComponents.ABILITY.get(), this.ability);
     }
 
-    @Override
-    public void loadAbility(CompoundTag compound)
+    public void loadAbility()
     {
-        this.ability = !compound.contains(ABILITY) && TravelersBackpackConfig.forceAbilityEnabled || compound.getBoolean(ABILITY);
+        this.ability = this.stack.getOrDefault(ModDataComponents.ABILITY.get(), TravelersBackpackConfig.SERVER.backpackAbilities.forceAbilityEnabled.get());
     }
 
-    @Override
-    public void saveTime(CompoundTag compound)
+    public void saveTime()
     {
-        compound.putInt(LAST_TIME, this.lastTime);
+        this.stack.set(ModDataComponents.LAST_TIME.get(), this.lastTime);
     }
 
-    @Override
-    public void loadTime(CompoundTag compound)
+    public void loadTime()
     {
-        this.lastTime = compound.getInt(LAST_TIME);
+        this.lastTime = this.stack.getOrDefault(ModDataComponents.LAST_TIME.get(), 0);
     }
 
     @Override
@@ -216,22 +203,10 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         return InventoryActions.transferContainerTank(this, getLeftTank(), 0, player) || InventoryActions.transferContainerTank(this, getRightTank(), 2, player);
     }
 
-    private void sendPackets()
-    {
-        if(screenID == Reference.WEARABLE_SCREEN_ID)
-        {
-            //Stop updating stack if player is changing settings
-            if(this.slotManager.isSelectorActive(SlotManager.MEMORY) || this.slotManager.isSelectorActive(SlotManager.UNSORTABLE)) return;
-
-            CapabilityUtils.synchronise(player);
-            CapabilityUtils.synchroniseToOthers(player);
-        }
-    }
-
     @Override
     public boolean hasColor()
     {
-        return this.stack.getOrCreateTag().contains(COLOR);
+        return this.stack.has(DataComponents.DYED_COLOR);
     }
 
     @Override
@@ -239,14 +214,14 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
     {
         if(hasColor())
         {
-            return this.stack.getOrCreateTag().getInt(COLOR);
+            return this.stack.get(DataComponents.DYED_COLOR).rgb();
         }
         return 0;
     }
 
     public boolean hasSleepingBagColor()
     {
-        return this.stack.getOrCreateTag().contains(SLEEPING_BAG_COLOR);
+        return this.stack.has(ModDataComponents.SLEEPING_BAG_COLOR.get());
     }
 
     @Override
@@ -254,7 +229,7 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
     {
         if(hasSleepingBagColor())
         {
-            return this.stack.getOrCreateTag().getInt(SLEEPING_BAG_COLOR);
+            return this.stack.getOrDefault(ModDataComponents.SLEEPING_BAG_COLOR.get(), DyeColor.RED.getId());
         }
         return DyeColor.RED.getId();
     }
@@ -262,7 +237,7 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
     @Override
     public boolean getAbilityValue()
     {
-        return TravelersBackpackConfig.enableBackpackAbilities ? (BackpackAbilities.ALLOWED_ABILITIES.contains(getItemStack().getItem()) ? this.ability : false) : false;
+        return TravelersBackpackConfig.SERVER.backpackAbilities.enableBackpackAbilities.get() ? (BackpackAbilities.ALLOWED_ABILITIES.contains(getItemStack().getItem()) ? this.ability : false) : false;
     }
 
     @Override
@@ -361,22 +336,61 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         {
             switch(data)
             {
-                case INVENTORY_DATA: this.stack.getOrCreateTag().put(INVENTORY, this.inventory.serializeNBT());
-                case TOOLS_DATA: this.stack.getOrCreateTag().put(TOOLS_INVENTORY, this.toolSlots.serializeNBT());
-                case CRAFTING_INVENTORY_DATA: this.stack.getOrCreateTag().put(CRAFTING_INVENTORY, this.craftingInventory.serializeNBT());
-                case COMBINED_INVENTORY_DATA: saveItems(this.stack.getOrCreateTag());
-                case TANKS_DATA: saveTanks(this.stack.getOrCreateTag());
-                case COLOR_DATA: saveColor(this.stack.getOrCreateTag());
-                case SLEEPING_BAG_COLOR_DATA: saveSleepingBagColor(this.stack.getOrCreateTag());
-                case ABILITY_DATA: saveAbility(this.stack.getOrCreateTag());
-                case LAST_TIME_DATA: saveTime(this.stack.getOrCreateTag());
-                case SLOT_DATA: slotManager.saveUnsortableSlots(this.stack.getOrCreateTag());
-                                slotManager.saveMemorySlots(this.stack.getOrCreateTag());
-                case SETTINGS_DATA: settingsManager.saveSettings(stack.getOrCreateTag());
-                case ALL_DATA: saveAllData(this.stack.getOrCreateTag());
+                case INVENTORY_DATA: this.stack.set(ModDataComponents.BACKPACK_CONTAINER.get(), itemsToList(this.stack.has(ModDataComponents.BACKPACK_CONTAINER.get()) ? this.inventory.getSlots() : this.tier.getStorageSlots(), this.inventory)); break;
+                case TOOLS_DATA: this.stack.set(ModDataComponents.TOOLS_CONTAINER.get(), itemsToList(this.toolSlots.getSlots(), this.toolSlots)); break;
+                case CRAFTING_INVENTORY_DATA: this.stack.set(ModDataComponents.CRAFTING_CONTAINER.get(), itemsToList(9, this.craftingInventory)); break;
+                case TANKS_DATA: saveTanks(); break;
+                case ABILITY_DATA: saveAbility(); break;
+                case LAST_TIME_DATA: saveTime(); break;
+                case SLOT_DATA: slotManager.saveUnsortableSlots(this.stack);
+                    slotManager.saveMemorySlots(this.stack); sendMemorySlotsToClient(); break;
+                case SETTINGS_DATA: settingsManager.saveSettings(this.stack); break;
+                case ALL_DATA: saveAllData(); break;
             }
         }
-        sendPackets();
+        this.sendPackets();
+    }
+
+    public void sendMemorySlotsToClient()
+    {
+        if(this.player != null && !getLevel().isClientSide && this.screenID == Reference.ITEM_SCREEN_ID)
+        {
+            this.player.containerMenu.sendAllDataToRemote();
+        }
+    }
+
+    //Sync ItemStack Components on client
+    public void sendPackets()
+    {
+        if(screenID == Reference.WEARABLE_SCREEN_ID)
+        {
+            //Stop updating stack if player is changing settings
+            if(this.slotManager.isSelectorActive(SlotManager.MEMORY) || this.slotManager.isSelectorActive(SlotManager.UNSORTABLE)) return;
+
+            CapabilityUtils.synchronise(player);
+            CapabilityUtils.synchroniseToOthers(player);
+        }
+
+        if(screenID == Reference.ITEM_SCREEN_ID && player instanceof ServerPlayer serverPlayer)
+        {
+            TravelersBackpack.NETWORK.send(new ClientboundSyncItemStackPacket(serverPlayer.getId(), this.stack), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(serverPlayer));
+            //PacketDistributor.sendToPlayersTrackingEntityAndSelf(serverPlayer, new ClientboundSyncItemStackPacket(serverPlayer.getId(), this.stack));
+        }
+    }
+
+    public BackpackContainerContents itemsToList(int size, ItemStackHandler handler)
+    {
+        List<ItemStack> list = new ArrayList<>(size);
+
+        for(int i = 0; i < handler.getSlots(); i++)
+        {
+            list.add(handler.getStackInSlot(i));
+        }
+        for(int i = handler.getSlots(); i < size; i++)
+        {
+            list.add(ItemStack.EMPTY);
+        }
+        return BackpackContainerContents.fromItems(size, list);
     }
 
     @Override
@@ -439,14 +453,21 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         return new TravelersBackpackItemMenu(windowID, inventory, this);
     }
 
-    private ItemStackHandler createHandler(int size, boolean isInventory)
+    private ItemStackHandler createHandler(NonNullList<ItemStack> stacks, boolean isInventory)
     {
-        return new ItemStackHandler(size)
+        return new ItemStackHandler(stacks)
         {
             @Override
             protected void onContentsChanged(int slot)
             {
-                setDataChanged(COMBINED_INVENTORY_DATA);
+                if(isInventory)
+                {
+                    setDataChanged(INVENTORY_DATA);
+                }
+                else
+                {
+                    setDataChanged(CRAFTING_INVENTORY_DATA);
+                }
             }
 
             @Override
@@ -454,37 +475,12 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             {
                 return BackpackSlotItemHandler.isItemValid(stack);
             }
-
-            @Override
-            public void deserializeNBT(CompoundTag nbt)
-            {
-                if(isInventory)
-                {
-                    setSize(nbt.contains("Size", 3) ? nbt.getInt("Size") : TravelersBackpackContainer.this.tier.getStorageSlots());
-                    ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
-                    for(int i = 0; i < tagList.size(); i++)
-                    {
-                        CompoundTag itemTags = tagList.getCompound(i);
-                        int slot = itemTags.getInt("Slot");
-
-                        if(slot >= 0 && slot < stacks.size())
-                        {
-                            stacks.set(slot, ItemStack.of(itemTags));
-                        }
-                    }
-                    onLoad();
-                }
-                else
-                {
-                    super.deserializeNBT(nbt);
-                }
-            }
         };
     }
 
-    private ItemStackHandler createToolsHandler(int size)
+    private ItemStackHandler createToolsHandler(NonNullList<ItemStack> items)
     {
-        return new ItemStackHandler(size)
+        return new ItemStackHandler(items)
         {
             @Override
             protected void onContentsChanged(int slot)
@@ -497,24 +493,6 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             {
                 return ToolSlotItemHandler.isValid(stack);
             }
-
-            @Override
-            public void deserializeNBT(CompoundTag nbt)
-            {
-                setSize(nbt.contains("Size", 3) ? nbt.getInt("Size") : TravelersBackpackContainer.this.tier.getToolSlots());
-                ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
-                for(int i = 0; i < tagList.size(); i++)
-                {
-                    CompoundTag itemTags = tagList.getCompound(i);
-                    int slot = itemTags.getInt("Slot");
-
-                    if(slot >= 0 && slot < stacks.size())
-                    {
-                        stacks.set(slot, ItemStack.of(itemTags));
-                    }
-                }
-                onLoad();
-            }
         };
     }
 
@@ -526,23 +504,6 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             protected void onContentsChanged()
             {
                 setDataChanged(TANKS_DATA);
-            }
-
-            @Override
-            public FluidTank readFromNBT(CompoundTag nbt)
-            {
-                setCapacity(nbt.contains("Capacity", 3) ? nbt.getInt("Capacity") : TravelersBackpackContainer.this.tier.getTankCapacity());
-                FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
-                setFluid(fluid);
-                return this;
-            }
-
-            @Override
-            public CompoundTag writeToNBT(CompoundTag nbt)
-            {
-                if(!nbt.contains("Capacity", 3)) nbt.putInt("Capacity", TravelersBackpackContainer.this.tier.getTankCapacity());
-                fluid.writeToNBT(nbt);
-                return nbt;
             }
         };
     }

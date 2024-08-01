@@ -5,7 +5,7 @@ import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackBlockEntity
 import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackItemMenu;
 import com.tiviacz.travelersbackpack.inventory.sorter.SlotManager;
 import com.tiviacz.travelersbackpack.util.Reference;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.network.CustomPayloadEvent;
@@ -25,7 +25,7 @@ public class ServerboundMemoryPacket
         this.stacks = stacks;
     }
 
-    public static ServerboundMemoryPacket decode(final FriendlyByteBuf buffer)
+    public static ServerboundMemoryPacket decode(final RegistryFriendlyByteBuf buffer)
     {
         final byte screenID = buffer.readByte();
         final boolean isActive = buffer.readBoolean();
@@ -34,13 +34,13 @@ public class ServerboundMemoryPacket
 
         for(int i = 0; i < selectedSlots.length; i++)
         {
-            stacks[i] = buffer.readItem();
+            stacks[i] = ItemStack.STREAM_CODEC.decode(buffer);
         }
 
         return new ServerboundMemoryPacket(screenID, isActive, selectedSlots, stacks);
     }
 
-    public static void encode(final ServerboundMemoryPacket message, final FriendlyByteBuf buffer)
+    public static void encode(final ServerboundMemoryPacket message, final RegistryFriendlyByteBuf buffer)
     {
         buffer.writeByte(message.screenID);
         buffer.writeBoolean(message.isActive);
@@ -48,7 +48,7 @@ public class ServerboundMemoryPacket
 
         for(int i = 0; i < message.selectedSlots.length; i++)
         {
-            buffer.writeItem(message.stacks[i]);
+            ItemStack.STREAM_CODEC.encode(buffer, message.stacks[i]); //buffer.writeItem(message.stacks[i]);
         }
     }
 

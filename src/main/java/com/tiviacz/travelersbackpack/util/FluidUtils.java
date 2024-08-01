@@ -3,13 +3,8 @@ package com.tiviacz.travelersbackpack.util;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.SoundActions;
-import net.minecraftforge.fluids.FluidStack;
 
 public class FluidUtils
 {
@@ -37,7 +32,8 @@ public class FluidUtils
         return soundevent;
     }
 
-    public static void setFluidStackNBT(ItemStack stack, FluidStack fluidStack)
+    //#TODO no possible conversion
+   /* public static void setFluidStackNBT(ItemStack stack, FluidStack fluidStack)
     {
         if(stack.getTag() != null)
         {
@@ -57,6 +53,7 @@ public class FluidUtils
 
     public static ItemStack getItemStackFromPotionType(Potion potion)
     {
-        return PotionUtils.setPotion(new ItemStack(Items.POTION), potion);
-    }
+        return PotionContents.createItemStack(Items.POTION, potion);
+        //return PotionUtils.setPotion(new ItemStack(Items.POTION), potion);
+    } */
 }

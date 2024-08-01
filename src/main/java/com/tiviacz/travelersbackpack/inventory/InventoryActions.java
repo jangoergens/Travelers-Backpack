@@ -1,17 +1,9 @@
 package com.tiviacz.travelersbackpack.inventory;
 
-import com.tiviacz.travelersbackpack.init.ModFluids;
 import com.tiviacz.travelersbackpack.util.ContainerUtils;
-import com.tiviacz.travelersbackpack.util.FluidUtils;
-import com.tiviacz.travelersbackpack.util.Reference;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PotionItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
@@ -35,7 +27,7 @@ public class InventoryActions
         if(tank == null || stackIn.isEmpty() || stackIn.getItem() == Items.AIR) return false;
 
         // --- POTION PART ---
-        if(stackIn.getItem() instanceof PotionItem && stackIn.getItem() != Items.GLASS_BOTTLE)
+       /* if(stackIn.getItem() instanceof PotionItem && stackIn.getItem() != Items.GLASS_BOTTLE)
         {
             boolean hasFluidHandler = FluidUtil.getFluidHandler(stackIn).isPresent();
 
@@ -43,7 +35,7 @@ public class InventoryActions
             {
                 int amount = Reference.POTION;
                 FluidStack fluidStack = new FluidStack(ModFluids.POTION_FLUID.get(), amount);
-                FluidUtils.setFluidStackNBT(stackIn, fluidStack);
+                //FluidUtils.setFluidStackNBT(stackIn, fluidStack);
 
                 if(tank.isEmpty() || FluidStack.areFluidStackTagsEqual(tank.getFluid(), fluidStack))
                 {
@@ -100,7 +92,7 @@ public class InventoryActions
                     return true;
                 }
             }
-        }
+        } */
         // --- POTION PART ---
 
         LazyOptional<IFluidHandlerItem> fluidHandler = FluidUtil.getFluidHandler(stackIn);
@@ -137,10 +129,10 @@ public class InventoryActions
                             if(stackOut.getCount() > slotOutStack.getMaxStackSize()) return false;
                         }
 
-                        if(stackInCopy.getItem() == Items.WATER_BUCKET && EnchantmentHelper.getEnchantments(stackInCopy).containsKey(Enchantments.INFINITY_ARROWS))
-                        {
-                            stackOut = stackInCopy;
-                        }
+                       // if(stackInCopy.getItem() == Items.WATER_BUCKET && EnchantmentHelper.getEnchantments(stackInCopy).containsKey(Enchantments.INFINITY_ARROWS))
+                      //  {
+                      //      stackOut = stackInCopy;
+                      //  }
 
                         FluidUtil.tryEmptyContainer(stackIn, tank, amount, player, true);
 

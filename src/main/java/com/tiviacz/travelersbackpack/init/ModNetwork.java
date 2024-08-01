@@ -5,12 +5,13 @@ import com.tiviacz.travelersbackpack.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.Channel;
 import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.SimpleChannel;
 
 public class ModNetwork
 {
-    public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(TravelersBackpack.MODID, "network");
-    public static final String NETWORK_VERSION = new ResourceLocation(TravelersBackpack.MODID, "1").toString();
+    public static final ResourceLocation CHANNEL_NAME = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "network");
+    public static final String NETWORK_VERSION = ResourceLocation.fromNamespaceAndPath(TravelersBackpack.MODID, "1").toString();
 
     public static SimpleChannel registerNetworkChannel() {
         final SimpleChannel channel = ChannelBuilder.named(CHANNEL_NAME)
@@ -20,7 +21,7 @@ public class ModNetwork
 
         TravelersBackpack.NETWORK = channel;
 
-        channel.messageBuilder(ClientboundSyncCapabilityPacket.class, 0)
+        channel.messageBuilder(ClientboundSyncCapabilityPacket.class, 0, NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(ClientboundSyncCapabilityPacket::decode)
                 .encoder(ClientboundSyncCapabilityPacket::encode)
                 .consumerNetworkThread(ClientboundSyncCapabilityPacket::handle)
@@ -44,7 +45,7 @@ public class ModNetwork
                 .consumerMainThread(ServerboundSpecialActionPacket::handle)
                 .add();
 
-        channel.messageBuilder(ClientboundUpdateRecipePacket.class,4)
+        channel.messageBuilder(ClientboundUpdateRecipePacket.class, 4, NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(ClientboundUpdateRecipePacket::decode)
                 .encoder(ClientboundUpdateRecipePacket::encode)
                 .consumerMainThread(ClientboundUpdateRecipePacket::handle)
@@ -68,7 +69,7 @@ public class ModNetwork
                 .consumerMainThread(ServerboundSlotPacket::handle)
                 .add();
 
-        channel.messageBuilder(ServerboundMemoryPacket.class, 8)
+        channel.messageBuilder(ServerboundMemoryPacket.class, 8, NetworkDirection.PLAY_TO_SERVER)
                 .decoder(ServerboundMemoryPacket::decode)
                 .encoder(ServerboundMemoryPacket::encode)
                 .consumerMainThread(ServerboundMemoryPacket::handle)
@@ -84,6 +85,12 @@ public class ModNetwork
                 .decoder(ClientboundSendMessagePacket::decode)
                 .encoder(ClientboundSendMessagePacket::encode)
                 .consumerMainThread(ClientboundSendMessagePacket::handle)
+                .add();
+
+        channel.messageBuilder(ClientboundSyncItemStackPacket.class, 11, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(ClientboundSyncItemStackPacket::decode)
+                .encoder(ClientboundSyncItemStackPacket::encode)
+                .consumerNetworkThread(ClientboundSyncItemStackPacket::handle)
                 .add();
 
         return channel;
