@@ -474,6 +474,7 @@ public class TravelersBackpackConfig
 
     public static class Client
     {
+        public final ForgeConfigSpec.BooleanValue showBackpackIconInInventory;
         public final ForgeConfigSpec.BooleanValue sendBackpackCoordinatesMessage;
         public final ForgeConfigSpec.BooleanValue enableToolCycling;
         public final ForgeConfigSpec.BooleanValue disableScrollWheel;
@@ -488,6 +489,10 @@ public class TravelersBackpackConfig
         {
             builder.comment("Client-only settings")
                     .push("client");
+
+            showBackpackIconInInventory = builder
+                    .comment("Whether the backpack icon should be visible in player's inventory")
+                    .define("showBackpackIconInInventory", true);
 
             sendBackpackCoordinatesMessage = builder
                     .comment("Sends a message to the player on death with backpack coordinates")
