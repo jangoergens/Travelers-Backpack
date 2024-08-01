@@ -334,7 +334,7 @@ public class ForgeEventHandler
             {
                 IEntityTravelersBackpack travelersBackpack = cap.resolve().get();
 
-                if(!travelersBackpack.hasWearable() && event.getLevel().getRandom().nextInt(0, TravelersBackpackConfig.SERVER.world.spawnChance.get()) == 0)
+                if(!travelersBackpack.hasWearable() && event.getLevel().getRandom().nextFloat() < TravelersBackpackConfig.SERVER.world.chance.get())
                 {
                     boolean isNether = living.getType() == EntityType.PIGLIN || living.getType() == EntityType.WITHER_SKELETON;
                     RandomSource rand = event.getLevel().random;
@@ -472,6 +472,8 @@ public class ForgeEventHandler
         {
             if(CapabilityUtils.isWearingBackpack(event.getEntity()))
             {
+                if(!(event.getSource().getEntity() instanceof Player)) return;
+
                 ItemEntity itemEntity = new ItemEntity(event.getEntity().level(), event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(), CapabilityUtils.getWearingBackpack(event.getEntity()));
                 event.getDrops().add(itemEntity);
             }
