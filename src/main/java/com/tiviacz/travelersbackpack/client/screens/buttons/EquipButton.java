@@ -6,7 +6,6 @@ import com.tiviacz.travelersbackpack.client.screens.TravelersBackpackScreen;
 import com.tiviacz.travelersbackpack.network.ServerboundEquipBackpackPacket;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.network.PacketDistributor;
 
 public class EquipButton extends Button
