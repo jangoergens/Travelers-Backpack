@@ -21,6 +21,11 @@ public class TravelersBackpackConfig
         return AutoConfig.getConfigHolder(TravelersBackpackConfigData.class).getConfig();
     }
 
+    public static void saveConfig()
+    {
+        AutoConfig.getConfigHolder(TravelersBackpackConfigData.class).save();
+    }
+
     public static void register()
     {
         AutoConfig.register(TravelersBackpackConfigData.class, JanksonConfigSerializer::new);
@@ -162,6 +167,7 @@ public class TravelersBackpackConfig
         data.client.overlay.offsetX = client.client.overlay.offsetX;
         data.client.overlay.offsetY = client.client.overlay.offsetY;
 
+        data.client.showBackpackIconInInventory = client.client.showBackpackIconInInventory;
         data.client.sendBackpackCoordinatesMessage = client.client.sendBackpackCoordinatesMessage;
         data.client.enableLegacyGui = client.client.enableLegacyGui;
         data.client.enableToolCycling = client.client.enableToolCycling;
