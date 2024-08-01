@@ -128,7 +128,7 @@ public class ServerActions
                 }
             }
 
-            inventory.setDataChanged(ITravelersBackpackContainer.TOOLS_DATA);
+            //inventory.setDataChanged(ITravelersBackpackContainer.TOOLS_DATA);
         }
     }
 

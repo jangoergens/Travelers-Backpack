@@ -336,9 +336,9 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
         {
             switch(data)
             {
-                case INVENTORY_DATA: this.stack.set(ModDataComponents.BACKPACK_CONTAINER.get(), itemsToList(this.stack.has(ModDataComponents.BACKPACK_CONTAINER.get()) ? this.inventory.getSlots() : this.tier.getStorageSlots(), this.inventory)); break;
-                case TOOLS_DATA: this.stack.set(ModDataComponents.TOOLS_CONTAINER.get(), itemsToList(this.toolSlots.getSlots(), this.toolSlots)); break;
-                case CRAFTING_INVENTORY_DATA: this.stack.set(ModDataComponents.CRAFTING_CONTAINER.get(), itemsToList(9, this.craftingInventory)); break;
+                //case INVENTORY_DATA: this.stack.set(ModDataComponents.BACKPACK_CONTAINER.get(), itemsToList(this.stack.has(ModDataComponents.BACKPACK_CONTAINER.get()) ? this.inventory.getSlots() : this.tier.getStorageSlots(), this.inventory)); break;
+                //case TOOLS_DATA: this.stack.set(ModDataComponents.TOOLS_CONTAINER.get(), itemsToList(this.toolSlots.getSlots(), this.toolSlots)); break;
+                //case CRAFTING_INVENTORY_DATA: this.stack.set(ModDataComponents.CRAFTING_CONTAINER.get(), itemsToList(9, this.craftingInventory)); break;
                 case TANKS_DATA: saveTanks(); break;
                 case ABILITY_DATA: saveAbility(); break;
                 case LAST_TIME_DATA: saveTime(); break;
@@ -349,6 +349,17 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             }
         }
         this.sendPackets();
+    }
+
+    public void setSlotChanged(int index, ItemStack stack, byte dataId)
+    {
+        switch(dataId)
+        {
+            case INVENTORY_DATA: this.stack.update(ModDataComponents.BACKPACK_CONTAINER.get(), new BackpackContainerContents(this.getTier().getStorageSlots()), new BackpackContainerContents.Slot(index, stack), BackpackContainerContents::updateSlot); break;
+            case CRAFTING_INVENTORY_DATA: this.stack.update(ModDataComponents.CRAFTING_CONTAINER.get(), new BackpackContainerContents(9), new BackpackContainerContents.Slot(index, stack), BackpackContainerContents::updateSlot); break;
+            case TOOLS_DATA: this.stack.update(ModDataComponents.TOOLS_CONTAINER.get(), new BackpackContainerContents(this.tier.getToolSlots()), new BackpackContainerContents.Slot(index, stack), BackpackContainerContents::updateSlot); break;
+        }
+        sendPackets();
     }
 
     public void sendMemorySlotsToClient()
@@ -462,11 +473,13 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             {
                 if(isInventory)
                 {
-                    setDataChanged(INVENTORY_DATA);
+                    setSlotChanged(slot, getStackInSlot(slot), INVENTORY_DATA);
+                    //setDataChanged(INVENTORY_DATA);
                 }
                 else
                 {
-                    setDataChanged(CRAFTING_INVENTORY_DATA);
+                    setSlotChanged(slot, getStackInSlot(slot), CRAFTING_INVENTORY_DATA);
+                    //setDataChanged(CRAFTING_INVENTORY_DATA);
                 }
             }
 
@@ -485,7 +498,8 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
             @Override
             protected void onContentsChanged(int slot)
             {
-                setDataChanged(TOOLS_DATA);
+                setSlotChanged(slot, getStackInSlot(slot), TOOLS_DATA);
+                //setDataChanged(TOOLS_DATA);
             }
 
             @Override

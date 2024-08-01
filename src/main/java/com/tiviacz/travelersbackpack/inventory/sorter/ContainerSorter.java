@@ -84,7 +84,7 @@ public class ContainerSorter
                 j++;
             }
 
-            container.setDataChanged(ITravelersBackpackContainer.INVENTORY_DATA);
+            //container.setDataChanged(ITravelersBackpackContainer.INVENTORY_DATA);
         }
     }
 

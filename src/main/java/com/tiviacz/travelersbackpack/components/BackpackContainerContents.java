@@ -37,7 +37,7 @@ public final class BackpackContainerContents
         }
     }
 
-    private BackpackContainerContents(int pSize)
+    public BackpackContainerContents(int pSize)
     {
         this(NonNullList.withSize(pSize, ItemStack.EMPTY));
     }
@@ -104,6 +104,16 @@ public final class BackpackContainerContents
         return list;
     }
 
+    public BackpackContainerContents updateSlot(BackpackContainerContents.Slot slot)
+    {
+        ArrayList<ItemStack> itemsCopy = new ArrayList<>(this.items);
+        if(slot.index >= 0 && slot.index < itemsCopy.size())
+        {
+            itemsCopy.set(slot.index, slot.item);
+        }
+        return new BackpackContainerContents(itemsCopy);
+    }
+
     @Override
     public boolean equals(Object pOther)
     {
@@ -127,7 +137,7 @@ public final class BackpackContainerContents
         return this.hashCode;
     }
 
-    record Slot(int index, ItemStack item)
+    public record Slot(int index, ItemStack item)
     {
         public static final Codec<Slot> CODEC = RecordCodecBuilder.create(inst -> inst.group(
                         Codec.intRange(0, 255).fieldOf("slot").forGetter(Slot::index),
