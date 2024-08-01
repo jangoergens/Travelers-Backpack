@@ -2,7 +2,6 @@ package com.tiviacz.travelersbackpack.client.renderer;
 
 import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.client.model.TravelersBackpackWearableModel;
-import com.tiviacz.travelersbackpack.compat.trinkets.TrinketsCompat;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.init.ModComponentTypes;
@@ -39,7 +38,7 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
     @Override
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch)
     {
-        if(TravelersBackpackConfig.getConfig().client.disableBackpackRender) return;
+        if(TravelersBackpackConfig.getConfig().client.disableBackpackRender || TravelersBackpack.enableAccessories()) return;
 
         if(ComponentUtils.isWearingBackpack(entity))
         {
@@ -47,7 +46,7 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
 
             if(inv != null && !entity.isInvisible())
             {
-                boolean trinketsIntegration = TravelersBackpack.enableTrinkets();
+               /* boolean trinketsIntegration = TravelersBackpack.enableTrinkets();
 
                 if(trinketsIntegration)
                 {
@@ -55,9 +54,9 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
                     {
                         return;
                     }
-                }
+                } */
 
-                if(!trinketsIntegration && !TravelersBackpackConfig.getConfig().client.renderBackpackWithElytra && entity.getEquippedStack(EquipmentSlot.CHEST).getItem() instanceof ElytraItem) return;
+                if(!TravelersBackpackConfig.getConfig().client.renderBackpackWithElytra && entity.getEquippedStack(EquipmentSlot.CHEST).getItem() instanceof ElytraItem) return;
 
                 renderLayer(matrices, vertexConsumers, light, entity, inv);
 

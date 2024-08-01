@@ -8,6 +8,7 @@ import com.tiviacz.travelersbackpack.client.screen.HudOverlay;
 import com.tiviacz.travelersbackpack.client.screen.TravelersBackpackHandledScreen;
 import com.tiviacz.travelersbackpack.client.screen.tooltip.BackpackTooltipComponent;
 import com.tiviacz.travelersbackpack.client.screen.tooltip.BackpackTooltipData;
+import com.tiviacz.travelersbackpack.compat.accessories.TravelersBackpackAccessory;
 import com.tiviacz.travelersbackpack.compat.craftingtweaks.TravelersBackpackCraftingGridProvider;
 import com.tiviacz.travelersbackpack.fluids.milk.MilkFluidVariantAttributeHandler;
 import com.tiviacz.travelersbackpack.fluids.potion.PotionFluidVariantAttributeHandler;
@@ -79,6 +80,7 @@ public class TravelersBackpackClient implements ClientModInitializer
 
         //Crafting Tweaks Integration
         if(TravelersBackpack.craftingTweaksLoaded) TravelersBackpackCraftingGridProvider.registerClient();
+        if(TravelersBackpack.accessoriesLoaded) TravelersBackpackAccessory.clientInit();
     }
 
     public static void registerFeatureRenderers()

@@ -72,7 +72,7 @@ public abstract class LivingEntityMixin extends Entity
                         LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.getBlockPos().getX() + " Y: " + player.getBlockPos().getY() + " Z: " + player.getBlockPos().getZ());
 
                         //If Trinkets loaded - handled by Trinkets
-                        if(!TravelersBackpack.enableTrinkets())
+                        if(!TravelersBackpack.enableAccessories())
                         {
                             player.dropStack(stack);
                         }

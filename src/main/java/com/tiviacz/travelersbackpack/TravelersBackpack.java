@@ -1,7 +1,7 @@
 package com.tiviacz.travelersbackpack;
 
+import com.tiviacz.travelersbackpack.compat.accessories.TravelersBackpackAccessory;
 import com.tiviacz.travelersbackpack.compat.craftingtweaks.TravelersBackpackCraftingGridProvider;
-import com.tiviacz.travelersbackpack.compat.trinkets.TrinketsCompat;
 import com.tiviacz.travelersbackpack.compat.universalgraves.UniversalGravesCompat;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.fluids.EffectFluidRegistry;
@@ -17,7 +17,8 @@ import org.apache.logging.log4j.Logger;
 public class TravelersBackpack implements ModInitializer {
 	public static final String MODID = "travelersbackpack";
 	public static final Logger LOGGER = LogManager.getLogger();
-	private static boolean trinketsLoaded;
+
+	public static boolean accessoriesLoaded;
 	public static boolean craftingTweaksLoaded;
 
 	public static boolean comfortsLoaded;
@@ -49,24 +50,24 @@ public class TravelersBackpack implements ModInitializer {
 
 		TravelersBackpackItem.registerCauldronBehavior();
 
-		trinketsLoaded = FabricLoader.getInstance().isModLoaded("trinkets");
+		accessoriesLoaded = FabricLoader.getInstance().isModLoaded("accessories");
 		craftingTweaksLoaded = FabricLoader.getInstance().isModLoaded("craftingtweaks");
 
-		if (craftingTweaksLoaded) new TravelersBackpackCraftingGridProvider();
+		if(craftingTweaksLoaded) new TravelersBackpackCraftingGridProvider();
 
-		if (trinketsLoaded) TrinketsCompat.init();
+		if(accessoriesLoaded) TravelersBackpackAccessory.init();
 
 		comfortsLoaded = FabricLoader.getInstance().isModLoaded("comforts");
 
 		universalGravesLoaded = FabricLoader.getInstance().isModLoaded("universal-graves");
-		if (universalGravesLoaded && !enableTrinkets()) UniversalGravesCompat.register();
+		if(universalGravesLoaded && !enableAccessories()) UniversalGravesCompat.register();
 
 		EffectFluidRegistry.initEffects();
 	}
 
-	public static boolean enableTrinkets()
+	public static boolean enableAccessories()
 	{
-		return trinketsLoaded && TravelersBackpackConfig.getConfig().backpackSettings.trinketsIntegration;
+		return accessoriesLoaded && TravelersBackpackConfig.getConfig().backpackSettings.accessoriesIntegration;
 	}
 
 	public static boolean isAnyGraveModInstalled()

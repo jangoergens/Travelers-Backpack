@@ -4,7 +4,7 @@ import com.tiviacz.travelersbackpack.TravelersBackpack;
 import com.tiviacz.travelersbackpack.blockentity.TravelersBackpackBlockEntity;
 import com.tiviacz.travelersbackpack.blocks.TravelersBackpackBlock;
 import com.tiviacz.travelersbackpack.common.recipes.ShapedBackpackRecipe;
-import com.tiviacz.travelersbackpack.compat.trinkets.TrinketsCompat;
+import com.tiviacz.travelersbackpack.compat.accessories.AccessoriesUtils;
 import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.init.ModItems;
@@ -47,9 +47,9 @@ public class RightClickHandler
                                 player.swingHand(Hand.MAIN_HAND, true);
                                 world.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 1.05F, (1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F) * 0.7F);
 
-                                if(TravelersBackpack.enableTrinkets())
+                                if(TravelersBackpack.enableAccessories())
                                 {
-                                    TrinketsCompat.rightClickUnequip(player, backpackStack);
+                                    AccessoriesUtils.rightClickUnequip(player, backpackStack);
                                 }
 
                                 ComponentUtils.getComponent(player).removeWearable();
@@ -153,20 +153,39 @@ public class RightClickHandler
                     if(!ComponentUtils.isWearingBackpack(player))
                     {
                         ItemStack stack = new ItemStack(player.getWorld().getBlockState(hitResult.getBlockPos()).getBlock(), 1).copy();
+                        blockEntity.transferToItemStack(stack);
+
                         Direction bagDirection = player.getWorld().getBlockState(hitResult.getBlockPos()).get(TravelersBackpackBlock.FACING);
 
-                        if(player.getWorld().setBlockState(hitResult.getBlockPos(), Blocks.AIR.getDefaultState()))
+                        boolean canEquipAccessory = false;
+                        if(TravelersBackpack.enableAccessories())
                         {
-                            blockEntity.transferToItemStack(stack);
+                            canEquipAccessory = AccessoriesUtils.rightClickEquip(player, stack);
+                            if(!canEquipAccessory) return ActionResult.PASS;
+                        }
 
-                            if(TravelersBackpack.enableTrinkets())
+                        boolean canSetBlock = player.getWorld().setBlockState(hitResult.getBlockPos(), Blocks.AIR.getDefaultState());
+
+                        if(canEquipAccessory && !canSetBlock)
+                        {
+                            AccessoriesUtils.rightClickUnequip(player, stack);
+                        }
+
+                        if(canSetBlock)
+                        {
+                            if(!TravelersBackpack.enableAccessories())
+                            {
+                                ComponentUtils.equipBackpack(player, stack);
+                                //AccessoriesUtils.rightClickEquip(player, backpack);
+                            }
+                           /* if(TravelersBackpack.enableTrinkets())
                             {
                                 TrinketsCompat.rightClickEquip(player, stack);
                             }
                             else
                             {
                                 ComponentUtils.equipBackpack(player, stack);
-                            }
+                            } */
 
                             if(blockEntity.isSleepingBagDeployed())
                             {

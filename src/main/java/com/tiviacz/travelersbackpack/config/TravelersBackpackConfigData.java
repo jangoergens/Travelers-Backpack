@@ -100,8 +100,8 @@ public class TravelersBackpackConfigData implements ConfigData
         public boolean enableSleepingBagSpawnPoint = false;
 
         @ConfigEntry.Gui.RequiresRestart
-        @Comment("If true, backpack can only be worn by placing it in curios 'Back' slot\nWARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
-        public boolean trinketsIntegration = false;
+        @Comment("If true, backpack can only be worn by placing it in accessories 'Back' slot\nWARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
+        public boolean accessoriesIntegration = false;
     }
 
     public static class LeatherTierConfig
