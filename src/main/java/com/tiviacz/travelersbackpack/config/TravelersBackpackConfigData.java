@@ -224,8 +224,9 @@ public class TravelersBackpackConfigData implements ConfigData
             };
 
         @ConfigEntry.Gui.RequiresRestart
-        @Comment("Defines spawn chance of entity with backpack (1 in [selected value])")
-        public int spawnChance = 500;
+        @Comment("Defines spawn chance of entity with a backpack")
+        @ConfigEntry.BoundedDiscrete(min = 0, max = 1)
+        public float chance = 0.005F;
 
         @ConfigEntry.Gui.RequiresRestart
         @Comment("List of backpacks that can spawn on overworld mobs")

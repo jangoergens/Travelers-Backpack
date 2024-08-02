@@ -134,10 +134,10 @@ public class TravelersBackpackConfig
 
         //World
         nbt.putBoolean("world.enableLoot", data.world.enableLoot);
+        nbt.putFloat("world.chance", data.world.chance);
         nbt.putBoolean("world.spawnEntitiesWithBackpack", data.world.spawnEntitiesWithBackpack);
         nbt.putString("world.possibleOverworldEntityTypes", String.join(",", data.world.possibleOverworldEntityTypes));
         nbt.putString("world.possibleNetherEntityTypes", String.join(",", data.world.possibleNetherEntityTypes));
-        nbt.putInt("world.spawnChance", data.world.spawnChance);
         nbt.putString("world.overworldBackpacks", String.join(",", data.world.overworldBackpacks));
         nbt.putString("world.netherBackpacks", String.join(",", data.world.netherBackpacks));
         nbt.putBoolean("world.enableVillagerTrade", data.world.enableVillagerTrade);
@@ -224,10 +224,10 @@ public class TravelersBackpackConfig
 
         //World
         data.world.enableLoot = nbt.getBoolean("world.enableLoot");
+        data.world.chance = nbt.getFloat("world.chance");
         data.world.spawnEntitiesWithBackpack = nbt.getBoolean("world.spawnEntitiesWithBackpack");
         data.world.possibleOverworldEntityTypes = nbt.getString("world.possibleOverworldEntityTypes").split(",");
         data.world.possibleNetherEntityTypes = nbt.getString("world.possibleNetherEntityTypes").split(",");
-        data.world.spawnChance = nbt.getInt("world.spawnChance");
         data.world.overworldBackpacks = nbt.getString("world.overworldBackpacks").split(",");
         data.world.netherBackpacks = nbt.getString("world.netherBackpacks").split(",");
         data.world.enableVillagerTrade = nbt.getBoolean("world.enableVillagerTrade");

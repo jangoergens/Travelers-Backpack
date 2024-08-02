@@ -77,7 +77,7 @@ public abstract class LivingEntityMixin extends Entity
                         ServerPlayNetworking.send((ServerPlayerEntity)player, new SendMessagePacket(true, player.getBlockPos()));
                         LogHelper.info("There's no space for backpack. Dropping backpack item at" + " X: " + player.getBlockPos().getX() + " Y: " + player.getBlockPos().getY() + " Z: " + player.getBlockPos().getZ());
 
-                        //If Trinkets loaded - handled by Trinkets
+                        //If Accessories loaded - handled by Accessories
                         if(!TravelersBackpack.enableAccessories())
                         {
                             player.dropStack(stack);
@@ -87,17 +87,6 @@ public abstract class LivingEntityMixin extends Entity
                         ComponentUtils.sync(player);
                     }
                 }
-
-               /* if(ComponentUtils.isWearingBackpack(player))
-                {
-                    if(TravelersBackpack.isAnyGraveModInstalled()) return;
-
-                    if(!player.getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY))
-                    {
-                        BackpackUtils.onPlayerDeath(player.getWorld(), player, ComponentUtils.getWearingBackpack(player));
-                    }
-                }
-                ComponentUtils.sync(player); */
             }
 
             if((Object)this instanceof LivingEntity livingEntity && (TravelersBackpackConfig.isOverworldEntityTypePossible(livingEntity) || TravelersBackpackConfig.isNetherEntityTypePossible(livingEntity)))
