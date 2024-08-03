@@ -101,7 +101,7 @@ public class TravelersBackpackConfigData implements ConfigData
 
         @ConfigEntry.Gui.RequiresRestart
         @Comment("If true, backpack can only be worn by placing it in accessories 'Back' slot\nWARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
-        public boolean accessoriesIntegration = false;
+        public boolean accessoriesIntegration = true;
     }
 
     public static class LeatherTierConfig
