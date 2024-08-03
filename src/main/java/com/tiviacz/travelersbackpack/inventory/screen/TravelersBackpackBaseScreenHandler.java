@@ -225,26 +225,6 @@ public class TravelersBackpackBaseScreenHandler extends ScreenHandler
 
     protected static void slotChangedCraftingGrid(ScreenHandler handler, World world, PlayerEntity player, CraftingRecipeInput craftMatrix, CraftingResultInventory craftResult)
     {
-        /*if(!world.isClient)
-        {
-            ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
-            ItemStack itemStack = ItemStack.EMPTY;
-            Optional<RecipeEntry<CraftingRecipe>> optional = world.getServer().getRecipeManager().getFirstMatch(RecipeType.CRAFTING, craftMatrix, world);
-
-            if(optional.isPresent())
-            {
-                RecipeEntry<CraftingRecipe> craftingRecipeEntry = optional.get();
-
-                if(craftResult.shouldCraftRecipe(world, serverPlayerEntity, craftingRecipeEntry))
-                {
-                    itemStack = craftingRecipeEntry.value().craft(craftMatrix, world.getRegistryManager());
-                }
-            }
-
-            craftResult.setStack(0, itemStack);
-            serverPlayerEntity.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(handler.syncId, handler.getRevision(), 0, itemStack));
-        } */
-
         if(world.isClient) return;
 
         ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;

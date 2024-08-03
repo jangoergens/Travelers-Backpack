@@ -402,11 +402,11 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
             switch(data)
             {
                 //case INVENTORY_DATA: stack.getOrCreateNbt().put(INVENTORY, inventory.writeNbt());
-                case INVENTORY_DATA: this.stack.set(ModComponentTypes.BACKPACK_CONTAINER, itemsToList(this.stack.contains(ModComponentTypes.BACKPACK_CONTAINER) ? this.inventory.size() : this.tier.getStorageSlots(), this.inventory)); break;
+              //  case INVENTORY_DATA: this.stack.set(ModComponentTypes.BACKPACK_CONTAINER, itemsToList(this.stack.contains(ModComponentTypes.BACKPACK_CONTAINER) ? this.inventory.size() : this.tier.getStorageSlots(), this.inventory)); break;
                 //case TOOLS_DATA: stack.getOrCreateNbt().put(TOOLS_INVENTORY, toolSlots.writeNbt());
-                case TOOLS_DATA: this.stack.set(ModComponentTypes.TOOLS_CONTAINER, itemsToList(this.toolSlots.size(), this.toolSlots)); break;
+              //  case TOOLS_DATA: this.stack.set(ModComponentTypes.TOOLS_CONTAINER, itemsToList(this.toolSlots.size(), this.toolSlots)); break;
                 //case CRAFTING_INVENTORY_DATA: stack.getOrCreateNbt().put(CRAFTING_INVENTORY, craftingInventory.writeNbt());
-                case CRAFTING_INVENTORY_DATA: this.stack.set(ModComponentTypes.CRAFTING_CONTAINER, itemsToList(9, this.craftingInventory)); break;
+              //  case CRAFTING_INVENTORY_DATA: this.stack.set(ModComponentTypes.CRAFTING_CONTAINER, itemsToList(9, this.craftingInventory)); break;
                 case TANKS_DATA: writeTanks(); break;
                 case ABILITY_DATA: writeAbility(); break;
                 case LAST_TIME_DATA: writeTime(); break;
@@ -426,6 +426,17 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
                 case SETTINGS_DATA: settingsManager.writeSettings(stack.getOrCreateNbt());
                 case ALL_DATA: writeAllData(stack.getOrCreateNbt()); */
             }
+        }
+        sendPackets();
+    }
+
+    public void markSlotDirty(int index, ItemStack stack, byte dataId)
+    {
+        switch(dataId)
+        {
+            case INVENTORY_DATA: this.stack.apply(ModComponentTypes.BACKPACK_CONTAINER, new BackpackContainerComponent(this.getTier().getStorageSlots()), new BackpackContainerComponent.Slot(index, stack), BackpackContainerComponent::updateSlot); break;
+            case CRAFTING_INVENTORY_DATA: this.stack.apply(ModComponentTypes.CRAFTING_CONTAINER, new BackpackContainerComponent(9), new BackpackContainerComponent.Slot(index, stack), BackpackContainerComponent::updateSlot); break;
+            case TOOLS_DATA: this.stack.apply(ModComponentTypes.TOOLS_CONTAINER, new BackpackContainerComponent(this.tier.getToolSlots()), new BackpackContainerComponent.Slot(index, stack), BackpackContainerComponent::updateSlot); break;
         }
         sendPackets();
     }
@@ -519,15 +530,18 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
         return new InventoryImproved(stacks)
         {
             @Override
-            public void markDirty()
+            public void markDirty() { }
+
+            @Override
+            public void onContentsChanged(int index, ItemStack stack)
             {
                 if(isInventory)
                 {
-                    markDataDirty(INVENTORY_DATA);
+                    markSlotDirty(index, stack, INVENTORY_DATA);
                 }
                 else
                 {
-                    markDataDirty(CRAFTING_INVENTORY_DATA);
+                    markSlotDirty(index, stack, CRAFTING_INVENTORY_DATA);
                 }
             }
         };
@@ -538,9 +552,12 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
         return new InventoryImproved(stacks)
         {
             @Override
-            public void markDirty()
+            public void markDirty() {}
+
+            @Override
+            public void onContentsChanged(int index, ItemStack stack)
             {
-                markDataDirty(TOOLS_DATA);
+                markSlotDirty(index, stack, TOOLS_DATA);
             }
 
             @Override

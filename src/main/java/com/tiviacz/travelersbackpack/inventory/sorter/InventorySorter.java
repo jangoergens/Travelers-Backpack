@@ -94,7 +94,7 @@ public class InventorySorter
             //{
             //    screen.onContentChanged(screen.craftMatrix);
            // }
-            inventory.markDataDirty(ITravelersBackpackInventory.INVENTORY_DATA);
+           // inventory.markDataDirty(ITravelersBackpackInventory.INVENTORY_DATA);
         }
     }
 

@@ -113,6 +113,9 @@ public interface ITravelersBackpackInventory extends ITanks
             public void markDirty() {}
 
             @Override
+            public void onContentsChanged(int index, ItemStack stack) {}
+
+            @Override
             public boolean isValid(int slot, ItemStack stack)
             {
                 Storage<FluidVariant> storage = ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM);

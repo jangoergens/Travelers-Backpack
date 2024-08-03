@@ -70,7 +70,7 @@ public abstract class InventoryImproved implements Inventory
 
         if(!itemstack.isEmpty())
         {
-            this.markDirty();
+            this.onContentsChanged(slot, getStack(slot));
         }
         return itemstack;
     }
@@ -86,6 +86,10 @@ public abstract class InventoryImproved implements Inventory
         else
         {
             this.stacks.set(slot, ItemStack.EMPTY);
+
+            //Call onContentsChanged
+            this.onContentsChanged(slot, getStack(slot));
+
             return itemStack;
         }
     }
@@ -98,8 +102,7 @@ public abstract class InventoryImproved implements Inventory
         {
             stack.setCount(this.getMaxCountPerStack());
         }
-
-       this.markDirty();
+        this.onContentsChanged(slot, stack);
     }
 
     public NbtCompound writeNbt(RegistryWrapper.WrapperLookup lookup)
@@ -137,25 +140,10 @@ public abstract class InventoryImproved implements Inventory
         }
     }
 
-  /*  public void readNbtOld(NbtCompound nbt, boolean isInventory)
-    {
-        this.setSize(nbt.contains("Size", 3) ? nbt.getInt("Size") : this.stacks.size());
-        NbtList tagList = isInventory ? nbt.getList(ITravelersBackpackInventory.INVENTORY, 10) : nbt.getList(ITravelersBackpackInventory.CRAFTING_INVENTORY, 10);
-
-        for(int i = 0; i < tagList.size(); ++i)
-        {
-            NbtCompound itemTags = tagList.getCompound(i);
-            int slot = itemTags.getInt("Slot");
-            if(slot >= 0 && slot < this.stacks.size())
-            {
-                this.stacks.set(slot, ItemStack.fromNbt(itemTags));
-            }
-        }
-        //nbt.remove(isInventory ? ITravelersBackpackInventory.INVENTORY : ITravelersBackpackInventory.CRAFTING_INVENTORY);
-    } */
-
     @Override
     public abstract void markDirty();
+
+    public abstract void onContentsChanged(int index, ItemStack stack);
 
     @Override
     public boolean isValid(int slot, ItemStack stack)
@@ -170,8 +158,5 @@ public abstract class InventoryImproved implements Inventory
     }
 
     @Override
-    public void clear()
-    {
-
-    }
+    public void clear() {}
 }

@@ -65,7 +65,8 @@ public class ReiCompat implements REIServerPlugin
         }
 
         @Override
-        public void clearInputSlots(T menu) {
+        public void clearInputSlots(T menu)
+        {
             menu.craftMatrix.clear();
         }
 

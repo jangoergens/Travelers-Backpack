@@ -124,7 +124,7 @@ public class ServerActions
                     slot++;
                 }
             }
-            inventory.markDataDirty(ITravelersBackpackInventory.TOOLS_DATA);
+          //  inventory.markDataDirty(ITravelersBackpackInventory.TOOLS_DATA);
         }
     }
 

@@ -665,29 +665,10 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
         this.addComponents(map);
         stack.applyComponentsFrom(map.build());
         return stack;
-        /*NbtCompound compound = new NbtCompound();
-        writeTier(compound);
-        writeTanks(compound);
-        writeItems(compound);
-        if(this.hasColor()) this.writeColor(compound);
-        if(this.hasSleepingBagColor()) this.writeSleepingBagColor(compound);
-        writeAbility(compound);
-        writeTime(compound);
-        slotManager.writeUnsortableSlots(compound);
-        slotManager.writeMemorySlots(compound);
-        settingsManager.writeSettings(compound);
-        stack.setNbt(compound);
-        if(hasCustomName()) stack.setCustomName(getCustomName());
-        return stack; */
     }
 
     public BackpackContainerComponent itemsToList(int size, DefaultedList<ItemStack> inventory)
     {
-       /* List<ItemStack> list = new ArrayList<>();
-        for(int i = 0; i < handler.getSlots(); i++)
-        {
-            list.add(handler.getStackInSlot(i));
-        } */
         return BackpackContainerComponent.fromStacks(size, new ArrayList<>(inventory.stream().toList()));
     }
 
@@ -785,6 +766,12 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
             }
 
             @Override
+            public void onContentsChanged(int index, ItemStack stack)
+            {
+                markDirty();
+            }
+
+            @Override
             public void readNbt(RegistryWrapper.WrapperLookup registryLookup, NbtCompound nbt)
             {
                 if(isInventory)
@@ -819,6 +806,12 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
             public void markDirty()
             {
                 TravelersBackpackBlockEntity.this.markDirty();
+            }
+
+            @Override
+            public void onContentsChanged(int index, ItemStack stack)
+            {
+                markDirty();
             }
 
             @Override
@@ -862,8 +855,6 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
             {
                 setCapacity(nbt.contains("capacity") ? nbt.getLong("capacity") : TravelersBackpackBlockEntity.this.tier.getTankCapacity());
                 this.variant = readOptional(registryLookup, nbt.getCompound("variant"));
-                //this.variant = FluidVariantImpl.fromNbt(nbt.getCompound("variant"));
-                //this.variant = FluidVariantImpl.CODEC.parse(registryLookup.getOps(NbtOps.INSTANCE), nbt.getCompound("variant")).resultOrPartial();
                 this.amount = nbt.getLong("amount");
                 return this;
             }

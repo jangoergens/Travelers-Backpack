@@ -30,7 +30,7 @@ public final class BackpackContainerComponent
         }
     }
 
-    private BackpackContainerComponent(int size) {
+    public BackpackContainerComponent(int size) {
         this(DefaultedList.ofSize(size, ItemStack.EMPTY));
     }
 
@@ -93,6 +93,16 @@ public final class BackpackContainerComponent
         return list;
     }
 
+    public BackpackContainerComponent updateSlot(BackpackContainerComponent.Slot slot)
+    {
+        ArrayList<ItemStack> itemsCopy = new ArrayList<>(this.stacks);
+        if(slot.index >= 0 && slot.index < itemsCopy.size())
+        {
+            itemsCopy.set(slot.index, slot.item);
+        }
+        return new BackpackContainerComponent(itemsCopy);
+    }
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -122,12 +132,12 @@ public final class BackpackContainerComponent
         });
     }
 
-    static record Slot(int index, ItemStack item) {
+    public record Slot(int index, ItemStack item) {
         public static final Codec<BackpackContainerComponent.Slot> CODEC = RecordCodecBuilder.create((instance) -> {
             return instance.group(Codec.intRange(0, 255).fieldOf("slot").forGetter(BackpackContainerComponent.Slot::index), ItemStack.OPTIONAL_CODEC.fieldOf("item").forGetter(BackpackContainerComponent.Slot::item)).apply(instance, BackpackContainerComponent.Slot::new);
         });
 
-        Slot(int index, ItemStack item) {
+        public Slot(int index, ItemStack item) {
             this.index = index;
             this.item = item;
         }
