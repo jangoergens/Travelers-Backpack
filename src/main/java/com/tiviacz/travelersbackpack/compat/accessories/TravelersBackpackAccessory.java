@@ -11,6 +11,7 @@ import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.init.ModDataComponents;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackContainer;
+import com.tiviacz.travelersbackpack.inventory.menu.TravelersBackpackItemMenu;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
 import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import io.wispforest.accessories.api.AccessoriesAPI;
@@ -47,6 +48,9 @@ public class TravelersBackpackAccessory implements Accessory
 
         if(reference.entity() instanceof Player player)
         {
+            //#TODO onEquip method runs when player opens inventory, dunno why but causes issues
+            if(player.containerMenu instanceof TravelersBackpackItemMenu) return;
+
             if(!player.level().isClientSide)
             {
                 AttachmentUtils.getAttachment(player).ifPresent(cap ->
@@ -67,6 +71,8 @@ public class TravelersBackpackAccessory implements Accessory
 
         if(reference.entity() instanceof Player player)
         {
+            if(player.containerMenu instanceof TravelersBackpackItemMenu) return;
+
             if(!player.level().isClientSide)
             {
                 AttachmentUtils.getAttachment(player).ifPresent(ITravelersBackpack::removeWearable);
