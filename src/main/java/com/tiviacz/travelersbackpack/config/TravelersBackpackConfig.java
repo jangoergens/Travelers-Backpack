@@ -136,7 +136,7 @@ public class TravelersBackpackConfig
 
                 accessoriesIntegration = builder
                         .comment("If true, backpack can only be worn by placing it in accessories 'Back' slot", "WARNING - Remember to TAKE OFF BACKPACK BEFORE enabling or disabling this integration!! - if not you'll lose your backpack")
-                        .define("accessoriesIntegration", false);
+                        .define("accessoriesIntegration", true);
 
                 builder.pop();
             }
@@ -215,7 +215,7 @@ public class TravelersBackpackConfig
                         .define("spawnEntitiesWithBackpack", true);
 
                 chance = builder
-                        .comment("Defines spawn chance of entity with a backpack)")
+                        .comment("Defines spawn chance of entity with a backpack")
                         .defineInRange("chance", 0.005, 0, 1);
 
                 possibleOverworldEntityTypes = builder
