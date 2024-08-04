@@ -766,7 +766,7 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
             }
 
             @Override
-            public void onContentsChanged(int index, ItemStack stack)
+            public void onContentsChanged(int index)
             {
                 markDirty();
             }
@@ -809,7 +809,7 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
             }
 
             @Override
-            public void onContentsChanged(int index, ItemStack stack)
+            public void onContentsChanged(int index)
             {
                 markDirty();
             }

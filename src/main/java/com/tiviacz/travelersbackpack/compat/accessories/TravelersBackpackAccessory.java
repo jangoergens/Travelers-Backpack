@@ -8,6 +8,7 @@ import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.init.ModComponentTypes;
 import com.tiviacz.travelersbackpack.init.ModItems;
 import com.tiviacz.travelersbackpack.inventory.TravelersBackpackInventory;
+import com.tiviacz.travelersbackpack.inventory.screen.TravelersBackpackItemScreenHandler;
 import com.tiviacz.travelersbackpack.items.TravelersBackpackItem;
 import com.tiviacz.travelersbackpack.util.ResourceUtils;
 import io.wispforest.accessories.api.AccessoriesAPI;
@@ -46,6 +47,8 @@ public class TravelersBackpackAccessory implements Accessory
 
         if(reference.entity() instanceof PlayerEntity player)
         {
+            if(player.currentScreenHandler instanceof TravelersBackpackItemScreenHandler) return;
+
             if(!player.getWorld().isClient)
             {
                 ComponentUtils.getComponent(player).setContents(stack);
@@ -62,6 +65,8 @@ public class TravelersBackpackAccessory implements Accessory
 
         if(reference.entity() instanceof PlayerEntity player)
         {
+            if(player.currentScreenHandler instanceof TravelersBackpackItemScreenHandler) return;
+
             if(!player.getWorld().isClient)
             {
                 ComponentUtils.getComponent(player).removeWearable();

@@ -533,15 +533,15 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
             public void markDirty() { }
 
             @Override
-            public void onContentsChanged(int index, ItemStack stack)
+            public void onContentsChanged(int index)
             {
                 if(isInventory)
                 {
-                    markSlotDirty(index, stack, INVENTORY_DATA);
+                    markSlotDirty(index, getStack(index), INVENTORY_DATA);
                 }
                 else
                 {
-                    markSlotDirty(index, stack, CRAFTING_INVENTORY_DATA);
+                    markSlotDirty(index, getStack(index), CRAFTING_INVENTORY_DATA);
                 }
             }
         };
@@ -555,9 +555,9 @@ public class TravelersBackpackInventory implements ITravelersBackpackInventory
             public void markDirty() {}
 
             @Override
-            public void onContentsChanged(int index, ItemStack stack)
+            public void onContentsChanged(int index)
             {
-                markSlotDirty(index, stack, TOOLS_DATA);
+                markSlotDirty(index, getStack(index), TOOLS_DATA);
             }
 
             @Override

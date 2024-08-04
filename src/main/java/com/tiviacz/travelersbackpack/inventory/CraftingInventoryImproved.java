@@ -52,7 +52,7 @@ public class CraftingInventoryImproved implements RecipeInputInventory
         if(!itemStack.isEmpty())
         {
             this.handler.onContentChanged(this);
-            this.craftingInventory.onContentsChanged(slot, getStack(slot));
+            this.craftingInventory.onContentsChanged(slot);
             //this.markDirty();
         }
         return itemStack;
@@ -64,7 +64,7 @@ public class CraftingInventoryImproved implements RecipeInputInventory
         this.craftingInventory.getStacks().set(slot, stack);
         this.handler.onContentChanged(this);
 
-        this.craftingInventory.onContentsChanged(slot, getStack(slot));
+        this.craftingInventory.onContentsChanged(slot);
         //this.markDirty();
     }
 

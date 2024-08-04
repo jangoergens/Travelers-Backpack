@@ -4,6 +4,7 @@ import com.tiviacz.travelersbackpack.component.ComponentUtils;
 import com.tiviacz.travelersbackpack.config.TravelersBackpackConfig;
 import com.tiviacz.travelersbackpack.init.ModTags;
 import com.tiviacz.travelersbackpack.inventory.ITravelersBackpackInventory;
+import com.tiviacz.travelersbackpack.inventory.InventoryImproved;
 import com.tiviacz.travelersbackpack.items.HoseItem;
 import com.tiviacz.travelersbackpack.util.Reference;
 import net.minecraft.entity.player.PlayerEntity;
@@ -68,7 +69,14 @@ public class ToolSlot extends Slot
     @Override
     public void markDirty()
     {
-        super.markDirty();
+        if(inventory instanceof InventoryImproved improved)
+        {
+            improved.onContentsChanged(this.getIndex());
+        }
+        else
+        {
+            super.markDirty();
+        }
 
         if(inventory.getScreenID() == Reference.WEARABLE_SCREEN_ID && !player.getWorld().isClient)
         {

@@ -113,7 +113,7 @@ public interface ITravelersBackpackInventory extends ITanks
             public void markDirty() {}
 
             @Override
-            public void onContentsChanged(int index, ItemStack stack) {}
+            public void onContentsChanged(int index) {}
 
             @Override
             public boolean isValid(int slot, ItemStack stack)

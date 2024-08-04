@@ -70,7 +70,7 @@ public abstract class InventoryImproved implements Inventory
 
         if(!itemstack.isEmpty())
         {
-            this.onContentsChanged(slot, getStack(slot));
+            this.onContentsChanged(slot);
         }
         return itemstack;
     }
@@ -88,7 +88,7 @@ public abstract class InventoryImproved implements Inventory
             this.stacks.set(slot, ItemStack.EMPTY);
 
             //Call onContentsChanged
-            this.onContentsChanged(slot, getStack(slot));
+            this.onContentsChanged(slot);
 
             return itemStack;
         }
@@ -102,7 +102,7 @@ public abstract class InventoryImproved implements Inventory
         {
             stack.setCount(this.getMaxCountPerStack());
         }
-        this.onContentsChanged(slot, stack);
+        this.onContentsChanged(slot);
     }
 
     public NbtCompound writeNbt(RegistryWrapper.WrapperLookup lookup)
@@ -143,7 +143,7 @@ public abstract class InventoryImproved implements Inventory
     @Override
     public abstract void markDirty();
 
-    public abstract void onContentsChanged(int index, ItemStack stack);
+    public abstract void onContentsChanged(int index);
 
     @Override
     public boolean isValid(int slot, ItemStack stack)
