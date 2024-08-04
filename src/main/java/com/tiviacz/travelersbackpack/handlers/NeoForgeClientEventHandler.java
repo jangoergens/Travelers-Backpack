@@ -39,7 +39,7 @@ public class NeoForgeClientEventHandler
     @SubscribeEvent
     public static void renderBackpackIcon(ScreenEvent.Render.Post event)
     {
-        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get()) return;
+        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get() || TravelersBackpack.enableAccessories()) return;
 
         Player player = Minecraft.getInstance().player;
         if(player == null) return;
@@ -67,7 +67,7 @@ public class NeoForgeClientEventHandler
     @SubscribeEvent
     public static void hideBackpackIcon(ScreenEvent.MouseButtonPressed.Post event)
     {
-        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get()) return;
+        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get() || TravelersBackpack.enableAccessories()) return;
 
         Player player = Minecraft.getInstance().player;
         if(player == null) return;
