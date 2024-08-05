@@ -215,12 +215,6 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
 
     public void readTier(NbtCompound compound)
     {
-        /*if(compound.contains(TIER, NbtElement.STRING_TYPE))
-        {
-            Tiers.Tier tier = Tiers.of(compound.getString(TIER));
-            compound.remove(TIER);
-            compound.putInt(TIER, tier.getOrdinal());
-        } */
         this.tier = compound.contains(TIER) ? Tiers.of(compound.getInt(TIER)) : TravelersBackpackConfig.getConfig().backpackSettings.enableTierUpgrades ? Tiers.LEATHER : Tiers.DIAMOND;
     }
 
@@ -786,7 +780,6 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
                         if(slot >= 0 && slot < this.stacks.size())
                         {
                             ItemStack.fromNbt(registryLookup, itemTags).ifPresent(stack -> stacks.set(slot, stack));
-                            //this.stacks.set(slot, ItemStack.fromNbt(itemTags));
                         }
                     }
                 }
@@ -833,7 +826,6 @@ public class TravelersBackpackBlockEntity extends BlockEntity implements ITravel
                     if(slot >= 0 && slot < this.stacks.size())
                     {
                         ItemStack.fromNbt(registryLookup, itemTags).ifPresent(stack -> stacks.set(slot, stack));
-                        //this.stacks.set(slot, ItemStack.fromNbt(itemTags));
                     }
                 }
             }
