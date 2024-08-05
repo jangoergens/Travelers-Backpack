@@ -151,11 +151,8 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
     {
         this.inventory = createHandler(this.stack.getOrDefault(ModDataComponents.BACKPACK_CONTAINER, BackpackContainerContents.fromItems(this.tier.getStorageSlots(), NonNullList.withSize(this.tier.getStorageSlots(), ItemStack.EMPTY))).getItems(), true);
         this.toolSlots = createToolsHandler(this.stack.getOrDefault(ModDataComponents.TOOLS_CONTAINER, BackpackContainerContents.fromItems(this.tier.getToolSlots(), NonNullList.withSize(this.tier.getToolSlots(), ItemStack.EMPTY))).getItems());
-
-        if(this.stack.has(ModDataComponents.CRAFTING_CONTAINER))
-        {
-            this.craftingInventory = createHandler(this.stack.get(ModDataComponents.CRAFTING_CONTAINER).getItems(), false);
-        }
+        this.craftingInventory = createHandler(this.stack.getOrDefault(ModDataComponents.CRAFTING_CONTAINER, BackpackContainerContents.fromItems(9, NonNullList.withSize(9, ItemStack.EMPTY))).getItems(), false);
+        //if(this.stack.has(ModDataComponents.CRAFTING_CONTAINER))
     }
 
     public void saveTanks()
