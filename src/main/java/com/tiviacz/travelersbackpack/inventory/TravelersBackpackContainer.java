@@ -450,7 +450,7 @@ public class TravelersBackpackContainer implements ITravelersBackpackContainer, 
 
             if(screenID == Reference.WEARABLE_SCREEN_ID)
             {
-                serverPlayerEntity.openMenu(AttachmentUtils.getBackpackInv(serverPlayerEntity), packetBuffer -> packetBuffer.writeByte(screenID));
+                serverPlayerEntity.openMenu(AttachmentUtils.getBackpackInv(serverPlayerEntity), packetBuffer -> packetBuffer.writeByte(screenID).writeBoolean(false));
             }
         }
     }
