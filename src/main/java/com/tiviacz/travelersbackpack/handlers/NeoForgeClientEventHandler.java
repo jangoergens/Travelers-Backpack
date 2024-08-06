@@ -39,13 +39,15 @@ public class NeoForgeClientEventHandler
     @SubscribeEvent
     public static void renderBackpackIcon(ScreenEvent.Render.Post event)
     {
-        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get() || TravelersBackpack.enableAccessories()) return;
+        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get()) return;
 
         Player player = Minecraft.getInstance().player;
         if(player == null) return;
 
         if(AttachmentUtils.isWearingBackpack(player) && Minecraft.getInstance().screen instanceof InventoryScreen screen)
         {
+            if(TravelersBackpack.enableAccessories()) return;
+
             GuiGraphics guiGraphics = event.getGuiGraphics();
             guiGraphics.renderItem(AttachmentUtils.getWearingBackpack(player), screen.getGuiLeft() + 77, screen.getGuiTop() + 61 - 18);
             //guiGraphics.renderItem(AttachmentUtils.getWearingBackpack(player), screen.getGuiLeft() + 59, screen.getGuiTop() + 7);
@@ -67,13 +69,15 @@ public class NeoForgeClientEventHandler
     @SubscribeEvent
     public static void hideBackpackIcon(ScreenEvent.MouseButtonPressed.Post event)
     {
-        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get() || TravelersBackpack.enableAccessories()) return;
+        if(!TravelersBackpackConfig.CLIENT.showBackpackIconInInventory.get()) return;
 
         Player player = Minecraft.getInstance().player;
         if(player == null) return;
 
         if(AttachmentUtils.isWearingBackpack(player) && Minecraft.getInstance().screen instanceof InventoryScreen screen)
         {
+            if(TravelersBackpack.enableAccessories()) return;
+
             if(event.getMouseX() >= screen.getGuiLeft() + 77 && event.getMouseX() < screen.getGuiLeft() + 77 + 16 && event.getMouseY() >= screen.getGuiTop() + 61 - 18 && event.getMouseY() < screen.getGuiTop() + 61 - 18 + 16)
             {
                 if(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) && event.getButton() == GLFW.GLFW_MOUSE_BUTTON_1)
