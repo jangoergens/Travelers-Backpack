@@ -343,6 +343,9 @@ public class TravelersBackpackConfigData implements ConfigData
         @ConfigEntry.Gui.CollapsibleObject
         public Overlay overlay = new Overlay();
 
+        @Comment("Whether the backpack icon should be visible in player's inventory")
+        public boolean showBackpackIconInInventory = true;
+
         @Comment("Sends a message to the player on death with backpack coordinates")
         public boolean sendBackpackCoordinatesMessage = true;
 

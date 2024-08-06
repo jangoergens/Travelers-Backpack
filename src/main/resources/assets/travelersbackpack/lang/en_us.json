@@ -26,6 +26,9 @@
   "screen.travelersbackpack.ability_ready": "Ability Ready",
   "screen.travelersbackpack.equip_integration": "Integration enabled - put backpack in back slot",
   "screen.travelersbackpack.unequip_integration": "Integration enabled - take backpack from back slot",
+  "screen.travelersbackpack.open_inventory": "Press %s to Open Inventory",
+  "screen.travelersbackpack.hide_icon": "Press Shift + Right-Click to hide the icon",
+  "screen.travelersbackpack.hidden_icon_info": "Backpack icon hidden, to restore the icon edit client config",
 
   "screen.travelersbackpack.sort": "Sort items",
   "screen.travelersbackpack.quick_stack": "Quick stack items",
@@ -253,6 +256,7 @@
   "text.autoconfig.travelersbackpack.option.client.overlay.enableOverlay": "Enable Overlay",
   "text.autoconfig.travelersbackpack.option.client.overlay.offsetX": "Offset X",
   "text.autoconfig.travelersbackpack.option.client.overlay.offsetY": "Offset Y",
+  "text.autoconfig.travelersbackpack.option.client.showBackpackIconInInventory": "Show Backpack Icon In Inventory",
   "text.autoconfig.travelersbackpack.option.client.sendBackpackCoordinatesMessage": "Send Backpack Coordinates Message",
   "text.autoconfig.travelersbackpack.option.client.enableLegacyGui": "Enable Legacy Gui",
   "text.autoconfig.travelersbackpack.option.client.enableToolCycling": "Enable Tool Cycling",

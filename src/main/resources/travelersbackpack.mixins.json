@@ -18,6 +18,7 @@
     "abilities.SmallFireballEntityMixin"
   ],
   "client": [
+    "InventoryScreenMixin",
     "MouseMixin"
   ],
   "injectors": {

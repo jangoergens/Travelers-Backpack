@@ -21,6 +21,11 @@ public class TravelersBackpackConfig
         return AutoConfig.getConfigHolder(TravelersBackpackConfigData.class).getConfig();
     }
 
+    public static void saveConfig()
+    {
+        AutoConfig.getConfigHolder(TravelersBackpackConfigData.class).save();
+    }
+
     public static void register()
     {
         AutoConfig.register(TravelersBackpackConfigData.class, JanksonConfigSerializer::new);
