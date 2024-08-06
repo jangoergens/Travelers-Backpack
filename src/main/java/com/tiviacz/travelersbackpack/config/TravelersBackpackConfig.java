@@ -166,6 +166,7 @@ public class TravelersBackpackConfig
         data.client.overlay.offsetX = client.client.overlay.offsetX;
         data.client.overlay.offsetY = client.client.overlay.offsetY;
 
+        data.client.showBackpackIconInInventory = client.client.showBackpackIconInInventory;
         data.client.sendBackpackCoordinatesMessage = client.client.sendBackpackCoordinatesMessage;
         data.client.enableLegacyGui = client.client.enableLegacyGui;
         data.client.enableToolCycling = client.client.enableToolCycling;
