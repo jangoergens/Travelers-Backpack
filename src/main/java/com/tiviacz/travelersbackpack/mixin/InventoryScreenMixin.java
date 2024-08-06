@@ -36,13 +36,15 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
     @Inject(at = @At(value = "TAIL"), method = "render")
     public void render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci)
     {
-        if(!TravelersBackpackConfig.getConfig().client.showBackpackIconInInventory || TravelersBackpack.enableTrinkets()) return;
+        if(!TravelersBackpackConfig.getConfig().client.showBackpackIconInInventory) return;
 
         PlayerEntity player = MinecraftClient.getInstance().player;
         if(player == null) return;
 
         if(ComponentUtils.isWearingBackpack(player))
         {
+            if(TravelersBackpack.enableTrinkets()) return;
+
             context.drawItem(ComponentUtils.getWearingBackpack(player), this.x + 77, this.y + 61 - 18);
             //guiGraphics.renderItem(AttachmentUtils.getWearingBackpack(player), screen.getGuiLeft() + 59, screen.getGuiTop() + 7);
             //guiGraphics.renderItem(AttachmentUtils.getWearingBackpack(player), screen.getGuiLeft() - 8 - 9, screen.getGuiTop() + 8 + 18);
@@ -70,6 +72,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
 
         if(ComponentUtils.isWearingBackpack(player))
         {
+            if(TravelersBackpack.enableTrinkets()) return;
+
             if(mouseX >= this.x + 77 && mouseX < this.x + 77 + 16 && mouseY >= this.y + 61 - 18 && mouseY < this.y + 61 - 18 + 16)
             {
                 if(InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) && button == GLFW.GLFW_MOUSE_BUTTON_1)
