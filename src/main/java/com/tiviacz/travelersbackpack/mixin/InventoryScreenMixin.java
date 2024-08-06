@@ -52,7 +52,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
             {
                 //AbstractContainerScreen.renderSlotHighlight(guiGraphics, screen.getGuiLeft() - 8 - 9, screen.getGuiTop() + 8 + 18, -1000);
                 AbstractInventoryScreen.drawSlotHighlight(context, this.x + 77, this.y + 61 - 18, -1000);
-                String button = KeybindHandler.OPEN_BACKPACK.getDefaultKey().getLocalizedText().getString();
+                String button = KeybindHandler.OPEN_BACKPACK.getBoundKeyLocalizedText().getString();
                 List<Text> components = Arrays.asList(Text.translatable("screen.travelersbackpack.open_inventory", button), Text.translatable("screen.travelersbackpack.hide_icon"));
                 context.drawTooltip(MinecraftClient.getInstance().textRenderer, components, Optional.empty(), mouseX, mouseY);
             }
