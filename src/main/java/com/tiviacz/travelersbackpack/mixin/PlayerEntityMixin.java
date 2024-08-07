@@ -45,8 +45,7 @@ public abstract class PlayerEntityMixin extends LivingEntity
             {
                 if(TravelersBackpackConfig.getConfig().backpackAbilities.enableBackpackAbilities && BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_LIST, ComponentUtils.getWearingBackpack(player)))
                 {
-                    //If trinkets enabled tick ability in trinkets tick method
-                    if(!TravelersBackpack.enableAccessories()) TravelersBackpackInventory.abilityTick(player);
+                    TravelersBackpackInventory.abilityTick(player);
                     if(!checkAbilitiesForRemoval && BackpackAbilities.isOnList(BackpackAbilities.ITEM_ABILITIES_REMOVAL_LIST, ComponentUtils.getWearingBackpack(player))) checkAbilitiesForRemoval = true;
                 }
 
