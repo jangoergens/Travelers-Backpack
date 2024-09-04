@@ -136,18 +136,6 @@ public class TravelersBackpackFeature extends FeatureRenderer<AbstractClientPlay
         }
         model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
 
-        if(isCustomSleepingBag)
-        {
-            id = ResourceUtils.getSleepingBagTexture(inv.getSleepingBagColor());
-        }
-        else
-        {
-            id = ResourceUtils.getDefaultSleepingBagTexture();
-        }
-
-        vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(id));
-        model.sleepingBag.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, -1);
-
         matrices.pop();
     }
 }
